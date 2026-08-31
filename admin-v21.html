@@ -7,7 +7,7 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quản trị nội dung V22 - Góc nhỏ tu học</title>
-<link rel="stylesheet" href="admin-v17.css?v=22">
+<link rel="stylesheet" href="admin-v17.css?v=22.1">
 </head>
 <body>
 <header class="admin-header">
@@ -17,8 +17,8 @@
 
 <main class="admin-wrap">
   <section class="notice">
-    <strong>V22 · Tất cả đều đọc bằng Reader</strong>
-    <span>Bài học và sách nhập từ PDF đều dùng cùng giao diện đọc như Bài 40.</span>
+    <strong>V22.1 · Reader + ngắt theo Mục lục</strong>
+    <span>PDF tự nhận Mục lục, cho phép sửa trước khi đăng; mọi mục đều đọc bằng Reader như Bài 40.</span>
   </section>
 
   <section class="library-manager">
@@ -45,18 +45,35 @@
       <label><span>Tên sách</span><input id="pdfTitle" type="text" placeholder="Ví dụ: TỨ NIỆM XỨ GIẢNG NGHĨA"></label>
       <label><span>Tác giả / Giảng nghĩa</span><input id="pdfAuthor" type="text" placeholder="Ví dụ: Tỳ Kheo Ni Hải Triều Âm"></label>
       <label class="wide"><span>Mô tả</span><input id="pdfDescription" type="text" placeholder="Ví dụ: Tái bản lần thứ 3, có sửa chữa"></label>
-      <label><span>Tên Chương/Phần mặc định</span><input id="pdfChapter" type="text" value="NỘI DUNG SÁCH"></label>
-      <label><span>Số trang PDF mỗi bài/phần</span><input id="pdfPagesPerLesson" type="number" min="1" max="50" value="10"></label>
+      <label><span>Cách chia nội dung</span>
+        <select id="pdfSplitMode">
+          <option value="toc" selected>Theo Mục lục PDF</option>
+          <option value="pages">Theo số trang (dự phòng)</option>
+        </select>
+      </label>
+      <label><span>Số trang mỗi phần nếu không có Mục lục</span><input id="pdfPagesPerLesson" type="number" min="1" max="50" value="10"></label>
       <label class="wide"><span>Chọn file PDF nguồn</span><input id="pdfFile" type="file" accept="application/pdf,.pdf"></label>
       <label class="wide pdf-check"><input id="pdfFixVni" type="checkbox" checked> <span>Tự chuyển chữ tiếng Việt mã VNI cũ sang Unicode khi phát hiện</span></label>
     </div>
     <div class="pdf-actions">
       <button type="button" id="cancelPdf">Hủy</button>
-      <button type="button" id="analyzePdf">🔎 Đọc & xem trước PDF</button>
+      <button type="button" id="analyzePdf">🔎 Đọc PDF & nhận Mục lục</button>
       <button type="button" id="publishPdf" class="primary publish-primary" disabled>🚀 Tạo sách Reader & đăng website</button>
     </div>
     <div id="pdfStatus" class="pdf-status">Chưa chọn file PDF.</div>
     <div id="pdfPreview" class="pdf-preview" hidden></div>
+    <div id="tocEditor" class="toc-editor" hidden>
+      <div class="toc-editor-head">
+        <div><strong>✂️ Mục lục sẽ dùng để ngắt nội dung</strong><small>Bạn có thể sửa tên, số trang, cấp mục hoặc xóa/thêm mục trước khi đăng.</small></div>
+        <button type="button" id="addTocRow">＋ Thêm mục</button>
+      </div>
+      <div class="toc-table-wrap">
+        <table class="toc-table">
+          <thead><tr><th>Dùng</th><th>Cấp</th><th>Tên mục</th><th>Trang bắt đầu</th><th></th></tr></thead>
+          <tbody id="tocRows"></tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
   <section class="admin-actions">
@@ -167,7 +184,7 @@
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="data.js?v=22"></script>
-<script src="admin-v21.js?v=22"></script>
+<script src="data.js?v=22.1"></script>
+<script src="admin-v21.js?v=22.1"></script>
 </body>
 </html>

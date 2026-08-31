@@ -785,7 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.innerHTML = books.map(book => {
       const chapterCount = (book.chapters || []).length;
       const lessonCount = countLessons(book);
-      const href = `library.html?v=22&book=${encodeURIComponent(book.id)}`;
+      const href = `library.html?v=22.1&book=${encodeURIComponent(book.id)}`;
       return `<a class="book-card" href="${href}">
         <div class="book-icon">📚</div>
         <div class="book-card-body">

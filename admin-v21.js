@@ -1,6 +1,6 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="22";
+DATA.version="22.1";
 const DRAFT_KEY='gntt_v21_draft';
 const API_KEY='gntt_v21_publish_api_url';
 const PASS_KEY='gntt_v21_publish_password';
@@ -60,7 +60,7 @@ function loadSelected(){
   lessonSubtitle.value=l?.subtitle||'';
   editor.innerHTML=l?.contentHtml||'';
   preview.textContent=l?.title||'Chọn hoặc tạo bài học';
-  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=22`:'reader.html?v=22';
+  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=22.1`:'reader.html?v=22.1';
   setStatus(l?'Đã tải bài':'Chưa có bài');
 }
 
@@ -85,11 +85,13 @@ $('newPdfBook').addEventListener('click',()=>{
   $('pdfTitle').value='';
   $('pdfAuthor').value='';
   $('pdfDescription').value='';
-  $('pdfChapter').value='NỘI DUNG SÁCH';
+  $('pdfSplitMode').value='toc';
   $('pdfPagesPerLesson').value='10';
   $('pdfFile').value='';
   $('pdfPreview').hidden=true;
   $('pdfPreview').innerHTML='';
+  $('tocEditor').hidden=true;
+  $('tocRows').innerHTML='';
   $('publishPdf').disabled=true;
   window.__gnttPdfImport=null;
   $('pdfStatus').textContent='Chưa chọn file PDF.';
@@ -172,7 +174,7 @@ function upsertFromForm(){
   refreshSelectors();
   lessonSelect.value=l.id;
   preview.textContent=l.title;
-  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=22`;
+  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=22.1`;
   return l;
 }
 
@@ -183,7 +185,7 @@ function buildCatalogJs(){
     chapters:(b.chapters||[]).map(c=>({
       id:c.id,title:c.title,
       lessons:(c.lessons||[]).map(l=>({
-        id:l.id,title:l.title,subtitle:l.subtitle||'',href:`reader.html?id=${l.id}&v=22`
+        id:l.id,title:l.title,subtitle:l.subtitle||'',href:`reader.html?id=${l.id}&v=22.1`
       }))
     }))
   }))};
@@ -266,175 +268,290 @@ $('clearFormat').addEventListener('click',()=>{editor.focus();document.execComma
 
 
 
-// ===== V22: PDF chỉ là nguồn -> chuyển thành các bài Reader =====
+// ===== V22.1: PDF -> Reader, ưu tiên ngắt theo Mục lục =====
 if(window.pdfjsLib){
   window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 }
 
 function vniToUnicode(text){
   let r=String(text||'');
-  const pairs1=[
+  const pairs=[
     ['AÁ','Ấ'],['aá','ấ'],['AÀ','Ầ'],['aà','ầ'],['AÅ','Ẩ'],['aå','ẩ'],['AÃ','Ẫ'],['aã','ẫ'],['AÄ','Ậ'],['aä','ậ'],
     ['AÉ','Ắ'],['aé','ắ'],['AÈ','Ằ'],['aè','ằ'],['AÚ','Ẳ'],['aú','ẳ'],['AÜ','Ẵ'],['aü','ẵ'],['AË','Ặ'],['aë','ặ'],
     ['EÁ','Ế'],['eá','ế'],['EÀ','Ề'],['eà','ề'],['EÅ','Ể'],['eå','ể'],['EÃ','Ễ'],['eã','ễ'],['EÄ','Ệ'],['eä','ệ'],
     ['OÁ','Ố'],['oá','ố'],['OÀ','Ồ'],['oà','ồ'],['OÅ','Ổ'],['oå','ổ'],['OÃ','Ỗ'],['oã','ỗ'],['OÄ','Ộ'],['oä','ộ'],
     ['ÔÙ','Ớ'],['ôù','ớ'],['ÔØ','Ờ'],['ôø','ờ'],['ÔÛ','Ở'],['ôû','ở'],['ÔÕ','Ỡ'],['ôõ','ỡ'],['ÔÏ','Ợ'],['ôï','ợ'],
-    ['ÖÙ','Ứ'],['öù','ứ'],['ÖØ','Ừ'],['öø','ừ'],['ÖÛ','Ử'],['öû','ử'],['ÖÕ','Ữ'],['öõ','ữ'],['ÖÏ','Ự'],['öï','ự']
-  ];
-  const pairs2=[
-    ['AØ','À'],['AÙ','Á'],['AÂ','Â'],['AÕ','Ã'],['EØ','È'],['EÙ','É'],['EÂ','Ê'],['OØ','Ò'],['OÙ','Ó'],['OÂ','Ô'],['OÕ','Õ'],['UØ','Ù'],['UÙ','Ú'],['YÙ','Ý'],
-    ['aø','à'],['aù','á'],['aâ','â'],['aõ','ã'],['eø','è'],['eù','é'],['eâ','ê'],['oø','ò'],['où','ó'],['oâ','ô'],['oõ','õ'],['uø','ù'],['uù','ú'],['yù','ý'],
-    ['AÊ','Ă'],['aê','ă'],['Ñ','Đ'],['ñ','đ'],['Ö','Ư'],['ö','ư'],
+    ['ÖÙ','Ứ'],['öù','ứ'],['ÖØ','Ừ'],['öø','ừ'],['ÖÛ','Ử'],['öû','ử'],['ÖÕ','Ữ'],['öõ','ữ'],['ÖÏ','Ự'],['öï','ự'],
+    ['AØ','À'],['AÙ','Á'],['AÂ','Â'],['AÕ','Ã'],['AÊ','Ă'],['Ñ','Đ'],['Ö','Ư'],
+    ['aø','à'],['aù','á'],['aâ','â'],['aõ','ã'],['aê','ă'],['ñ','đ'],['ö','ư'],
+    ['EØ','È'],['EÙ','É'],['EÂ','Ê'],['eø','è'],['eù','é'],['eâ','ê'],
+    ['OØ','Ò'],['OÙ','Ó'],['OÂ','Ô'],['OÕ','Õ'],['oø','ò'],['où','ó'],['oâ','ô'],['oõ','õ'],
+    ['UØ','Ù'],['UÙ','Ú'],['uø','ù'],['uù','ú'],['YÙ','Ý'],['yù','ý'],
     ['AÏ','Ạ'],['aï','ạ'],['AÛ','Ả'],['aû','ả'],['EÏ','Ẹ'],['eï','ẹ'],['EÛ','Ẻ'],['eû','ẻ'],['EÕ','Ẽ'],['eõ','ẽ'],
-    ['OÏ','Ọ'],['oï','ọ'],['OÛ','Ỏ'],['oû','ỏ'],['UÏ','Ụ'],['uï','ụ'],['UÛ','Ủ'],['uû','ủ'],['YØ','Ỳ'],['yø','ỳ'],['YÛ','Ỷ'],['yû','ỷ'],['YÕ','Ỹ'],['yõ','ỹ'],
-    ['Ì','Ì'],['Í','Í'],['ì','ì'],['í','í'],['Ó','Ĩ'],['ó','ĩ'],['Ò','Ị'],['ò','ị'],['UÕ','Ũ'],['uõ','ũ'],['Î','Ỵ'],['î','ỵ']
+    ['OÏ','Ọ'],['oï','ọ'],['OÛ','Ỏ'],['oû','ỏ'],['UÏ','Ụ'],['uï','ụ'],['UÛ','Ủ'],['uû','ủ'],
+    ['YØ','Ỳ'],['yø','ỳ'],['YÛ','Ỷ'],['yû','ỷ'],['YÕ','Ỹ'],['yõ','ỹ'],['UÕ','Ũ'],['uõ','ũ']
   ];
-  for(const [a,b] of pairs1) r=r.split(a).join(b);
-  for(const [a,b] of pairs2) r=r.split(a).join(b);
+  for(const [a,b] of pairs) r=r.split(a).join(b);
   return r;
 }
-
 function looksLikeLegacyVni(text){
-  const sample=String(text||'').slice(0,20000);
-  const hits=(sample.match(/[öñæïûøùúüëäåõÖÑÆÏÛØÙÚÜËÄÅÕ]/g)||[]).length;
-  return hits>=4;
+  const sample=String(text||'').slice(0,30000);
+  return (sample.match(/[öñæïûøùúüëäåõÖÑÆÏÛØÙÚÜËÄÅÕ]/g)||[]).length>=4;
 }
-
-function escapePdfText(s){
-  return String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function escapePdfText(v){return String(v||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function normalizeTocTitle(v){
+  return String(v||'')
+    .replace(/^[*∗•·\-–—]+\s*/,'')
+    .replace(/\.{2,}.*$/,'')
+    .replace(/\s+/g,' ').trim();
 }
-
+function tocLevelFromTitle(raw){
+  const t=String(raw||'').trim();
+  if(/^(I{1,3}|IV|V|VI{0,3}|IX|X)[\s.\-–—)]/i.test(t)) return 1;
+  if(/^[A-ZÀ-Ỹ]\)\s*\d+/i.test(t)) return 2;
+  if(/^\d+[\s.\-–—)]/.test(t)) return 2;
+  if(/^[A-ZÀ-Ỹ]\)/.test(t)) return 2;
+  if(/^[*∗•·\-–—]/.test(t)) return 2;
+  return 1;
+}
+function detectTocEntries(pages){
+  const found=[];
+  const max=Math.min(25,pages.length);
+  let inToc=false, tocSeen=false, quiet=0;
+  for(let pi=0;pi<max;pi++){
+    const lines=String(pages[pi]||'').split('\n').map(x=>x.trim()).filter(Boolean);
+    if(lines.some(x=>/M[ỤU]C\s+L[ỤU]C/i.test(x))){
+      inToc=true; tocSeen=true; quiet=0; continue;
+    }
+    if(!inToc) continue;
+    let pageHits=0;
+    for(let i=0;i<lines.length;i++){
+      let line=lines[i];
+      let m=line.match(/^(.*?)(?:\.{2,}|\s{2,})\s*(\d{1,4})\s*$/);
+      if(!m) m=line.match(/^(.{3,120}?)\s+(\d{1,4})\s*$/);
+      if(!m && i+1<lines.length && /^\d{1,4}$/.test(lines[i+1])){
+        m=[null,line,lines[i+1]]; i++;
+      }
+      if(!m) continue;
+      const page=Number(m[2]);
+      const raw=m[1].trim();
+      const title=normalizeTocTitle(raw);
+      if(!title || page<1 || page>2000 || title.length<2) continue;
+      if(/^(TỨ NIỆM XỨ|Giảng nghĩa)$/i.test(title)) continue;
+      found.push({title,page,level:tocLevelFromTitle(raw),enabled:true});
+      pageHits++;
+    }
+    quiet = pageHits ? 0 : quiet+1;
+    if(tocSeen && quiet>=2 && found.length>=3) break;
+  }
+  const seen=new Set();
+  return found.filter(x=>{
+    const key=x.title.toLowerCase()+'|'+x.page;
+    if(seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+}
+function detectPageOffset(entries,pages){
+  // Tìm vài tiêu đề mục lục trong phần thân sách để ước lượng: PDF index - số trang in.
+  const candidates=entries.filter(x=>x.title.length>=4).slice(0,12);
+  const diffs=[];
+  for(const e of candidates){
+    const needle=e.title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+    if(!needle) continue;
+    for(let i=0;i<Math.min(pages.length,Math.max(40,e.page+15));i++){
+      const hay=String(pages[i]||'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ');
+      if(hay.includes(needle)){
+        const displayedPdfPage=i+1;
+        // bỏ qua chính trang mục lục: chỉ chấp nhận gần số trang đã ghi
+        const d=displayedPdfPage-e.page;
+        if(Math.abs(d)<=12){ diffs.push(d); break; }
+      }
+    }
+  }
+  if(!diffs.length) return 0;
+  diffs.sort((a,b)=>a-b);
+  return diffs[Math.floor(diffs.length/2)];
+}
 function pageTextToHtml(text){
   const lines=String(text||'').replace(/\r/g,'').split('\n').map(x=>x.trim()).filter(Boolean);
-  const paras=[];
-  let buf=[];
+  const paras=[]; let buf=[];
   const flush=()=>{if(buf.length){paras.push(buf.join(' ').replace(/\s+/g,' ').trim());buf=[];}};
   for(const line of lines){
-    if(/^\d{1,4}$/.test(line)){ continue; } // page number alone
-    if(line.length<70 && (/^[A-ZÀ-Ỹ0-9IVXLC][A-ZÀ-Ỹ0-9IVXLC .,:;()–—-]+$/.test(line) || /^(Tiểu Sử|Lời Giới Thiệu|Dẫn Nhập|Lời Khai Thị|Lễ Phật|KINH |QUÁN |Quán )/i.test(line))){
-      flush();
-      paras.push('__H__'+line);
-    }else{
-      buf.push(line);
-      if(/[.!?…””)]$/.test(line)) flush();
-    }
+    if(/^\d{1,4}$/.test(line)) continue;
+    const heading = line.length<100 && (
+      /^[IVXLC]+[\s.\-–—)]/i.test(line) ||
+      /^[A-ZÀ-Ỹ]\)\s*\d+/i.test(line) ||
+      /^[A-ZÀ-Ỹ0-9][A-ZÀ-Ỹ0-9 .,:;()–—-]{5,}$/.test(line)
+    );
+    if(heading){flush();paras.push('__H__'+line);}
+    else{buf.push(line);if(/[.!?…””)]$/.test(line)) flush();}
   }
   flush();
   return paras.map(x=>x.startsWith('__H__')?`<h2>${escapePdfText(x.slice(5))}</h2>`:`<p>${escapePdfText(x)}</p>`).join('\n');
 }
-
-async function extractPdfForReader(file, fixVni){
+async function extractPdfForReader(file,fixVni){
   if(!window.pdfjsLib) throw new Error('Không tải được bộ đọc PDF. Hãy kiểm tra Internet rồi tải lại trang Admin.');
   const bytes=new Uint8Array(await file.arrayBuffer());
   const pdf=await window.pdfjsLib.getDocument({data:bytes}).promise;
-  const pages=[];
-  let legacyDetected=false;
+  const pages=[]; let legacyDetected=false;
   for(let i=1;i<=pdf.numPages;i++){
     $('pdfStatus').textContent=`Đang đọc PDF: trang ${i}/${pdf.numPages}…`;
-    const page=await pdf.getPage(i);
-    const tc=await page.getTextContent();
+    const page=await pdf.getPage(i), tc=await page.getTextContent();
     let lines=[], current='';
     for(const item of tc.items){
       const t=String(item.str||'').trim();
-      if(t) current += (current?' ':'')+t;
-      if(item.hasEOL && current){ lines.push(current); current=''; }
+      if(t) current+=(current?' ':'')+t;
+      if(item.hasEOL&&current){lines.push(current);current='';}
     }
     if(current) lines.push(current);
     let text=lines.join('\n');
-    if(looksLikeLegacyVni(text)) legacyDetected=true;
-    if(fixVni && looksLikeLegacyVni(text)) text=vniToUnicode(text);
+    const legacy=looksLikeLegacyVni(text);
+    if(legacy) legacyDetected=true;
+    if(fixVni&&legacy) text=vniToUnicode(text);
     pages.push(text);
   }
-  return {numPages:pdf.numPages,pages,legacyDetected};
+  const toc=detectTocEntries(pages);
+  const offset=detectPageOffset(toc,pages);
+  return {numPages:pdf.numPages,pages,legacyDetected,toc,pageOffset:offset};
 }
+function addTocRow(item={title:'Mục mới',page:1,level:1,enabled:true}){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><input class="toc-use" type="checkbox" ${item.enabled!==false?'checked':''}></td>
+    <td><select class="toc-level"><option value="1" ${Number(item.level)===1?'selected':''}>Chương</option><option value="2" ${Number(item.level)===2?'selected':''}>Mục</option></select></td>
+    <td><input class="toc-title" type="text" value="${escapeHtml(item.title||'')}"></td>
+    <td><input class="toc-page" type="number" min="1" value="${Number(item.page)||1}"></td>
+    <td><button type="button" class="toc-del" title="Xóa">✕</button></td>`;
+  tr.querySelector('.toc-del').addEventListener('click',()=>tr.remove());
+  $('tocRows').appendChild(tr);
+}
+function renderTocEditor(entries){
+  $('tocRows').innerHTML='';
+  entries.forEach(addTocRow);
+  $('tocEditor').hidden=false;
+}
+function getEditedToc(){
+  return [...$('tocRows').querySelectorAll('tr')].map(tr=>({
+    enabled:tr.querySelector('.toc-use').checked,
+    level:Number(tr.querySelector('.toc-level').value)||1,
+    title:tr.querySelector('.toc-title').value.trim(),
+    page:Number(tr.querySelector('.toc-page').value)||1
+  })).filter(x=>x.enabled&&x.title).sort((a,b)=>a.page-b.page);
+}
+$('addTocRow').addEventListener('click',()=>addTocRow({title:'',page:1,level:1,enabled:true}));
 
 $('pdfFile').addEventListener('change',()=>{
   const f=$('pdfFile').files?.[0];
   window.__gnttPdfImport=null;
   $('publishPdf').disabled=true;
   $('pdfPreview').hidden=true;
-  $('pdfStatus').textContent=f?`Đã chọn: ${f.name} · ${(f.size/1024/1024).toFixed(1)} MB. Bấm “Đọc & xem trước PDF”.`:'Chưa chọn file PDF.';
+  $('tocEditor').hidden=true;
+  $('tocRows').innerHTML='';
+  $('pdfStatus').textContent=f?`Đã chọn: ${f.name} · ${(f.size/1024/1024).toFixed(1)} MB. Bấm “Đọc PDF & nhận Mục lục”.`:'Chưa chọn file PDF.';
 });
 
 $('analyzePdf').addEventListener('click',async()=>{
   try{
     const file=$('pdfFile').files?.[0];
     if(!file) throw new Error('Chưa chọn file PDF');
-    $('analyzePdf').disabled=true;
-    $('publishPdf').disabled=true;
+    $('analyzePdf').disabled=true; $('publishPdf').disabled=true;
     const result=await extractPdfForReader(file,$('pdfFixVni').checked);
     window.__gnttPdfImport=result;
-    const preview=(result.pages.slice(0,2).join('\n\n')).slice(0,4500);
+    const preview=result.pages.slice(0,8).join('\n\n').slice(0,6500);
     $('pdfPreview').hidden=false;
-    $('pdfPreview').innerHTML=`<strong>Xem trước nội dung đã trích (${result.numPages} trang)</strong><pre>${escapeHtml(preview)}</pre>`;
-    $('pdfStatus').textContent=`Đã đọc ${result.numPages} trang.${result.legacyDetected?' Phát hiện font/mã tiếng Việt cũ và đã thử chuyển sang Unicode.':''} Hãy xem phần xem trước trước khi đăng.`;
+    $('pdfPreview').innerHTML=`<strong>Xem trước chữ đã trích (${result.numPages} trang)</strong><pre>${escapeHtml(preview)}</pre>`;
+    if(result.toc.length){
+      renderTocEditor(result.toc);
+      $('pdfStatus').textContent=`Đã nhận ${result.toc.length} mục trong Mục lục. Độ lệch trang ước tính: ${result.pageOffset>=0?'+':''}${result.pageOffset}. Hãy kiểm tra/sửa danh sách bên dưới rồi mới đăng.`;
+    }else{
+      $('tocEditor').hidden=true;
+      $('pdfStatus').textContent=`Không nhận được Mục lục tự động. Bạn có thể chọn “Theo số trang” hoặc thêm mục thủ công.`;
+    }
     $('publishPdf').disabled=false;
-  }catch(e){
-    $('pdfStatus').textContent=e.message||String(e);
-  }finally{
-    $('analyzePdf').disabled=false;
-  }
+  }catch(e){$('pdfStatus').textContent=e.message||String(e);}
+  finally{$('analyzePdf').disabled=false;}
 });
+
+function buildReaderBookFromToc({title,author,description,id,imp,toc}){
+  const offset=Number(imp.pageOffset)||0;
+  const clean=toc.map((x,i)=>({...x,_i:i,pdfStart:Math.max(1,Math.min(imp.numPages,x.page+offset))}));
+  const chapters=[]; let current=null;
+  for(let i=0;i<clean.length;i++){
+    const e=clean[i], next=clean[i+1];
+    const start=e.pdfStart, end=Math.max(start,Math.min(imp.numPages,(next?next.pdfStart-1:imp.numPages)));
+    const contentHtml=pageTextToHtml(imp.pages.slice(start-1,end).join('\n\n'));
+    if(e.level===1 || !current){
+      current={
+        id:uniqueId(slug(e.title)||('chuong-'+(chapters.length+1)),chapters.map(c=>c.id)),
+        title:e.title, lessons:[]
+      };
+      chapters.push(current);
+      // Chương cũng là nội dung đọc riêng.
+      current.lessons.push({
+        id:`${id}-${current.id}-mo-dau`,
+        title:e.title,
+        subtitle:[author,description,`Trang ${e.page}${end>=start?'–'+(end-offset):''}`].filter(Boolean).join(' · '),
+        youtube:'',contentHtml
+      });
+    }else{
+      const lid=uniqueId(slug(e.title)||('muc-'+(current.lessons.length+1)),current.lessons.map(l=>l.id));
+      current.lessons.push({
+        id:`${id}-${current.id}-${lid}`,
+        title:e.title,
+        subtitle:[author,description,`Trang ${e.page}${end>=start?'–'+(end-offset):''}`].filter(Boolean).join(' · '),
+        youtube:'',contentHtml
+      });
+    }
+  }
+  return {id,title,author,description:description||author||'Sách đọc trực tuyến',type:'reader',sourceType:'pdf',chapters};
+}
 
 $('publishPdf').addEventListener('click',async()=>{
   let book=null;
   try{
     const imp=window.__gnttPdfImport;
-    if(!imp) throw new Error('Hãy bấm “Đọc & xem trước PDF” trước.');
-    const title=$('pdfTitle').value.trim();
-    const author=$('pdfAuthor').value.trim();
-    const description=$('pdfDescription').value.trim();
-    const chapterTitle=$('pdfChapter').value.trim()||'NỘI DUNG SÁCH';
-    const per=Math.max(1,Math.min(50,Number($('pdfPagesPerLesson').value)||10));
+    if(!imp) throw new Error('Hãy bấm “Đọc PDF & nhận Mục lục” trước.');
+    const title=$('pdfTitle').value.trim(), author=$('pdfAuthor').value.trim(), description=$('pdfDescription').value.trim();
     if(!title) throw new Error('Chưa nhập tên sách');
-
     const id=uniqueId(slug(title),DATA.books.map(b=>b.id));
-    const chapterId=slug(chapterTitle);
-    const lessons=[];
-    for(let start=0, part=1;start<imp.pages.length;start+=per,part++){
-      const end=Math.min(start+per,imp.pages.length);
-      const text=imp.pages.slice(start,end).join('\n\n');
-      const contentHtml=pageTextToHtml(text);
-      lessons.push({
-        id:`${id}-${chapterId}-phan-${part}`,
-        title:`PHẦN ${part} · TRANG ${start+1}–${end}`,
-        subtitle:[author,description].filter(Boolean).join(' · '),
-        youtube:'',
-        contentHtml
-      });
+    const mode=$('pdfSplitMode').value;
+    let toc=getEditedToc();
+
+    if(mode==='toc'){
+      if(!toc.length) throw new Error('Chưa có mục nào để ngắt theo Mục lục. Hãy thêm/sửa mục hoặc chọn cách chia theo số trang.');
+      book=buildReaderBookFromToc({title,author,description,id,imp,toc});
+    }else{
+      const per=Math.max(1,Math.min(50,Number($('pdfPagesPerLesson').value)||10));
+      const chapterId='noi-dung-sach', lessons=[];
+      for(let start=0,part=1;start<imp.pages.length;start+=per,part++){
+        const end=Math.min(start+per,imp.pages.length);
+        lessons.push({
+          id:`${id}-${chapterId}-phan-${part}`,
+          title:`PHẦN ${part} · TRANG ${start+1}–${end}`,
+          subtitle:[author,description].filter(Boolean).join(' · '),
+          youtube:'',contentHtml:pageTextToHtml(imp.pages.slice(start,end).join('\n\n'))
+        });
+      }
+      book={id,title,author,description:description||author||'Sách đọc trực tuyến',type:'reader',sourceType:'pdf',chapters:[{id:chapterId,title:'NỘI DUNG SÁCH',lessons}]};
     }
-    book={
-      id,title,author,
-      description:description||author||'Sách đọc trực tuyến',
-      type:'reader',
-      sourceType:'pdf',
-      chapters:[{id:chapterId,title:chapterTitle,lessons}]
-    };
+
+    if(!book.chapters.length) throw new Error('Không tạo được Chương/Phần nào từ PDF.');
     DATA.books.push(book);
-
     setPublishState('Đang đăng…','busy');
-    $('pdfStatus').textContent=`Đang đăng ${lessons.length} phần Reader lên GitHub…`;
+    $('pdfStatus').textContent=`Đang đăng ${book.chapters.length} chương/phần Reader lên GitHub…`;
     try{
-      await apiRequest('/publish-v21',{
-        method:'POST',
-        body:JSON.stringify({
-          dataJs:buildDataJs(),
-          catalogJs:buildCatalogJs(),
-          message:'Nhập PDF thành Reader: '+title
-        })
-      });
-    }catch(e){
-      DATA.books=DATA.books.filter(b=>b!==book);
-      throw e;
-    }
+      await apiRequest('/publish-v21',{method:'POST',body:JSON.stringify({
+        dataJs:buildDataJs(),catalogJs:buildCatalogJs(),message:'Nhập PDF theo Mục lục: '+title
+      })});
+    }catch(e){DATA.books=DATA.books.filter(b=>b!==book);throw e;}
 
-    selected={bookId:id,chapterId,lessonId:lessons[0]?.id||null};
-    refreshSelectors();
-    loadSelected();
+    const firstChapter=book.chapters[0], firstLesson=firstChapter?.lessons?.[0];
+    selected={bookId:id,chapterId:firstChapter?.id||null,lessonId:firstLesson?.id||null};
+    refreshSelectors(); loadSelected();
     $('pdfPanel').hidden=true;
     setPublishState('Đã đăng thành công','ok');
-    setStatus(`Đã tạo ${lessons.length} phần Reader từ PDF. GitHub Pages sẽ cập nhật sau ít phút.`);
-    alert(`Đăng sách thành công!\n\nĐã tạo ${lessons.length} phần. Tất cả đều đọc bằng Reader giống Bài 40.`);
+    setStatus(`Đã tạo ${book.chapters.length} chương/phần theo Mục lục. Mỗi mục đọc bằng Reader giống Bài 40.`);
+    alert(`Đăng sách thành công!\n\nĐã tạo ${book.chapters.length} chương/phần theo Mục lục.\nTất cả đều đọc bằng Reader giống Bài 40.`);
   }catch(e){
     if(book) DATA.books=DATA.books.filter(b=>b!==book);
     setPublishState('Đăng thất bại','error');
