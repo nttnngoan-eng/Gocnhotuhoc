@@ -661,3 +661,111 @@ body:not(.page-after-first) .reader-paper > h1,
 body:not(.page-after-first) .reader-paper > .subtitle{
   display:block;
 }
+
+
+/* ===== V11: Thu gọn phần trên + căn trang sách cân hai bên ===== */
+
+/* Bỏ đường kẻ/mép giả bên phải do hiệu ứng inset cũ */
+body.page-mode .reader-content{
+  box-shadow:none !important;
+  border-right:0 !important;
+  outline:none !important;
+}
+
+/* Toàn bộ khối đọc căn giữa, không sát mép màn hình */
+.reader-shell{
+  max-width:900px !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+
+.reader-paper{
+  width:auto !important;
+  max-width:860px !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  box-sizing:border-box !important;
+}
+
+/* Máy tính: thu gọn phần phía trên để dành nhiều chỗ hơn cho bài */
+@media(min-width:701px){
+  body.page-mode .site-header{
+    padding-top:0 !important;
+    padding-bottom:0 !important;
+  }
+  body.page-mode .site-header .nav{
+    min-height:42px !important;
+  }
+
+  body.page-mode .reader-shell{
+    padding-top:10px !important;
+  }
+
+  body.page-mode .reader-topbar{
+    min-height:40px !important;
+    margin-bottom:4px !important;
+  }
+
+  body.page-mode .progress-wrap{
+    margin:5px 0 5px !important;
+  }
+
+  body.page-mode .progress-info{
+    margin:0 !important;
+    min-height:auto !important;
+    font-size:12px !important;
+  }
+
+  body.page-mode .reader-utility{
+    margin:4px 0 8px !important;
+    gap:7px !important;
+  }
+
+  body.page-mode .reader-utility button{
+    min-height:32px !important;
+    padding:5px 10px !important;
+    font-size:12px !important;
+    border-radius:9px !important;
+  }
+
+  body.page-mode .reader-paper{
+    padding:22px 34px 18px !important;
+  }
+
+  body.page-mode .reader-content{
+    height:calc(100vh - 230px) !important;
+    min-height:500px !important;
+    padding:0 30px 8px !important;
+    column-width:calc(860px - 128px) !important;
+    column-gap:54px !important;
+  }
+
+  body.page-mode .page-turn-controls{
+    margin-top:4px !important;
+  }
+}
+
+/* Mobile/tablet: giữ khoảng thở hai bên, không sát mép */
+@media(max-width:700px){
+  .reader-shell{
+    width:auto !important;
+    margin-left:10px !important;
+    margin-right:10px !important;
+  }
+
+  .reader-paper{
+    margin-left:0 !important;
+    margin-right:0 !important;
+    padding-left:14px !important;
+    padding-right:14px !important;
+  }
+
+  body.page-mode .reader-content{
+    box-shadow:none !important;
+    border-right:0 !important;
+    padding-left:14px !important;
+    padding-right:14px !important;
+    column-width:calc(100vw - 68px) !important;
+    column-gap:28px !important;
+  }
+}
