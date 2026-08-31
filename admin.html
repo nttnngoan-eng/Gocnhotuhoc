@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quản trị nội dung - Góc nhỏ tu học</title>
+<link rel="stylesheet" href="admin.css?v=14">
+</head>
+<body>
+<header class="admin-header">
+  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span></div>
+  <a href="reader.html" target="_blank" rel="noopener">Mở bài đọc ↗</a>
+</header>
+
+<main class="admin-wrap">
+  <section class="notice">
+    <strong>Trình biên tập bài giảng</strong>
+    <span>Chỉnh nội dung trực tiếp trên web, không cần sửa Word. Bản nháp được lưu trên trình duyệt này.</span>
+  </section>
+
+  <section class="admin-actions">
+    <button type="button" id="loadCurrent">↻ Tải lại bài hiện tại</button>
+    <button type="button" id="saveDraft">💾 Lưu bản nháp</button>
+    <button type="button" id="restoreDraft">↩ Khôi phục bản nháp</button>
+    <button type="button" id="exportReader" class="primary">⬇ Xuất reader.html</button>
+  </section>
+
+  <section class="toolbar" id="toolbar" aria-label="Thanh định dạng">
+    <div class="tool-group">
+      <button type="button" data-cmd="undo" title="Hoàn tác">↶</button>
+      <button type="button" data-cmd="redo" title="Làm lại">↷</button>
+    </div>
+    <div class="tool-group">
+      <button type="button" data-cmd="bold" title="Đậm"><b>B</b></button>
+      <button type="button" data-cmd="italic" title="Nghiêng"><i>I</i></button>
+      <button type="button" data-cmd="underline" title="Gạch chân"><u>U</u></button>
+    </div>
+    <div class="tool-group">
+      <button type="button" data-block="p">Đoạn</button>
+      <button type="button" data-block="h2">H2</button>
+      <button type="button" data-block="h3">H3</button>
+      <button type="button" data-block="blockquote">❝ Trích dẫn</button>
+    </div>
+    <div class="tool-group">
+      <button type="button" data-cmd="justifyLeft" title="Căn trái">≡←</button>
+      <button type="button" data-cmd="justifyCenter" title="Căn giữa">≡</button>
+      <button type="button" data-cmd="justifyRight" title="Căn phải">→≡</button>
+      <button type="button" data-cmd="justifyFull" title="Căn đều">☰</button>
+    </div>
+    <div class="tool-group">
+      <button type="button" data-cmd="insertUnorderedList" title="Danh sách">• Danh sách</button>
+      <button type="button" data-cmd="insertOrderedList" title="Đánh số">1. Danh sách</button>
+    </div>
+    <div class="tool-group color-group" aria-label="Màu chữ">
+      <span>Màu:</span>
+      <button type="button" class="color-dot c-default" data-color="#2c2925" title="Mặc định"></button>
+      <button type="button" class="color-dot c-brown" data-color="#7a5730" title="Nâu"></button>
+      <button type="button" class="color-dot c-red" data-color="#9a3d35" title="Đỏ trầm"></button>
+      <button type="button" class="color-dot c-blue" data-color="#355d7a" title="Xanh"></button>
+    </div>
+    <div class="tool-group">
+      <button type="button" id="clearFormat">⌫ Bỏ định dạng</button>
+    </div>
+  </section>
+
+  <section class="editor-panel">
+    <div class="editor-heading">
+      <div>
+        <strong>BÀI 40 - BỐN VÔ LƯỢNG TÂM (P.1)</strong>
+        <small>Bôi đen chữ rồi chọn nút định dạng phía trên.</small>
+      </div>
+      <span id="status">Đang tải…</span>
+    </div>
+    <div id="editor" class="editor" contenteditable="true" spellcheck="false" aria-label="Nội dung bài giảng"></div>
+  </section>
+
+  <section class="help">
+    <strong>Cách cập nhật website:</strong>
+    Sau khi định dạng xong, bấm <b>Xuất reader.html</b>. File tải xuống đã giữ nguyên toàn bộ chức năng đọc, lật trang và highlight; bạn chỉ cần upload đè file <code>reader.html</code> trên GitHub.
+  </section>
+</main>
+
+<script src="admin.js?v=14"></script>
+</body>
+</html>

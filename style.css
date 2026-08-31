@@ -485,3 +485,31 @@ body.page-mode .youtube-inline-card{
     margin:8px 0 5px!important;
   }
 }
+
+
+/* ===== V14: Định dạng nội dung tạo từ trang quản trị ===== */
+.reader-content h2{
+  font-family:var(--ui-font);
+  font-size:1.28em;
+  line-height:1.35;
+  color:#5a4126;
+  margin:1.35em 0 .55em;
+}
+.reader-content h3{
+  font-family:var(--ui-font);
+  font-size:1.12em;
+  line-height:1.4;
+  color:#6f5333;
+  margin:1.2em 0 .5em;
+}
+.reader-content blockquote{
+  margin:1.15em 0;
+  padding:10px 14px!important;
+  border-left:4px solid #a88455;
+  background:rgba(168,132,85,.09);
+  text-align:left;
+  break-inside:avoid;
+}
+.reader-content ul,.reader-content ol{
+  padding-left:1.5em;
+}
