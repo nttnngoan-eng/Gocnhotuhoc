@@ -1,6 +1,6 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="22.3";
+DATA.version="22.4";
 const DRAFT_KEY='gntt_v21_draft';
 const API_KEY='gntt_v21_publish_api_url';
 const PASS_KEY='gntt_v21_publish_password';
@@ -60,7 +60,7 @@ function loadSelected(){
   lessonSubtitle.value=l?.subtitle||'';
   editor.innerHTML=l?.contentHtml||'';
   preview.textContent=l?.title||'Chọn hoặc tạo bài học';
-  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=22.3`:'reader.html?v=22.3';
+  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=22.4`:'reader.html?v=22.4';
   setStatus(l?'Đã tải bài':'Chưa có bài');
 }
 
@@ -174,7 +174,7 @@ function upsertFromForm(){
   refreshSelectors();
   lessonSelect.value=l.id;
   preview.textContent=l.title;
-  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=22.3`;
+  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=22.4`;
   return l;
 }
 
@@ -185,7 +185,7 @@ function buildCatalogJs(){
     chapters:(b.chapters||[]).map(c=>({
       id:c.id,title:c.title,
       lessons:(c.lessons||[]).map(l=>({
-        id:l.id,title:l.title,subtitle:l.subtitle||'',href:`reader.html?id=${l.id}&v=22.3`
+        id:l.id,title:l.title,subtitle:l.subtitle||'',href:`reader.html?id=${l.id}&v=22.4`
       }))
     }))
   }))};
@@ -295,16 +295,30 @@ function vniToUnicode(text){
   return r;
 }
 function hasVietnameseUnicode(text){
-  // If the PDF already gives real Vietnamese Unicode, NEVER run the VNI converter.
-  // This prevents valid words such as “toàn”, “định” from being changed.
   return /[ăâđêôơưĂÂĐÊÔƠƯ]|[àáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵÀÁẢÃẠẰẮẲẴẶẦẤẨẪẬÈÉẺẼẸỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌỒỐỔỖỘỜỚỞỠỢÙÚỦŨỤỪỨỬỮỰỲÝỶỸỴ]/.test(String(text||''));
 }
+
+// V22.4: chỉ nhận VNI khi dòng có ký tự "mã cũ" mạnh.
+// Không dùng các ký tự Unicode hợp lệ như À/Á để nhận diện,
+// nên "TOÀN", "ĐỊNH"... sẽ không bị chuyển nhầm.
+function looksLikeLegacyVniLine(text){
+  const t=String(text||'');
+  if(!t.trim()) return false;
+  return /[ÑñÖöÆæØøÛûÏïÅåÄäËëÜü]/.test(t);
+}
 function looksLikeLegacyVni(text){
-  const sample=String(text||'').slice(0,30000);
-  if(hasVietnameseUnicode(sample)) return false;
-  // Require several strong VNI-only markers; ordinary Vietnamese Unicode must not trigger this.
-  const hits=(sample.match(/[öñæïûøùúüëäåÖÑÆÏÛØÙÚÜËÄÅ]/g)||[]).length;
-  return hits>=6;
+  return String(text||'').split(/\r?\n/).some(looksLikeLegacyVniLine);
+}
+function convertMixedVniText(text){
+  let converted=0;
+  const lines=String(text||'').split(/\r?\n/).map(line=>{
+    if(looksLikeLegacyVniLine(line)){
+      converted++;
+      return vniToUnicode(line);
+    }
+    return line;
+  });
+  return {text:lines.join('\n'),converted};
 }
 function escapePdfText(v){return String(v||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
 function normalizeTocTitle(v){
@@ -462,18 +476,24 @@ async function extractPdfForReader(file,fixVni){
     // Store raw extraction first. Conversion decision is made after reading the whole PDF.
     pages.push(text);
   }
-  // Decide once for the WHOLE document. Mixed/normal Unicode PDFs are preserved exactly.
-  const sample=pages.slice(0,40).join('\n');
-  const alreadyUnicode=hasVietnameseUnicode(sample);
-  const legacy=looksLikeLegacyVni(sample);
-  legacyDetected=legacy;
+  // V22.4: PDF có thể trộn Unicode + VNI. Chuyển riêng từng dòng có VNI.
   let finalPages=pages;
-  if(fixVni && legacy && !alreadyUnicode){
-    finalPages=pages.map(vniToUnicode);
+  let convertedLines=0;
+  legacyDetected=looksLikeLegacyVni(pages.slice(0,60).join('\n'));
+  if(fixVni){
+    finalPages=pages.map(pageText=>{
+      const r=convertMixedVniText(pageText);
+      convertedLines+=r.converted;
+      return r.text;
+    });
   }
   const toc=detectTocEntries(finalPages);
   const offset=detectPageOffset(toc,finalPages);
-  return {numPages:pdf.numPages,pages:finalPages,legacyDetected,toc,pageOffset:offset,alreadyUnicode};
+  return {
+    numPages:pdf.numPages,pages:finalPages,legacyDetected,toc,pageOffset:offset,
+    alreadyUnicode:hasVietnameseUnicode(pages.slice(0,40).join('\n')),
+    convertedLines
+  };
 }
 function addTocRow(item={title:'Mục mới',page:1,level:1,enabled:true}){
   const tr=document.createElement('tr');
@@ -504,7 +524,6 @@ $('addTocRow').addEventListener('click',()=>addTocRow({title:'',page:1,level:1,e
 $('pdfFile').addEventListener('change',()=>{
   const f=$('pdfFile').files?.[0];
   window.__gnttPdfImport=null;
-  $('pdfFixVni').checked=false;
   $('publishPdf').disabled=true;
   $('pdfPreview').hidden=true;
   $('tocEditor').hidden=true;
@@ -524,9 +543,13 @@ $('analyzePdf').addEventListener('click',async()=>{
     $('pdfPreview').innerHTML=`<strong>Xem trước chữ đã trích (${result.numPages} trang)</strong><pre>${escapeHtml(preview)}</pre>`;
     if(result.toc.length){
       renderTocEditor(result.toc);
-      const textMode=result.alreadyUnicode
-        ? 'PDF đã là Unicode → giữ nguyên chữ, KHÔNG chuyển VNI.'
-        : (result.legacyDetected ? ($('pdfFixVni').checked?'Đã phát hiện và chuyển VNI cũ.':'Phát hiện dấu hiệu VNI cũ nhưng đang giữ nguyên vì bạn chưa bật sửa VNI.') : 'Không phát hiện VNI cũ → giữ nguyên chữ.');
+      const textMode=$('pdfFixVni').checked
+        ? (result.convertedLines>0
+            ? `PDF trộn Unicode/VNI → đã sửa ${result.convertedLines} dòng VNI; dòng Unicode giữ nguyên.`
+            : 'Không thấy dòng VNI cần sửa → giữ nguyên chữ PDF.')
+        : (result.legacyDetected
+            ? 'Có dấu hiệu VNI cũ nhưng chức năng sửa VNI đang tắt.'
+            : 'Giữ nguyên chữ PDF.');
       $('pdfStatus').textContent=`${textMode} Đã nhận ${result.toc.length} mục và tự phân cấp Chương/Mục. Độ lệch trang ước tính: ${result.pageOffset>=0?'+':''}${result.pageOffset}. Hãy kiểm tra chữ và Mục lục trước khi đăng.`;
     }else{
       $('tocEditor').hidden=true;
