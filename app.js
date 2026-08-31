@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const article=document.querySelector('.reader-content');
   if(!article) return;
 
-  const ARTICLE_ID='bai40-bon-vo-luong-tam-p1';
+  const ARTICLE_ID=window.GNTT_CURRENT_LESSON_ID || document.querySelector('.reader-content')?.dataset.lessonId || 'reader-default';
   const progressKey='phap_hoc_progress_'+ARTICLE_ID;
   const highlightKey='gocnho_highlights_v3_'+ARTICLE_ID;
 
@@ -553,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!article || !paper || !toggle || !controls || !prev || !next || !label) return;
 
   const MODE_KEY = 'gocnho_reader_view_mode';
-  const PAGE_KEY = 'gocnho_page_position_bai40-bon-vo-luong-tam-p1';
+  const PAGE_KEY = 'gocnho_page_position_' + (window.GNTT_CURRENT_LESSON_ID || document.querySelector('.reader-content')?.dataset.lessonId || 'reader-default');
 
   const category = paper.querySelector(':scope > .reader-category');
   const title = paper.querySelector(':scope > h1');
@@ -785,7 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.innerHTML = books.map(book => {
       const chapterCount = (book.chapters || []).length;
       const lessonCount = countLessons(book);
-      return `<a class="book-card" href="library.html?v=19&book=${encodeURIComponent(book.id)}">
+      return `<a class="book-card" href="library.html?v=21&book=${encodeURIComponent(book.id)}">
         <div class="book-icon">📚</div>
         <div class="book-card-body">
           <h3>${esc(book.title)}</h3>

@@ -6,13 +6,14 @@ window.GNTT_CATALOG = {
       "description": "Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.",
       "chapters": [
         {
+          "id": "pham-12-vo-luong",
           "title": "PHẨM 12: VÔ LƯỢNG",
           "lessons": [
             {
-              "id": "bai-40",
+              "id": "a-ti-dat-ma-phap-uan-tuc-luan-pham-12-vo-luong-bai-40",
               "title": "BÀI 40 - TỪ VÔ LƯỢNG",
               "subtitle": "Giảng thọ sư: TT Thích Huyền Châu",
-              "href": "reader.html?v=20.2"
+              "href": "reader.html?id=a-ti-dat-ma-phap-uan-tuc-luan-pham-12-vo-luong-bai-40&v=21"
             }
           ]
         }

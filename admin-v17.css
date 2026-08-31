@@ -339,3 +339,26 @@ code{background:#eee8dc;padding:2px 5px;border-radius:5px}
   .publish-grid .secondary{width:100%}
   .publish-panel-head{display:grid}
 }
+
+/* ===== V21 multi-book manager ===== */
+.library-manager{
+  margin:12px 0;
+  padding:14px;
+  border:1px solid #dfd1bd;
+  border-radius:12px;
+  background:rgba(255,255,255,.66);
+}
+.manager-grid{
+  display:grid;
+  grid-template-columns:1.25fr 1.1fr 1.2fr;
+  gap:10px;
+}
+.manager-grid label{display:flex;flex-direction:column;gap:5px}
+.manager-grid span{font-size:12px;color:#6d6255}
+.manager-grid select{
+  width:100%;box-sizing:border-box;padding:10px 11px;
+  border:1px solid #ddcfbc;border-radius:9px;background:#fff;font:inherit;
+}
+.manager-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.manager-actions button{min-height:38px}
+@media(max-width:820px){.manager-grid{grid-template-columns:1fr}.manager-actions button{flex:1 1 auto}}

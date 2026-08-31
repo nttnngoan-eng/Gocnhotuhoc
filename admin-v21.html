@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quản trị nội dung V21 - Góc nhỏ tu học</title>
+<link rel="stylesheet" href="admin-v17.css?v=21">
+</head>
+<body>
+<header class="admin-header">
+  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V21</b></div>
+  <a id="openReaderLink" href="reader.html?v=21" target="_blank" rel="noopener">Mở bài đọc ↗</a>
+</header>
+
+<main class="admin-wrap">
+  <section class="notice">
+    <strong>V21 · Nhiều sách → nhiều chương → nhiều bài</strong>
+    <span>Tạo thêm đầu sách, phẩm/chương và bài học mà không ghi đè các bài cũ.</span>
+  </section>
+
+  <section class="library-manager">
+    <div class="manager-grid">
+      <label><span>Chọn đầu sách</span><select id="bookSelect"></select></label>
+      <label><span>Chọn Phẩm / Chương</span><select id="chapterSelect"></select></label>
+      <label><span>Chọn bài</span><select id="lessonSelect"></select></label>
+    </div>
+    <div class="manager-actions">
+      <button type="button" id="newBook">➕ Đầu sách mới</button>
+      <button type="button" id="newChapter">➕ Phẩm / Chương mới</button>
+      <button type="button" id="newLesson" class="primary">➕ Bài mới</button>
+    </div>
+  </section>
+
+  <section class="admin-actions">
+    <button type="button" id="reloadData">↻ Tải lại dữ liệu website</button>
+    <button type="button" id="saveDraft">💾 Lưu bản nháp</button>
+    <button type="button" id="restoreDraft">↩ Khôi phục bản nháp</button>
+    <button type="button" id="exportData">⬇ Xuất data.js dự phòng</button>
+    <button type="button" id="publishNow" class="primary publish-primary">🚀 Đăng bài lên website</button>
+  </section>
+
+  <section class="toolbar" id="toolbar" aria-label="Thanh định dạng">
+    <div class="tool-group">
+      <button type="button" data-cmd="undo">↶</button>
+      <button type="button" data-cmd="redo">↷</button>
+    </div>
+    <div class="tool-group">
+      <button type="button" data-cmd="bold"><b>B</b></button>
+      <button type="button" data-cmd="italic"><i>I</i></button>
+      <button type="button" data-cmd="underline"><u>U</u></button>
+    </div>
+    <div class="tool-group">
+      <button type="button" data-block="p">Đoạn</button>
+      <button type="button" data-block="h2">H2</button>
+      <button type="button" data-block="h3">H3</button>
+      <button type="button" data-block="blockquote">❝ Trích dẫn sách</button>
+    </div>
+    <div class="tool-group">
+      <button type="button" data-cmd="justifyLeft">≡←</button>
+      <button type="button" data-cmd="justifyCenter">≡</button>
+      <button type="button" data-cmd="justifyRight">→≡</button>
+      <button type="button" data-cmd="justifyFull">☰</button>
+    </div>
+    <div class="tool-group">
+      <button type="button" data-cmd="insertUnorderedList">• Danh sách</button>
+      <button type="button" data-cmd="insertOrderedList">1. Danh sách</button>
+    </div>
+    <div class="tool-group color-group">
+      <span>Màu:</span>
+      <button type="button" class="color-dot c-default" data-color="#2c2925"></button>
+      <button type="button" class="color-dot c-brown" data-color="#7a5730"></button>
+      <button type="button" class="color-dot c-red" data-color="#9a3d35"></button>
+      <button type="button" class="color-dot c-blue" data-color="#355d7a"></button>
+    </div>
+    <div class="tool-group"><button type="button" id="clearFormat">⌫ Bỏ định dạng</button></div>
+  </section>
+
+  <section class="meta-panel">
+    <div class="meta-grid">
+      <label>
+        <span>Tên sách</span>
+        <input id="bookTitle" type="text" placeholder="Nhập tên đầu sách">
+      </label>
+      <label>
+        <span>Phẩm / Chương</span>
+        <input id="chapterTitle" type="text" placeholder="Nhập tên phẩm/chương">
+      </label>
+      <label>
+        <span>Tên bài</span>
+        <input id="lessonTitle" type="text" placeholder="Ví dụ: BÀI 41 - ...">
+      </label>
+      <label class="wide">
+        <span>Link YouTube</span>
+        <input id="youtubeUrl" type="url" placeholder="https://www.youtube.com/watch?v=...">
+      </label>
+      <label class="wide">
+        <span>Mô tả</span>
+        <input id="lessonSubtitle" type="text" placeholder="Ví dụ: Giảng thọ sư: ...">
+      </label>
+    </div>
+  </section>
+
+  <section class="publish-panel">
+    <div class="publish-panel-head">
+      <div>
+        <strong>Đăng bài trực tiếp</strong>
+        <small>Cloudflare chỉ làm cầu nối. Toàn bộ dữ liệu vẫn được lưu trong GitHub.</small>
+      </div>
+      <span id="publishState" class="publish-state">Chưa kết nối</span>
+    </div>
+    <div class="publish-grid">
+      <label class="wide">
+        <span>Địa chỉ API xuất bản</span>
+        <input id="publishApiUrl" type="url" placeholder="https://gocnhotuhoc-publisher.nttn-ngoan.workers.dev">
+      </label>
+      <label>
+        <span>Mật khẩu quản trị</span>
+        <input id="publishPassword" type="password" autocomplete="current-password">
+      </label>
+      <button type="button" id="testPublishConnection" class="secondary">Kiểm tra kết nối</button>
+    </div>
+  </section>
+
+  <section class="editor-panel">
+    <div class="editor-heading">
+      <div>
+        <strong id="editorTitlePreview">Chọn hoặc tạo bài học</strong>
+        <small>Nội dung của mỗi bài được lưu riêng theo ID nên không ghi đè bài khác.</small>
+      </div>
+      <span id="status">Đang tải…</span>
+    </div>
+    <div id="editor" class="editor" contenteditable="true" spellcheck="false"></div>
+  </section>
+
+  <section class="help">
+    <strong>Cách thêm Bài 41/42:</strong> chọn sách → chọn phẩm/chương → bấm <b>➕ Bài mới</b> → nhập nội dung → <b>🚀 Đăng bài</b>.<br>
+    <strong>Cách tạo sách khác:</strong> bấm <b>➕ Đầu sách mới</b> → nhập tên sách, chương và bài đầu tiên → Đăng bài.
+  </section>
+</main>
+
+<script src="data.js?v=21"></script>
+<script src="admin-v21.js?v=21"></script>
+</body>
+</html>
