@@ -1,6 +1,6 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="22.4";
+DATA.version="22.5";
 const DRAFT_KEY='gntt_v21_draft';
 const API_KEY='gntt_v21_publish_api_url';
 const PASS_KEY='gntt_v21_publish_password';
@@ -60,7 +60,7 @@ function loadSelected(){
   lessonSubtitle.value=l?.subtitle||'';
   editor.innerHTML=l?.contentHtml||'';
   preview.textContent=l?.title||'Chọn hoặc tạo bài học';
-  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=22.4`:'reader.html?v=22.4';
+  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=22.5`:'reader.html?v=22.5';
   setStatus(l?'Đã tải bài':'Chưa có bài');
 }
 
@@ -174,7 +174,7 @@ function upsertFromForm(){
   refreshSelectors();
   lessonSelect.value=l.id;
   preview.textContent=l.title;
-  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=22.4`;
+  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=22.5`;
   return l;
 }
 
@@ -185,7 +185,7 @@ function buildCatalogJs(){
     chapters:(b.chapters||[]).map(c=>({
       id:c.id,title:c.title,
       lessons:(c.lessons||[]).map(l=>({
-        id:l.id,title:l.title,subtitle:l.subtitle||'',href:`reader.html?id=${l.id}&v=22.4`
+        id:l.id,title:l.title,subtitle:l.subtitle||'',href:`reader.html?id=${l.id}&v=22.5`
       }))
     }))
   }))};
@@ -274,37 +274,32 @@ if(window.pdfjsLib){
 }
 
 function vniToUnicode(text){
-  let r=String(text||'');
-  const pairs=[
-    ['AÁ','Ấ'],['aá','ấ'],['AÀ','Ầ'],['aà','ầ'],['AÅ','Ẩ'],['aå','ẩ'],['AÃ','Ẫ'],['aã','ẫ'],['AÄ','Ậ'],['aä','ậ'],
-    ['AÉ','Ắ'],['aé','ắ'],['AÈ','Ằ'],['aè','ằ'],['AÚ','Ẳ'],['aú','ẳ'],['AÜ','Ẵ'],['aü','ẵ'],['AË','Ặ'],['aë','ặ'],
-    ['EÁ','Ế'],['eá','ế'],['EÀ','Ề'],['eà','ề'],['EÅ','Ể'],['eå','ể'],['EÃ','Ễ'],['eã','ễ'],['EÄ','Ệ'],['eä','ệ'],
-    ['OÁ','Ố'],['oá','ố'],['OÀ','Ồ'],['oà','ồ'],['OÅ','Ổ'],['oå','ổ'],['OÃ','Ỗ'],['oã','ỗ'],['OÄ','Ộ'],['oä','ộ'],
-    ['ÔÙ','Ớ'],['ôù','ớ'],['ÔØ','Ờ'],['ôø','ờ'],['ÔÛ','Ở'],['ôû','ở'],['ÔÕ','Ỡ'],['ôõ','ỡ'],['ÔÏ','Ợ'],['ôï','ợ'],
-    ['ÖÙ','Ứ'],['öù','ứ'],['ÖØ','Ừ'],['öø','ừ'],['ÖÛ','Ử'],['öû','ử'],['ÖÕ','Ữ'],['öõ','ữ'],['ÖÏ','Ự'],['öï','ự'],
-    ['AØ','À'],['AÙ','Á'],['AÂ','Â'],['AÕ','Ã'],['AÊ','Ă'],['Ñ','Đ'],['Ö','Ư'],
-    ['aø','à'],['aù','á'],['aâ','â'],['aõ','ã'],['aê','ă'],['ñ','đ'],['ö','ư'],
-    ['EØ','È'],['EÙ','É'],['EÂ','Ê'],['eø','è'],['eù','é'],['eâ','ê'],
-    ['OØ','Ò'],['OÙ','Ó'],['OÂ','Ô'],['OÕ','Õ'],['oø','ò'],['où','ó'],['oâ','ô'],['oõ','õ'],
-    ['UØ','Ù'],['UÙ','Ú'],['uø','ù'],['uù','ú'],['YÙ','Ý'],['yù','ý'],
-    ['AÏ','Ạ'],['aï','ạ'],['AÛ','Ả'],['aû','ả'],['EÏ','Ẹ'],['eï','ẹ'],['EÛ','Ẻ'],['eû','ẻ'],['EÕ','Ẽ'],['eõ','ẽ'],
-    ['OÏ','Ọ'],['oï','ọ'],['OÛ','Ỏ'],['oû','ỏ'],['UÏ','Ụ'],['uï','ụ'],['UÛ','Ủ'],['uû','ủ'],
-    ['YØ','Ỳ'],['yø','ỳ'],['YÛ','Ỷ'],['yû','ỷ'],['YÕ','Ỹ'],['yõ','ỹ'],['UÕ','Ũ'],['uõ','ũ']
-  ];
-  for(const [a,b] of pairs) r=r.split(a).join(b);
-  return r;
+  let result=String(text||'');
+
+  const uniChars1=['Ấ','ấ','Ầ','ầ','Ẩ','ẩ','Ẫ','ẫ','Ậ','ậ','Ắ','ắ','Ằ','ằ','Ẳ','ẳ','Ẵ','ẵ','Ặ','ặ','Ế','ế','Ề','ề','Ể','ể','Ễ','ễ','Ệ','ệ','Ố','ố','Ồ','ồ','Ổ','ổ','Ỗ','ỗ','Ộ','ộ','Ớ','ớ','Ờ','ờ','Ở','ở','Ỡ','ỡ','Ợ','ợ','Ố','ố','Ồ','ồ','Ổ','ổ','Ỗ','ỗ','Ộ','ộ','Ớ','ớ','Ờ','ờ','Ở','ở','Ỡ','ỡ','Ợ','ợ','Ứ','ứ','Ừ','ừ','Ử','ử','Ữ','ữ','Ự','ự'];
+  const vniChars1=['AÁ','aá','AÀ','aà','AÅ','aå','AÃ','aã','AÄ','aä','AÉ','aé','AÈ','aè','AÚ','aú','AÜ','aü','AË','aë','EÁ','eá','EÀ','eà','EÅ','eå','EÃ','eã','EÄ','eä','OÁ','oá','OÀ','oà','OÅ','oå','OÃ','oã','OÄ','oä','ÔÙ','ôù','ÔØ','ôø','ÔÛ','ôû','ÔÕ','ôõ','ÔÏ','ôï','OÁ','oá','OÀ','oà','OÅ','oå','OÃ','oã','OÄ','oä','ÔÙ','ôù','ÔØ','ôø','ÔÛ','ôû','ÔÕ','ôõ','ÔÏ','ôï','ÖÙ','öù','ÖØ','öø','ÖÛ','öû','ÖÕ','öõ','ÖÏ','öï'];
+
+  const uniChars=['Ơ','ơ','ĩ','Ị','ị','À','Á','Â','Ã','È','É','Ê','Ì','Í','Ò','Ó','Ô','Õ','Ù','Ú','Ý','à','á','â','ã','è','é','ê','ì','í','ò','ó','ô','õ','ù','ú','ý','Ă','ă','Đ','đ','Ĩ','Ũ','ũ','Ư','ư','Ạ','ạ','Ả','ả','Ẹ','ẹ','Ẻ','ẻ','Ẽ','ẽ','Ỉ','ỉ','Ọ','ọ','Ỏ','ỏ','Ụ','ụ','Ủ','ủ','Ỳ','ỳ','Ỵ','ỵ','Ỷ','ỷ','Ỹ','ỹ'];
+  const vniChars=['Ô','ô','ó','Ò','ò','AØ','AÙ','AÂ','AÕ','EØ','EÙ','EÂ','Ì','Í','OØ','OÙ','OÂ','OÕ','UØ','UÙ','YÙ','aø','aù','aâ','aõ','eø','eù','eâ','ì','í','oø','où','oâ','oõ','uø','uù','yù','AÊ','aê','Ñ','ñ','Ó','UÕ','uõ','Ö','ö','AÏ','aï','AÛ','aû','EÏ','eï','EÛ','eû','EÕ','eõ','Æ','æ','OÏ','oï','OÛ','oû','UÏ','uï','UÛ','uû','YØ','yø','Î','î','YÛ','yû','YÕ','yõ'];
+
+  for(let i=0;i<vniChars1.length;i++) result=result.split(vniChars1[i]).join(uniChars1[i]);
+  for(let i=0;i<vniChars.length;i++) result=result.split(vniChars[i]).join(uniChars[i]);
+  return result;
 }
 function hasVietnameseUnicode(text){
   return /[ăâđêôơưĂÂĐÊÔƠƯ]|[àáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵÀÁẢÃẠẰẮẲẴẶẦẤẨẪẬÈÉẺẼẸỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌỒỐỔỖỘỜỚỞỠỢÙÚỦŨỤỪỨỬỮỰỲÝỶỸỴ]/.test(String(text||''));
 }
 
-// V22.4: chỉ nhận VNI khi dòng có ký tự "mã cũ" mạnh.
-// Không dùng các ký tự Unicode hợp lệ như À/Á để nhận diện,
-// nên "TOÀN", "ĐỊNH"... sẽ không bị chuyển nhầm.
 function looksLikeLegacyVniLine(text){
   const t=String(text||'');
   if(!t.trim()) return false;
-  return /[ÑñÖöÆæØøÛûÏïÅåÄäËëÜü]/.test(t);
+
+  // Ký tự rất đặc trưng của VNI.
+  if(/[ÑñÖöÆæØøÛûÏïÅåÄäËëÜüÎî]/.test(t)) return true;
+
+  // Các cặp VNI phổ biến; loại OÀ/oà vì Unicode đúng như TOÀN/ngoài có thể chứa cặp này.
+  const strongPairs=/(?:AÊ|aê|AÂ|aâ|EÂ|eâ|OÂ|oâ|AÙ|aù|AØ|aø|AÛ|aû|AÏ|aï|EÙ|eù|EØ|eø|EÛ|eû|EÏ|eï|UÙ|uù|UØ|uø|UÛ|uû|UÏ|uï|YÙ|yù|YØ|yø|YÛ|yû|YÕ|yõ|EÀ|eà|EÁ|eá|EÄ|eä|OÁ|oá|OÄ|oä|AÁ|aá|AÀ|aà|AÄ|aä|AÅ|aå|AÃ|aã|AÉ|aé|AÈ|aè|AÚ|aú|AÜ|aü|AË|aë)/;
+  return strongPairs.test(t);
 }
 function looksLikeLegacyVni(text){
   return String(text||'').split(/\r?\n/).some(looksLikeLegacyVniLine);
