@@ -1,0 +1,80 @@
+GÓC NHỎ TU HỌC – V20 TỰ ĐĂNG BÀI
+====================================
+
+MỤC TIÊU
+Admin → bấm “🚀 Đăng bài lên website” → Cloudflare Worker → GitHub
+→ GitHub Pages tự deploy.
+Không còn tải reader.html rồi upload thủ công.
+
+AN TOÀN
+- Website vẫn nằm trên GitHub Pages.
+- Mỗi lần đăng tạo commit trên GitHub nên có thể quay lại bản cũ.
+- GitHub token KHÔNG nằm trong website public.
+- Token chỉ để trong Cloudflare Secret.
+- Token chỉ cấp quyền Contents: Read and write cho đúng repo Gocnhotuhoc.
+- Nếu Worker ngừng hoạt động, website đã đăng vẫn còn nguyên; chỉ nút Đăng tạm không dùng.
+
+PHẦN A – UPLOAD WEBSITE V20
+Upload các file website trong ZIP lên root repo như bình thường.
+Các file cloudflare-worker/ KHÔNG cần upload vào root website.
+
+PHẦN B – TẠO GITHUB TOKEN AN TOÀN
+1. GitHub → ảnh đại diện góc phải → Settings.
+2. Developer settings.
+3. Personal access tokens → Fine-grained tokens.
+4. Generate new token.
+5. Repository access → Only select repositories → chọn Gocnhotuhoc.
+6. Repository permissions → Contents → Read and write.
+7. Không bật quyền Administration.
+8. Tạo token và COPY token ngay. GitHub chỉ hiện token đầy đủ một lần.
+
+PHẦN C – TẠO CLOUDFLARE WORKER
+1. Đăng nhập Cloudflare.
+2. Workers & Pages → Create.
+3. Tạo Worker mới, ví dụ tên: gocnho-publisher.
+4. Mở Edit code.
+5. Xóa code mẫu và dán toàn bộ nội dung file cloudflare-worker/worker.js.
+6. Deploy.
+
+PHẦN D – THÊM SECRET / VARIABLE TRÊN CLOUDFLARE
+Vào Worker → Settings → Variables and Secrets.
+
+Thêm SECRET:
+ADMIN_PASSWORD
+- Tự đặt một mật khẩu quản trị dài, khó đoán.
+- Không dùng mật khẩu GitHub của bạn.
+
+GITHUB_TOKEN
+- Dán fine-grained token vừa tạo.
+
+Thêm VARIABLE:
+GITHUB_OWNER = nttnngoan-eng
+GITHUB_REPO = Gocnhotuhoc
+GITHUB_BRANCH = main
+ALLOWED_ORIGIN = https://nttnngoan-eng.github.io
+
+Sau đó Save/Deploy.
+
+PHẦN E – KẾT NỐI ADMIN
+1. Mở:
+   https://nttnngoan-eng.github.io/Gocnhotuhoc/admin.html
+2. Trong “Đăng bài trực tiếp”:
+   - Địa chỉ API xuất bản = URL Worker, ví dụ:
+     https://gocnho-publisher.TEN-TAI-KHOAN.workers.dev
+   - Mật khẩu quản trị = ADMIN_PASSWORD đã đặt.
+3. Bấm “Kiểm tra kết nối”.
+4. Khi hiện “Kết nối tốt”, bạn có thể sửa bài.
+5. Bấm “🚀 Đăng bài lên website”.
+6. Chờ GitHub Pages deploy khoảng 1–3 phút.
+
+MẬT KHẨU TRÊN ADMIN
+- URL API được lưu bằng localStorage để lần sau không phải nhập lại.
+- Mật khẩu chỉ lưu sessionStorage: đóng hẳn trình duyệt/tab session thì cần nhập lại.
+- Không ghi mật khẩu vào source code.
+
+PHƯƠNG ÁN DỰ PHÒNG
+Nút “Xuất reader.html dự phòng” vẫn còn.
+Nếu Cloudflare có sự cố, bạn vẫn có thể dùng quy trình upload GitHub thủ công.
+
+BACKUP
+Thỉnh thoảng vào GitHub → Code → Download ZIP để giữ thêm một bản sao trên máy.

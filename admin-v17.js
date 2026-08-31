@@ -1,4 +1,115 @@
 
+// ===== V20: Đăng bài trực tiếp qua Cloudflare Worker -> GitHub =====
+const V20_PUBLISH_API_KEY = 'gntt_v20_publish_api_url';
+const V20_PUBLISH_PASS_KEY = 'gntt_v20_publish_password';
+
+function v20NormalizeApiUrl(value){
+  return String(value || '').trim().replace(/\/+$/, '');
+}
+
+function v20Slugify(text){
+  return String(text || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/đ/g,'d').replace(/Đ/g,'D')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/^-+|-+$/g,'')
+    .slice(0,120) || 'bai-hoc';
+}
+
+function v20EscJsString(value){
+  return JSON.stringify(String(value ?? ''));
+}
+
+function v20ParseCatalog(text){
+  const m = String(text || '').match(/window\.GNTT_CATALOG\s*=\s*([\s\S]*?);\s*$/);
+  if(!m) return {books:[]};
+  try { return JSON.parse(m[1]); } catch(e) { return {books:[]}; }
+}
+
+function v20CatalogJs(catalog){
+  return 'window.GNTT_CATALOG = ' + JSON.stringify(catalog, null, 2) + ';\n';
+}
+
+function v20UpdateCatalog(catalog, meta){
+  if(!catalog || !Array.isArray(catalog.books)) catalog = {books:[]};
+
+  const bookId = v20Slugify(meta.bookTitle);
+  let book = catalog.books.find(b => b.id === bookId || b.title === meta.bookTitle);
+  if(!book){
+    book = {
+      id: bookId,
+      title: meta.bookTitle || 'Chưa đặt tên sách',
+      description: 'Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.',
+      chapters: []
+    };
+    catalog.books.push(book);
+  }else{
+    book.title = meta.bookTitle || book.title;
+    book.id = book.id || bookId;
+    if(!Array.isArray(book.chapters)) book.chapters = [];
+  }
+
+  let chapter = book.chapters.find(c => c.title === meta.chapterTitle);
+  if(!chapter){
+    chapter = {title: meta.chapterTitle || 'Chưa phân chương', lessons: []};
+    book.chapters.push(chapter);
+  }
+  if(!Array.isArray(chapter.lessons)) chapter.lessons = [];
+
+  const lessonHref = 'reader.html?v=20';
+  let lesson = chapter.lessons.find(l => l.title === meta.lessonTitle);
+  if(!lesson){
+    // Current website still has one active Reader. Put latest/current lesson first if new.
+    lesson = {};
+    chapter.lessons.unshift(lesson);
+  }
+  lesson.title = meta.lessonTitle || 'Bài học';
+  lesson.subtitle = meta.subtitle || '';
+  lesson.href = lessonHref;
+
+  return catalog;
+}
+
+async function v20FetchCatalog(){
+  const res = await fetch('catalog.js?admin=' + Date.now(), {cache:'no-store'});
+  if(!res.ok) return {books:[]};
+  return v20ParseCatalog(await res.text());
+}
+
+function v20SetPublishState(text, kind=''){
+  const el = document.getElementById('publishState');
+  if(!el) return;
+  el.textContent = text;
+  el.className = 'publish-state' + (kind ? ' ' + kind : '');
+}
+
+async function v20ApiRequest(path, options={}){
+  const apiInput = document.getElementById('publishApiUrl');
+  const passInput = document.getElementById('publishPassword');
+  const apiUrl = v20NormalizeApiUrl(apiInput?.value);
+  const password = passInput?.value || '';
+  if(!apiUrl) throw new Error('Chưa nhập địa chỉ API xuất bản');
+  if(!password) throw new Error('Chưa nhập mật khẩu quản trị');
+
+  localStorage.setItem(V20_PUBLISH_API_KEY, apiUrl);
+  sessionStorage.setItem(V20_PUBLISH_PASS_KEY, password);
+
+  const res = await fetch(apiUrl + path, {
+    ...options,
+    headers: {
+      'Content-Type':'application/json',
+      'X-Admin-Password':password,
+      ...(options.headers || {})
+    }
+  });
+  let data = {};
+  try { data = await res.json(); } catch(e) {}
+  if(!res.ok) throw new Error(data.error || ('Lỗi API ' + res.status));
+  return data;
+}
+
+
 // ===== V19F1: Reader footer chỉ hiển thị tên bài =====
 function applyReaderTitleOnlyFooter(html){
   const lessonTitle =
@@ -101,8 +212,8 @@ function applyV18AntiCache(html) {
       '  <meta http-equiv="Pragma" content="no-cache">\n' +
       '  <meta http-equiv="Expires" content="0">');
   }
-  html = html.replace(/style\.css(?:\?[^"'<> ]*)?/g, 'style.css?v=19f1');
-  html = html.replace(/app\.js(?:\?[^"'<> ]*)?/g, 'app.js?v=19f1');
+  html = html.replace(/style\.css(?:\?[^"'<> ]*)?/g, 'style.css?v=20');
+  html = html.replace(/app\.js(?:\?[^"'<> ]*)?/g, 'app.js?v=20');
   if (!html.includes('GNTT_VERSION_18')) {
     html = html.replace('<head>', '<head>\\n  <!-- GNTT_VERSION_18 anti-cache -->');
   }
@@ -319,19 +430,14 @@ function applyV18AntiCache(html) {
     }
   }
 
-  document.getElementById('exportReader').addEventListener('click', () => {
-    if(!readerSource){
-      setStatus('Chưa tải được reader.html');
-      return;
-    }
+
+  function buildReaderOutput(){
+    if(!readerSource) throw new Error('Chưa tải được reader.html');
 
     const doc = new DOMParser().parseFromString(readerSource,'text/html');
     const article = doc.querySelector('.reader-content');
     const paper = doc.querySelector('.reader-paper');
-    if(!article || !paper){
-      setStatus('Không tìm thấy cấu trúc bài');
-      return;
-    }
+    if(!article || !paper) throw new Error('Không tìm thấy cấu trúc bài');
 
     article.innerHTML = cleanEditorHTML();
     normalizeYoutube(article);
@@ -348,28 +454,85 @@ function applyV18AntiCache(html) {
     if(titleEl) titleEl.textContent = titleInput.value.trim() || 'Chưa đặt tên bài';
     if(subtitleEl) subtitleEl.textContent = subtitleInput.value.trim();
 
-    // Also update browser tab title.
     if(doc.querySelector('title')){
       doc.querySelector('title').textContent = (titleInput.value.trim() || 'Bài đọc') + ' | Góc nhỏ tu học';
     }
 
-    // Metadata useful for later multi-lesson admin.
     article.dataset.bookTitle = bookInput.value.trim();
     article.dataset.chapterTitle = chapterInput.value.trim();
     article.dataset.lessonTitle = titleInput.value.trim();
 
-    const output = '<!doctype html>\n' + doc.documentElement.outerHTML;
-    const blob = new Blob([output], {type:'text/html;charset=utf-8'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'reader.html';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    let output = '<!doctype html>\n' + doc.documentElement.outerHTML;
+    output = applyV18AntiCache(output);
+    return output;
+  }
 
-    setStatus('Đã xuất reader.html với thông tin bài mới');
+  document.getElementById('exportReader').addEventListener('click', () => {
+    try{
+      const output = buildReaderOutput();
+      const blob = new Blob([output], {type:'text/html;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'reader.html';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setStatus('Đã xuất reader.html dự phòng');
+    }catch(err){
+      setStatus(err.message || 'Không xuất được reader.html');
+    }
+  });
+
+  // V20: publish directly to GitHub through the protected Worker.
+  document.getElementById('publishNow')?.addEventListener('click', async () => {
+    try{
+      v20SetPublishState('Đang đăng…', 'busy');
+      setStatus('Đang đăng bài lên website…');
+
+      const readerHtml = buildReaderOutput();
+      const catalog = await v20FetchCatalog();
+      const meta = {
+        bookTitle: bookInput.value.trim(),
+        chapterTitle: chapterInput.value.trim(),
+        lessonTitle: titleInput.value.trim(),
+        subtitle: subtitleInput.value.trim()
+      };
+      const updatedCatalog = v20UpdateCatalog(catalog, meta);
+      const catalogJs = v20CatalogJs(updatedCatalog);
+
+      const result = await v20ApiRequest('/publish', {
+        method:'POST',
+        body:JSON.stringify({
+          readerHtml,
+          catalogJs,
+          message:'Cập nhật bài: ' + (meta.lessonTitle || 'Bài học')
+        })
+      });
+
+      dirty = false;
+      v20SetPublishState('Đã đăng thành công', 'ok');
+      setStatus('Đã đăng bài. GitHub Pages sẽ cập nhật sau ít phút.');
+      alert('Đăng bài thành công!\\n\\nGitHub đã nhận bản cập nhật. Trang Reader/Home/Thư viện thường cập nhật sau khoảng 1–3 phút.');
+    }catch(err){
+      console.error(err);
+      v20SetPublishState('Đăng thất bại', 'error');
+      setStatus(err.message || 'Đăng bài thất bại');
+      alert('Chưa đăng được bài:\\n' + (err.message || err));
+    }
+  });
+
+  document.getElementById('testPublishConnection')?.addEventListener('click', async () => {
+    try{
+      v20SetPublishState('Đang kiểm tra…', 'busy');
+      const data = await v20ApiRequest('/health', {method:'GET', headers:{}});
+      v20SetPublishState('Kết nối tốt', 'ok');
+      setStatus('Kết nối API xuất bản thành công');
+    }catch(err){
+      v20SetPublishState('Không kết nối', 'error');
+      setStatus(err.message || 'Không kết nối được API');
+    }
   });
 
   window.addEventListener('beforeunload', e => {
@@ -394,4 +557,15 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch(e){}
     }
   });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const api = document.getElementById('publishApiUrl');
+  const pass = document.getElementById('publishPassword');
+  if(api){
+    try { api.value = localStorage.getItem(V20_PUBLISH_API_KEY) || ''; } catch(e){}
+  }
+  if(pass){
+    try { pass.value = sessionStorage.getItem(V20_PUBLISH_PASS_KEY) || ''; } catch(e){}
+  }
 });

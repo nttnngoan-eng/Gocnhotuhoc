@@ -11,7 +11,7 @@ window.GNTT_CATALOG = {
             {
               "title": "BÀI 40 - TỨ VÔ LƯỢNG",
               "subtitle": "Giảng thọ sư: TT Thích Huyền Châu",
-              "href": "reader.html?v=19"
+              "href": "reader.html?v=20"
             }
           ]
         }
