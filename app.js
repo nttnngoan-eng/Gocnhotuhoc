@@ -539,3 +539,181 @@ document.addEventListener('DOMContentLoaded',()=>{
     drawer?.classList.remove('open');
   });
 });
+
+
+/* ===== V5: Chế độ lật trang ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  const article = document.querySelector('.reader-content');
+  const toggle = document.getElementById('togglePageMode');
+  const controls = document.getElementById('pageTurnControls');
+  const prev = document.getElementById('prevPage');
+  const next = document.getElementById('nextPage');
+  const pageNumber = document.getElementById('pageNumber');
+  if (!article || !toggle || !controls || !prev || !next || !pageNumber) return;
+
+  const MODE_KEY = 'gocnho_reader_view_mode';
+  const PAGE_KEY = 'gocnho_page_position_bai40-bon-vo-luong-tam-p1';
+
+  let pageMode = localStorage.getItem(MODE_KEY) === 'page';
+  let currentPage = 0;
+  let totalPages = 1;
+  let resizeTimer = null;
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  function pageStep() {
+    const style = getComputedStyle(article);
+    const gap = parseFloat(style.columnGap) || 0;
+    return article.clientWidth + gap;
+  }
+
+  function calculatePages() {
+    if (!pageMode) return;
+    const step = pageStep();
+    if (!step) return;
+
+    // scrollWidth includes all CSS columns laid horizontally.
+    totalPages = Math.max(1, Math.round((article.scrollWidth + (parseFloat(getComputedStyle(article).columnGap) || 0)) / step));
+    currentPage = Math.max(0, Math.min(totalPages - 1, currentPage));
+    article.scrollLeft = currentPage * step;
+    updatePageUI();
+  }
+
+  function updatePageUI() {
+    pageNumber.textContent = `Trang ${currentPage + 1} / ${totalPages}`;
+    prev.disabled = currentPage <= 0;
+    next.disabled = currentPage >= totalPages - 1;
+
+    const pct = totalPages <= 1 ? 100 : Math.round(((currentPage + 1) / totalPages) * 100);
+    const bar = document.getElementById('readingProgressBar');
+    const percent = document.getElementById('readingPercent');
+    if (bar) bar.style.width = pct + '%';
+    if (percent) percent.textContent = pct + '%';
+
+    localStorage.setItem(PAGE_KEY, JSON.stringify({
+      page: currentPage,
+      total: totalPages,
+      savedAt: Date.now()
+    }));
+  }
+
+  function goToPage(index, smooth = true) {
+    if (!pageMode) return;
+    currentPage = Math.max(0, Math.min(totalPages - 1, index));
+    article.scrollTo({
+      left: currentPage * pageStep(),
+      top: 0,
+      behavior: smooth ? 'smooth' : 'auto'
+    });
+    updatePageUI();
+  }
+
+  function restorePage() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(PAGE_KEY) || 'null');
+      if (saved && Number.isFinite(saved.page)) currentPage = Math.max(0, saved.page);
+    } catch (e) {}
+  }
+
+  function enablePageMode(restore = true) {
+    pageMode = true;
+    document.body.classList.add('page-mode');
+    toggle.setAttribute('aria-pressed', 'true');
+    toggle.textContent = '↕ Cuộn dọc';
+    controls.hidden = false;
+    localStorage.setItem(MODE_KEY, 'page');
+
+    if (restore) restorePage();
+
+    // Let browser finish column layout before measuring.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        calculatePages();
+        goToPage(currentPage, false);
+      });
+    });
+  }
+
+  function disablePageMode() {
+    pageMode = false;
+    document.body.classList.remove('page-mode');
+    toggle.setAttribute('aria-pressed', 'false');
+    toggle.textContent = '📖 Lật trang';
+    controls.hidden = true;
+    article.scrollLeft = 0;
+    localStorage.setItem(MODE_KEY, 'scroll');
+
+    // Return progress display to the normal vertical reader calculation.
+    window.dispatchEvent(new Event('scroll'));
+  }
+
+  toggle.addEventListener('click', () => {
+    if (pageMode) disablePageMode();
+    else enablePageMode(true);
+  });
+
+  prev.addEventListener('click', () => goToPage(currentPage - 1));
+  next.addEventListener('click', () => goToPage(currentPage + 1));
+
+  article.addEventListener('touchstart', e => {
+    if (!pageMode || e.touches.length !== 1) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  article.addEventListener('touchend', e => {
+    if (!pageMode || !e.changedTouches.length) return;
+
+    // Do not flip while the user is selecting text for highlighting.
+    const selection = window.getSelection();
+    if (selection && !selection.isCollapsed && selection.toString().trim()) return;
+
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+
+    if (Math.abs(dx) >= 45 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+      if (dx < 0) goToPage(currentPage + 1);
+      else goToPage(currentPage - 1);
+    }
+  }, { passive: true });
+
+  article.setAttribute('tabindex', '0');
+  article.addEventListener('keydown', e => {
+    if (!pageMode) return;
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+      e.preventDefault();
+      goToPage(currentPage + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      goToPage(currentPage - 1);
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (!pageMode) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      calculatePages();
+      goToPage(currentPage, false);
+    }, 180);
+  });
+
+  // Recalculate after changing font size/font family.
+  document.getElementById('smaller')?.addEventListener('click', () => setTimeout(calculatePages, 60));
+  document.getElementById('larger')?.addEventListener('click', () => setTimeout(calculatePages, 60));
+  document.querySelectorAll('[data-font]').forEach(btn => {
+    btn.addEventListener('click', () => setTimeout(calculatePages, 60));
+  });
+
+  // "Đọc từ đầu" also resets to page 1 in book mode.
+  document.getElementById('clearProgress')?.addEventListener('click', () => {
+    localStorage.removeItem(PAGE_KEY);
+    if (pageMode) goToPage(0, false);
+  });
+
+  // If the user had selected page mode before, restore it automatically.
+  if (pageMode) enablePageMode(true);
+});

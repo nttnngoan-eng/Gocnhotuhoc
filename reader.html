@@ -1,5 +1,5 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BÀI 40 - BỐN VÔ LƯỢNG TÂM (P.1)</title><link rel="stylesheet" href="style.css"></head><body class="theme-paper">
+<title>BÀI 40 - BỐN VÔ LƯỢNG TÂM (P.1)</title><link rel="stylesheet" href="style.css?v=5"></head><body class="theme-paper">
 
 <header class="site-header"><nav class="nav">
   <a class="brand" href="index.html">📖 Góc nhỏ tu học</a>
@@ -23,6 +23,7 @@
   <span id="readingPercent">0%</span>
 </div>
 <div class="reader-utility">
+  <button id="togglePageMode" class="page-mode-toggle" aria-pressed="false">📖 Lật trang</button>
   <button id="showHighlights">⭐ Đoạn đã đánh dấu</button>
   <button id="clearProgress">↺ Đọc từ đầu</button>
 </div>
@@ -73,6 +74,14 @@
 <p>Ngày hoàn thành chép: 23-04-2026</p>
 <p>Người soạn: Cô Hiền Ngọc</p>
 <p>Ngày hoàn thành soạn:</p></div>
+<div class="page-turn-controls" id="pageTurnControls" hidden>
+  <button type="button" id="prevPage" aria-label="Trang trước">‹</button>
+  <div class="page-turn-status">
+    <span id="pageNumber">Trang 1 / 1</span>
+    <small>Vuốt trái/phải hoặc dùng phím ← →</small>
+  </div>
+  <button type="button" id="nextPage" aria-label="Trang sau">›</button>
+</div>
 </article>
 </main>
 <div class="settings" id="settingsPanel">
@@ -85,15 +94,6 @@
 <button data-theme="paper">Giấy</button><button data-theme="white">Trắng</button><button data-theme="sepia">Kem</button><button data-theme="dark">Tối</button>
 </div></div>
 </div>
-
-<div class="highlight-toolbar" id="highlightToolbar">
-  <span>Highlight:</span>
-  <button data-highlight="yellow">Vàng</button>
-  <button data-highlight="green">Xanh</button>
-  <button data-highlight="pink">Hồng</button>
-  <button id="removeHighlight">Bỏ</button>
-</div>
-
 <div class="resume-modal" id="resumeModal" aria-hidden="true">
   <div class="resume-card">
     <div class="resume-icon">📖</div>
@@ -114,4 +114,4 @@
   <div id="highlightList" class="highlight-list"></div>
 </aside>
 <footer class="footer">Góc nhỏ tu học • Bản website đọc trực tuyến</footer>
-<script src="app.js?v=4"></script></body></html>
+<script src="app.js?v=5"></script></body></html>

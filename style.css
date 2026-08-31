@@ -232,3 +232,131 @@ mark.user-highlight.pink{background:#ffc9d8}
   .reader-utility{justify-content:space-between}
   .reader-utility button{flex:1}
 }
+
+
+/* ===== V5: Chế độ lật trang ===== */
+.page-mode-toggle[aria-pressed="true"]{
+  background:rgba(118,86,46,.12);
+  border-color:rgba(118,86,46,.4);
+  font-weight:600;
+}
+.page-turn-controls{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  margin:18px auto 2px;
+  font-family:var(--ui-font);
+  user-select:none;
+}
+.page-turn-controls[hidden]{display:none!important}
+.page-turn-controls button{
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.48);
+  color:inherit;
+  font-size:30px;
+  line-height:1;
+  cursor:pointer;
+}
+.page-turn-controls button:disabled{
+  opacity:.32;
+  cursor:default;
+}
+.page-turn-status{
+  min-width:180px;
+  text-align:center;
+  display:grid;
+  gap:2px;
+}
+.page-turn-status span{
+  font-size:14px;
+  font-weight:600;
+}
+.page-turn-status small{
+  font-size:11px;
+  opacity:.62;
+}
+
+/* Only the lesson body becomes a paged book. The DOM stays unchanged,
+   so highlights remain compatible with page mode. */
+body.page-mode .reader-content{
+  --page-gap:48px;
+  height:min(68vh,720px);
+  min-height:430px;
+  overflow:hidden;
+  column-width:calc(100vw - 96px);
+  column-gap:var(--page-gap);
+  column-fill:auto;
+  scroll-behavior:smooth;
+  overscroll-behavior-x:contain;
+}
+body.page-mode .reader-content > *{
+  break-inside:avoid;
+}
+body.page-mode .reader-content p{
+  orphans:3;
+  widows:3;
+}
+body.page-mode .youtube-inline-card{
+  break-inside:avoid;
+}
+body.page-mode .reader-paper{
+  overflow:hidden;
+}
+body.page-mode .progress-info{
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+body.page-mode .page-turn-controls{
+  display:flex;
+}
+
+/* A subtle page edge */
+body.page-mode .reader-content{
+  border-radius:8px;
+  box-shadow:inset -1px 0 rgba(90,70,40,.08);
+}
+
+@media(max-width:700px){
+  body.page-mode .reader-content{
+    --page-gap:28px;
+    height:66vh;
+    min-height:390px;
+    column-width:calc(100vw - 48px);
+  }
+  .reader-utility{
+    flex-wrap:wrap;
+  }
+  .reader-utility button{
+    min-width:calc(50% - 6px);
+  }
+  .page-turn-status{
+    min-width:150px;
+  }
+  .page-turn-status small{
+    display:none;
+  }
+}
+
+@media(max-width:420px){
+  body.page-mode .reader-content{
+    --page-gap:22px;
+    height:64vh;
+    min-height:360px;
+    column-width:calc(100vw - 34px);
+  }
+  .page-turn-controls{
+    gap:8px;
+  }
+  .page-turn-controls button{
+    width:44px;
+    height:44px;
+  }
+  .page-turn-status{
+    min-width:120px;
+  }
+}
