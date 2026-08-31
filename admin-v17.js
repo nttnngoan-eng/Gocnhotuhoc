@@ -31,11 +31,22 @@ function v20CatalogJs(catalog){
   return 'window.GNTT_CATALOG = ' + JSON.stringify(catalog, null, 2) + ';\n';
 }
 
+function v20LessonNumber(title){
+  const m = String(title || '').match(/\bBÀI\s*0*(\d+)\b/i);
+  return m ? String(Number(m[1])) : '';
+}
+
+function v20LessonId(title){
+  const n = v20LessonNumber(title);
+  return n ? ('bai-' + n) : v20Slugify(title);
+}
+
 function v20UpdateCatalog(catalog, meta){
   if(!catalog || !Array.isArray(catalog.books)) catalog = {books:[]};
 
   const bookId = v20Slugify(meta.bookTitle);
   let book = catalog.books.find(b => b.id === bookId || b.title === meta.bookTitle);
+
   if(!book){
     book = {
       id: bookId,
@@ -57,16 +68,44 @@ function v20UpdateCatalog(catalog, meta){
   }
   if(!Array.isArray(chapter.lessons)) chapter.lessons = [];
 
-  const lessonHref = 'reader.html?v=20';
-  let lesson = chapter.lessons.find(l => l.title === meta.lessonTitle);
+  const lessonTitle = meta.lessonTitle || 'Bài học';
+  const lessonNumber = v20LessonNumber(lessonTitle);
+  const lessonId = v20LessonId(lessonTitle);
+  const lessonHref = 'reader.html?v=20.2';
+
+  // Quan trọng:
+  // Nhận diện bài theo ID / số bài trước, KHÔNG chỉ theo tên.
+  // Vì vậy đổi "BÀI 40 - TỨ..." thành "BÀI 40 - TỪ..." vẫn là cùng Bài 40.
+  const matches = chapter.lessons.filter(l => {
+    const existingId = l.id || v20LessonId(l.title);
+    const existingNumber = v20LessonNumber(l.title);
+    return existingId === lessonId ||
+           (lessonNumber && existingNumber === lessonNumber) ||
+           l.title === lessonTitle;
+  });
+
+  let lesson = matches[0];
+
   if(!lesson){
-    // Current website still has one active Reader. Put latest/current lesson first if new.
     lesson = {};
     chapter.lessons.unshift(lesson);
   }
-  lesson.title = meta.lessonTitle || 'Bài học';
+
+  lesson.id = lessonId;
+  lesson.title = lessonTitle;
   lesson.subtitle = meta.subtitle || '';
   lesson.href = lessonHref;
+
+  // Xóa các bản ghi trùng cùng số bài / ID, chỉ giữ một bản.
+  chapter.lessons = chapter.lessons.filter(l => {
+    if(l === lesson) return true;
+    const existingId = l.id || v20LessonId(l.title);
+    const existingNumber = v20LessonNumber(l.title);
+    const sameLesson =
+      existingId === lessonId ||
+      (lessonNumber && existingNumber === lessonNumber);
+    return !sameLesson;
+  });
 
   return catalog;
 }
