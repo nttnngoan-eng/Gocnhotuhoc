@@ -13,7 +13,7 @@ window.GNTT_CATALOG = {
               "id": "a-ti-dat-ma-phap-uan-tuc-luan-pham-12-vo-luong-bai-40",
               "title": "BÀI 40 - TỪ VÔ LƯỢNG",
               "subtitle": "Giảng thọ sư: TT Thích Huyền Châu",
-              "href": "reader.html?id=a-ti-dat-ma-phap-uan-tuc-luan-pham-12-vo-luong-bai-40&v=22.1"
+              "href": "reader.html?id=a-ti-dat-ma-phap-uan-tuc-luan-pham-12-vo-luong-bai-40&v=22.3"
             }
           ]
         }
