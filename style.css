@@ -607,3 +607,41 @@ body.page-mode .reader-content{
     margin-bottom:7px !important;
   }
 }
+
+
+/* ===== V8: Thu nhỏ tiêu đề Bài 40 ===== */
+/* Máy tính / màn hình lớn */
+.reader-content h1{
+  font-size:28px !important;
+  line-height:1.18 !important;
+}
+
+/* Điện thoại: áp dụng cho cả Cuộn dọc và Lật trang */
+@media(max-width:700px){
+  .reader-content h1,
+  body.page-mode .reader-content h1{
+    font-size:20px !important;
+    line-height:1.18 !important;
+    margin-top:0 !important;
+    margin-bottom:6px !important;
+  }
+}
+
+/* Điện thoại nhỏ vẫn giữ 20px, không bị rule cũ ghi đè */
+@media(max-width:700px) and (max-height:750px){
+  body.page-mode .reader-content h1{
+    font-size:20px !important;
+  }
+}
+
+
+/* ===== V9: Tiêu đề đầu bài chỉ hiện ở trang 1 trong chế độ Lật trang ===== */
+body.page-mode.page-after-first .reader-content .eyebrow,
+body.page-mode.page-after-first .reader-content h1,
+body.page-mode.page-after-first .reader-content h1 + p{
+  visibility:hidden !important;
+}
+
+/* Keep their original space inside CSS columns so page calculations/content
+   do not jump when moving between pages. Since those nodes live in column 1,
+   later columns are unaffected visually. */

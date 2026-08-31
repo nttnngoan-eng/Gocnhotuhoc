@@ -737,3 +737,35 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e) {}
   }
 });
+
+
+/* ===== V9: Chỉ hiện phần đầu bài ở trang 1 ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  const article = document.querySelector('.reader-content');
+  if (!article) return;
+
+  function syncFirstPageHeader(){
+    if (!document.body.classList.contains('page-mode')){
+      document.body.classList.remove('page-after-first');
+      return;
+    }
+    // In page mode, page 1 starts at scrollLeft 0.
+    // Use a small tolerance for mobile/browser fractional pixels.
+    document.body.classList.toggle('page-after-first', article.scrollLeft > 20);
+  }
+
+  article.addEventListener('scroll', syncFirstPageHeader, {passive:true});
+
+  document.getElementById('togglePageMode')?.addEventListener('click', () => {
+    setTimeout(syncFirstPageHeader, 120);
+  });
+  document.getElementById('prevPage')?.addEventListener('click', () => {
+    setTimeout(syncFirstPageHeader, 380);
+  });
+  document.getElementById('nextPage')?.addEventListener('click', () => {
+    setTimeout(syncFirstPageHeader, 380);
+  });
+
+  window.addEventListener('resize', () => setTimeout(syncFirstPageHeader, 220));
+  setTimeout(syncFirstPageHeader, 300);
+});
