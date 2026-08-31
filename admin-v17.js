@@ -1,4 +1,33 @@
 
+// ===== V19F1: Reader footer chỉ hiển thị tên bài =====
+function applyReaderTitleOnlyFooter(html){
+  const lessonTitle =
+    document.getElementById('lessonTitle')?.value?.trim() ||
+    'Bài học';
+
+  const safe = String(lessonTitle).replace(/[&<>"']/g, s => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[s]));
+
+  const mark = `<div class="reader-end-footer">
+  <footer class="reader-title-footer" aria-label="Tên bài học">
+    <span data-reader-footer-title>${safe}</span>
+  </footer>
+</div>`;
+
+  // Remove any old full reader footer.
+  html = html.replace(
+    /<div class=["']reader-end-footer["'][\s\S]*?<\/footer>\s*<\/div>/i,
+    mark
+  );
+
+  if (!html.includes('data-reader-footer-title')) {
+    html = html.replace(/<\/article>/i, mark + '\\n</article>');
+  }
+  return html;
+}
+
+
 // ===== V18F Footer Admin =====
 function escFooterHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, s => ({
@@ -64,6 +93,7 @@ function readFooterFromLoadedReader(doc){
 function applyV18AntiCache(html) {
   if (!html) return html;
   html = applyFooterToReaderHtml(html);
+  html = applyReaderTitleOnlyFooter(html);
   if (!/http-equiv=["']Cache-Control["']/i.test(html)) {
     html = html.replace(/<meta charset=["']utf-8["']\s*\/?>/i,
       '<meta charset="utf-8">\n' +
@@ -71,8 +101,8 @@ function applyV18AntiCache(html) {
       '  <meta http-equiv="Pragma" content="no-cache">\n' +
       '  <meta http-equiv="Expires" content="0">');
   }
-  html = html.replace(/style\.css(?:\?[^"'<> ]*)?/g, 'style.css?v=19');
-  html = html.replace(/app\.js(?:\?[^"'<> ]*)?/g, 'app.js?v=19');
+  html = html.replace(/style\.css(?:\?[^"'<> ]*)?/g, 'style.css?v=19f1');
+  html = html.replace(/app\.js(?:\?[^"'<> ]*)?/g, 'app.js?v=19f1');
   if (!html.includes('GNTT_VERSION_18')) {
     html = html.replace('<head>', '<head>\\n  <!-- GNTT_VERSION_18 anti-cache -->');
   }

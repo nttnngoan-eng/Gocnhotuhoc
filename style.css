@@ -723,3 +723,34 @@ body.page-mode .reader-content blockquote{
   .library-book-head{padding:18px}
   .chapter-block{padding:17px 18px 20px}
 }
+
+
+/* ===== V19F1 Reader footer: chỉ tên bài ===== */
+.reader-content .reader-end-footer{
+  margin-top:2em;
+  padding-top:1em;
+  border-top:1px solid rgba(110,82,50,.14);
+  text-align:center;
+}
+.reader-title-footer{
+  padding:8px 6px 4px;
+  text-align:center;
+  font-size:.88rem;
+  font-weight:600;
+  letter-spacing:.01em;
+  color:inherit;
+  opacity:.72;
+}
+body.page-mode .reader-content .reader-end-footer{
+  margin-top:1.25em;
+  padding-top:.75em;
+  break-inside:avoid;
+}
+body.page-mode .reader-title-footer{
+  padding:4px 4px 2px;
+}
+@media(max-width:700px){
+  .reader-title-footer{
+    font-size:.82rem;
+  }
+}
