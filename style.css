@@ -360,3 +360,250 @@ body.page-mode .reader-content{
     min-width:120px;
   }
 }
+
+
+/* ===== V6: Mobile page mode compact + smaller Bài 40 text ===== */
+
+/* Bài 40: smaller default reading text on phone */
+@media(max-width:700px){
+  .reader-content{
+    font-size:17px !important;
+    line-height:1.72 !important;
+  }
+
+  /* Compact the whole area above the book while page mode is active */
+  body.page-mode .site-header{
+    padding-top:4px !important;
+    padding-bottom:4px !important;
+  }
+  body.page-mode .site-header .nav{
+    min-height:44px !important;
+  }
+
+  body.page-mode .reader-shell{
+    padding-top:8px !important;
+  }
+
+  body.page-mode .reader-topbar{
+    min-height:44px !important;
+    margin-bottom:4px !important;
+    padding:0 !important;
+  }
+
+  /* Hide large/secondary controls in book mode */
+  body.page-mode .progress-wrap,
+  body.page-mode .progress-info,
+  body.page-mode #showHighlights,
+  body.page-mode #clearProgress{
+    display:none !important;
+  }
+
+  body.page-mode .reader-utility{
+    margin:4px 0 6px !important;
+    padding:0 !important;
+    display:flex !important;
+    justify-content:flex-end !important;
+  }
+
+  body.page-mode #togglePageMode{
+    min-width:auto !important;
+    width:auto !important;
+    padding:8px 12px !important;
+    min-height:40px !important;
+    font-size:14px !important;
+  }
+
+  /* Hide the large lesson cover/title only in page mode.
+     It remains visible in normal vertical reading mode. */
+  body.page-mode .reader-content .eyebrow,
+  body.page-mode .reader-content h1,
+  body.page-mode .reader-content h1 + p{
+    display:none !important;
+  }
+
+  body.page-mode .reader-paper{
+    padding-top:8px !important;
+  }
+
+  /* Give most of the phone screen to the actual lesson page */
+  body.page-mode .reader-content{
+    height:calc(100svh - 215px) !important;
+    min-height:520px !important;
+    padding-top:10px !important;
+    padding-bottom:8px !important;
+    font-size:17px !important;
+    line-height:1.68 !important;
+  }
+
+  /* Compact page navigation */
+  body.page-mode .page-turn-controls{
+    margin:6px auto 0 !important;
+    gap:8px !important;
+  }
+  body.page-mode .page-turn-controls button{
+    width:40px !important;
+    height:40px !important;
+    font-size:26px !important;
+  }
+  body.page-mode .page-turn-status{
+    min-width:110px !important;
+  }
+  body.page-mode .page-turn-status span{
+    font-size:13px !important;
+  }
+}
+
+/* Very short phones: squeeze controls a little more */
+@media(max-width:700px) and (max-height:750px){
+  body.page-mode .reader-content{
+    height:calc(100svh - 190px) !important;
+    min-height:430px !important;
+  }
+  body.page-mode .site-header{
+    display:none !important;
+  }
+}
+
+
+/* ===== V7: Giữ đầy đủ các phần, chỉ thu gọn tối ưu chiều cao ===== */
+@media(max-width:700px){
+
+  /* Không ẩn bất kỳ phần nào trong chế độ lật trang */
+  body.page-mode .site-header,
+  body.page-mode .progress-wrap,
+  body.page-mode .progress-info,
+  body.page-mode #showHighlights,
+  body.page-mode #clearProgress,
+  body.page-mode .reader-content .eyebrow,
+  body.page-mode .reader-content h1,
+  body.page-mode .reader-content h1 + p{
+    display:revert !important;
+  }
+
+  /* Header gọn hơn nhưng vẫn hiển thị */
+  body.page-mode .site-header{
+    padding:2px 0 !important;
+  }
+  body.page-mode .site-header .nav{
+    min-height:40px !important;
+    padding-top:2px !important;
+    padding-bottom:2px !important;
+  }
+
+  /* Khu vực đầu trang */
+  body.page-mode .reader-shell{
+    padding-top:5px !important;
+  }
+  body.page-mode .reader-topbar{
+    min-height:38px !important;
+    margin-bottom:3px !important;
+  }
+
+  /* Thanh tiến độ vẫn giữ, nhưng mảnh và sát hơn */
+  body.page-mode .progress-wrap{
+    margin:4px 0 5px !important;
+  }
+  body.page-mode .progress-info{
+    min-height:auto !important;
+    margin:0 !important;
+    padding:0 !important;
+    font-size:13px !important;
+  }
+  body.page-mode .progress-track,
+  body.page-mode .reading-progress-track{
+    height:6px !important;
+  }
+
+  /* Ba nút chức năng vẫn hiển thị, thu nhỏ chiều cao */
+  body.page-mode .reader-utility{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:5px !important;
+    margin:4px 0 6px !important;
+  }
+  body.page-mode .reader-utility button{
+    min-height:36px !important;
+    padding:5px 8px !important;
+    font-size:13px !important;
+    line-height:1.15 !important;
+    border-radius:10px !important;
+  }
+  body.page-mode #togglePageMode{
+    min-width:0 !important;
+    width:auto !important;
+    padding:5px 8px !important;
+    min-height:36px !important;
+    font-size:13px !important;
+  }
+  body.page-mode #clearProgress{
+    grid-column:1 / -1 !important;
+  }
+
+  /* Khung bài học: giảm padding */
+  body.page-mode .reader-paper{
+    padding:12px 12px 8px !important;
+    border-radius:16px !important;
+  }
+
+  /* Tiêu đề bài vẫn hiện, nhưng thu nhỏ rõ rệt */
+  body.page-mode .reader-content .eyebrow{
+    margin:0 0 3px !important;
+    font-size:12px !important;
+    letter-spacing:.08em !important;
+  }
+  body.page-mode .reader-content h1{
+    margin:0 0 4px !important;
+    font-size:24px !important;
+    line-height:1.12 !important;
+  }
+  body.page-mode .reader-content h1 + p{
+    margin:0 0 10px !important;
+    font-size:13px !important;
+    line-height:1.35 !important;
+  }
+
+  /* Giữ cỡ chữ nội dung nhỏ gọn */
+  body.page-mode .reader-content{
+    font-size:17px !important;
+    line-height:1.62 !important;
+    height:calc(100svh - 300px) !important;
+    min-height:410px !important;
+    padding-top:4px !important;
+    padding-bottom:4px !important;
+  }
+
+  /* Điều hướng trang gọn */
+  body.page-mode .page-turn-controls{
+    margin:4px auto 0 !important;
+    gap:6px !important;
+  }
+  body.page-mode .page-turn-controls button{
+    width:36px !important;
+    height:36px !important;
+    font-size:24px !important;
+  }
+  body.page-mode .page-turn-status{
+    min-width:100px !important;
+  }
+  body.page-mode .page-turn-status span{
+    font-size:12px !important;
+  }
+}
+
+/* Với màn hình thấp vẫn giữ đủ các phần, chỉ siết khoảng cách thêm */
+@media(max-width:700px) and (max-height:750px){
+  body.page-mode .site-header{
+    display:block !important;
+  }
+  body.page-mode .reader-content{
+    height:calc(100svh - 270px) !important;
+    min-height:350px !important;
+  }
+  body.page-mode .reader-content h1{
+    font-size:21px !important;
+  }
+  body.page-mode .reader-content h1 + p{
+    font-size:12px !important;
+    margin-bottom:7px !important;
+  }
+}

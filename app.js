@@ -717,3 +717,23 @@ document.addEventListener('DOMContentLoaded', () => {
   // If the user had selected page mode before, restore it automatically.
   if (pageMode) enablePageMode(true);
 });
+
+
+/* ===== V6: Bài 40 default mobile font size ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  const article = document.querySelector('.reader-content');
+  if (!article) return;
+
+  // Keep A-/A+ working. On mobile, start Bài 40 at a calmer 17px
+  // when the old default 20px is still being used.
+  if (window.matchMedia('(max-width:700px)').matches) {
+    try {
+      const s = loadSettings();
+      if (!s.size || s.size === 20) {
+        s.size = 17;
+        saveSettings(s);
+        applyReaderSettings();
+      }
+    } catch(e) {}
+  }
+});
