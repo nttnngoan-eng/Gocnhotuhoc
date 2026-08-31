@@ -645,3 +645,19 @@ body.page-mode.page-after-first .reader-content h1 + p{
 /* Keep their original space inside CSS columns so page calculations/content
    do not jump when moving between pages. Since those nodes live in column 1,
    later columns are unaffected visually. */
+
+
+/* ===== V10 FIX: Tiêu đề thực tế nằm ngoài .reader-content ===== */
+/* Chỉ ẩn phần đầu bài khi đang ở trang 2 trở đi của chế độ Lật trang. */
+body.page-mode.page-after-first .reader-paper > .reader-category,
+body.page-mode.page-after-first .reader-paper > h1,
+body.page-mode.page-after-first .reader-paper > .subtitle{
+  display:none !important;
+}
+
+/* Khi quay lại trang 1 hoặc dùng Cuộn dọc, hiện lại bình thường. */
+body:not(.page-after-first) .reader-paper > .reader-category,
+body:not(.page-after-first) .reader-paper > h1,
+body:not(.page-after-first) .reader-paper > .subtitle{
+  display:block;
+}

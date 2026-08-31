@@ -769,3 +769,37 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', () => setTimeout(syncFirstPageHeader, 220));
   setTimeout(syncFirstPageHeader, 300);
 });
+
+
+/* ===== V10 FIX: xác định trang hiện tại từ bộ đếm Trang X / Y ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  const pageNumber = document.getElementById('pageNumber');
+  const toggle = document.getElementById('togglePageMode');
+  if (!pageNumber) return;
+
+  function syncTitleForCurrentPage(){
+    if (!document.body.classList.contains('page-mode')){
+      document.body.classList.remove('page-after-first');
+      return;
+    }
+
+    const m = (pageNumber.textContent || '').match(/Trang\s+(\d+)/i);
+    const page = m ? parseInt(m[1], 10) : 1;
+    document.body.classList.toggle('page-after-first', page > 1);
+  }
+
+  const observer = new MutationObserver(syncTitleForCurrentPage);
+  observer.observe(pageNumber, {childList:true, characterData:true, subtree:true});
+
+  document.getElementById('prevPage')?.addEventListener('click', () => {
+    setTimeout(syncTitleForCurrentPage, 50);
+    setTimeout(syncTitleForCurrentPage, 400);
+  });
+  document.getElementById('nextPage')?.addEventListener('click', () => {
+    setTimeout(syncTitleForCurrentPage, 50);
+    setTimeout(syncTitleForCurrentPage, 400);
+  });
+  toggle?.addEventListener('click', () => setTimeout(syncTitleForCurrentPage, 150));
+
+  setTimeout(syncTitleForCurrentPage, 350);
+});
