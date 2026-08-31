@@ -1,6 +1,6 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="21.1";
+DATA.version="22";
 const DRAFT_KEY='gntt_v21_draft';
 const API_KEY='gntt_v21_publish_api_url';
 const PASS_KEY='gntt_v21_publish_password';
@@ -60,7 +60,7 @@ function loadSelected(){
   lessonSubtitle.value=l?.subtitle||'';
   editor.innerHTML=l?.contentHtml||'';
   preview.textContent=l?.title||'Chọn hoặc tạo bài học';
-  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=21`:'reader.html?v=21';
+  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=22`:'reader.html?v=22';
   setStatus(l?'Đã tải bài':'Chưa có bài');
 }
 
@@ -82,7 +82,16 @@ $('newBook').addEventListener('click',()=>{
 });
 $('newPdfBook').addEventListener('click',()=>{
   $('pdfPanel').hidden=false;
-  $('pdfTitle').value=''; $('pdfAuthor').value=''; $('pdfDescription').value=''; $('pdfFile').value='';
+  $('pdfTitle').value='';
+  $('pdfAuthor').value='';
+  $('pdfDescription').value='';
+  $('pdfChapter').value='NỘI DUNG SÁCH';
+  $('pdfPagesPerLesson').value='10';
+  $('pdfFile').value='';
+  $('pdfPreview').hidden=true;
+  $('pdfPreview').innerHTML='';
+  $('publishPdf').disabled=true;
+  window.__gnttPdfImport=null;
   $('pdfStatus').textContent='Chưa chọn file PDF.';
   $('pdfTitle').focus();
 });
@@ -163,7 +172,7 @@ function upsertFromForm(){
   refreshSelectors();
   lessonSelect.value=l.id;
   preview.textContent=l.title;
-  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=21`;
+  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=22`;
   return l;
 }
 
@@ -174,7 +183,7 @@ function buildCatalogJs(){
     chapters:(b.chapters||[]).map(c=>({
       id:c.id,title:c.title,
       lessons:(c.lessons||[]).map(l=>({
-        id:l.id,title:l.title,subtitle:l.subtitle||'',href:`reader.html?id=${l.id}&v=21`
+        id:l.id,title:l.title,subtitle:l.subtitle||'',href:`reader.html?id=${l.id}&v=22`
       }))
     }))
   }))};
@@ -194,8 +203,19 @@ async function apiRequest(path, options={}){
 }
 
 $('testPublishConnection').addEventListener('click',async()=>{
-  try{setPublishState('Đang kiểm tra…','busy');await apiRequest('/health',{method:'GET'});setPublishState('Kết nối tốt','ok');setStatus('Kết nối Cloudflare thành công');}
-  catch(e){setPublishState('Không kết nối','error');setStatus(e.message);}
+  try{
+    setPublishState('Đang kiểm tra…','busy');
+    const h=await apiRequest('/health',{method:'GET'});
+    const service=String(h.service||'');
+    if(!service.includes('gocnhotuhoc-publisher')){
+      throw new Error('API không đúng dịch vụ xuất bản Góc nhỏ tu học');
+    }
+    setPublishState('Kết nối tốt','ok');
+    setStatus('Kết nối Cloudflare thành công');
+  }catch(e){
+    setPublishState('Không kết nối','error');
+    setStatus(e.message);
+  }
 });
 
 $('publishNow').addEventListener('click',async()=>{
@@ -245,42 +265,182 @@ document.querySelectorAll('[data-color]').forEach(btn=>btn.addEventListener('cli
 $('clearFormat').addEventListener('click',()=>{editor.focus();document.execCommand('removeFormat',false,null);});
 
 
-function fileToBase64(file){
-  return new Promise((resolve,reject)=>{
-    const r=new FileReader();
-    r.onload=()=>resolve(String(r.result).split(',')[1]||'');
-    r.onerror=()=>reject(new Error('Không đọc được file PDF'));
-    r.readAsDataURL(file);
-  });
+
+// ===== V22: PDF chỉ là nguồn -> chuyển thành các bài Reader =====
+if(window.pdfjsLib){
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 }
-$('publishPdf').addEventListener('click',async()=>{
+
+function vniToUnicode(text){
+  let r=String(text||'');
+  const pairs1=[
+    ['AÁ','Ấ'],['aá','ấ'],['AÀ','Ầ'],['aà','ầ'],['AÅ','Ẩ'],['aå','ẩ'],['AÃ','Ẫ'],['aã','ẫ'],['AÄ','Ậ'],['aä','ậ'],
+    ['AÉ','Ắ'],['aé','ắ'],['AÈ','Ằ'],['aè','ằ'],['AÚ','Ẳ'],['aú','ẳ'],['AÜ','Ẵ'],['aü','ẵ'],['AË','Ặ'],['aë','ặ'],
+    ['EÁ','Ế'],['eá','ế'],['EÀ','Ề'],['eà','ề'],['EÅ','Ể'],['eå','ể'],['EÃ','Ễ'],['eã','ễ'],['EÄ','Ệ'],['eä','ệ'],
+    ['OÁ','Ố'],['oá','ố'],['OÀ','Ồ'],['oà','ồ'],['OÅ','Ổ'],['oå','ổ'],['OÃ','Ỗ'],['oã','ỗ'],['OÄ','Ộ'],['oä','ộ'],
+    ['ÔÙ','Ớ'],['ôù','ớ'],['ÔØ','Ờ'],['ôø','ờ'],['ÔÛ','Ở'],['ôû','ở'],['ÔÕ','Ỡ'],['ôõ','ỡ'],['ÔÏ','Ợ'],['ôï','ợ'],
+    ['ÖÙ','Ứ'],['öù','ứ'],['ÖØ','Ừ'],['öø','ừ'],['ÖÛ','Ử'],['öû','ử'],['ÖÕ','Ữ'],['öõ','ữ'],['ÖÏ','Ự'],['öï','ự']
+  ];
+  const pairs2=[
+    ['AØ','À'],['AÙ','Á'],['AÂ','Â'],['AÕ','Ã'],['EØ','È'],['EÙ','É'],['EÂ','Ê'],['OØ','Ò'],['OÙ','Ó'],['OÂ','Ô'],['OÕ','Õ'],['UØ','Ù'],['UÙ','Ú'],['YÙ','Ý'],
+    ['aø','à'],['aù','á'],['aâ','â'],['aõ','ã'],['eø','è'],['eù','é'],['eâ','ê'],['oø','ò'],['où','ó'],['oâ','ô'],['oõ','õ'],['uø','ù'],['uù','ú'],['yù','ý'],
+    ['AÊ','Ă'],['aê','ă'],['Ñ','Đ'],['ñ','đ'],['Ö','Ư'],['ö','ư'],
+    ['AÏ','Ạ'],['aï','ạ'],['AÛ','Ả'],['aû','ả'],['EÏ','Ẹ'],['eï','ẹ'],['EÛ','Ẻ'],['eû','ẻ'],['EÕ','Ẽ'],['eõ','ẽ'],
+    ['OÏ','Ọ'],['oï','ọ'],['OÛ','Ỏ'],['oû','ỏ'],['UÏ','Ụ'],['uï','ụ'],['UÛ','Ủ'],['uû','ủ'],['YØ','Ỳ'],['yø','ỳ'],['YÛ','Ỷ'],['yû','ỷ'],['YÕ','Ỹ'],['yõ','ỹ'],
+    ['Ì','Ì'],['Í','Í'],['ì','ì'],['í','í'],['Ó','Ĩ'],['ó','ĩ'],['Ò','Ị'],['ò','ị'],['UÕ','Ũ'],['uõ','ũ'],['Î','Ỵ'],['î','ỵ']
+  ];
+  for(const [a,b] of pairs1) r=r.split(a).join(b);
+  for(const [a,b] of pairs2) r=r.split(a).join(b);
+  return r;
+}
+
+function looksLikeLegacyVni(text){
+  const sample=String(text||'').slice(0,20000);
+  const hits=(sample.match(/[öñæïûøùúüëäåõÖÑÆÏÛØÙÚÜËÄÅÕ]/g)||[]).length;
+  return hits>=4;
+}
+
+function escapePdfText(s){
+  return String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+}
+
+function pageTextToHtml(text){
+  const lines=String(text||'').replace(/\r/g,'').split('\n').map(x=>x.trim()).filter(Boolean);
+  const paras=[];
+  let buf=[];
+  const flush=()=>{if(buf.length){paras.push(buf.join(' ').replace(/\s+/g,' ').trim());buf=[];}};
+  for(const line of lines){
+    if(/^\d{1,4}$/.test(line)){ continue; } // page number alone
+    if(line.length<70 && (/^[A-ZÀ-Ỹ0-9IVXLC][A-ZÀ-Ỹ0-9IVXLC .,:;()–—-]+$/.test(line) || /^(Tiểu Sử|Lời Giới Thiệu|Dẫn Nhập|Lời Khai Thị|Lễ Phật|KINH |QUÁN |Quán )/i.test(line))){
+      flush();
+      paras.push('__H__'+line);
+    }else{
+      buf.push(line);
+      if(/[.!?…””)]$/.test(line)) flush();
+    }
+  }
+  flush();
+  return paras.map(x=>x.startsWith('__H__')?`<h2>${escapePdfText(x.slice(5))}</h2>`:`<p>${escapePdfText(x)}</p>`).join('\n');
+}
+
+async function extractPdfForReader(file, fixVni){
+  if(!window.pdfjsLib) throw new Error('Không tải được bộ đọc PDF. Hãy kiểm tra Internet rồi tải lại trang Admin.');
+  const bytes=new Uint8Array(await file.arrayBuffer());
+  const pdf=await window.pdfjsLib.getDocument({data:bytes}).promise;
+  const pages=[];
+  let legacyDetected=false;
+  for(let i=1;i<=pdf.numPages;i++){
+    $('pdfStatus').textContent=`Đang đọc PDF: trang ${i}/${pdf.numPages}…`;
+    const page=await pdf.getPage(i);
+    const tc=await page.getTextContent();
+    let lines=[], current='';
+    for(const item of tc.items){
+      const t=String(item.str||'').trim();
+      if(t) current += (current?' ':'')+t;
+      if(item.hasEOL && current){ lines.push(current); current=''; }
+    }
+    if(current) lines.push(current);
+    let text=lines.join('\n');
+    if(looksLikeLegacyVni(text)) legacyDetected=true;
+    if(fixVni && looksLikeLegacyVni(text)) text=vniToUnicode(text);
+    pages.push(text);
+  }
+  return {numPages:pdf.numPages,pages,legacyDetected};
+}
+
+$('pdfFile').addEventListener('change',()=>{
+  const f=$('pdfFile').files?.[0];
+  window.__gnttPdfImport=null;
+  $('publishPdf').disabled=true;
+  $('pdfPreview').hidden=true;
+  $('pdfStatus').textContent=f?`Đã chọn: ${f.name} · ${(f.size/1024/1024).toFixed(1)} MB. Bấm “Đọc & xem trước PDF”.`:'Chưa chọn file PDF.';
+});
+
+$('analyzePdf').addEventListener('click',async()=>{
   try{
+    const file=$('pdfFile').files?.[0];
+    if(!file) throw new Error('Chưa chọn file PDF');
+    $('analyzePdf').disabled=true;
+    $('publishPdf').disabled=true;
+    const result=await extractPdfForReader(file,$('pdfFixVni').checked);
+    window.__gnttPdfImport=result;
+    const preview=(result.pages.slice(0,2).join('\n\n')).slice(0,4500);
+    $('pdfPreview').hidden=false;
+    $('pdfPreview').innerHTML=`<strong>Xem trước nội dung đã trích (${result.numPages} trang)</strong><pre>${escapeHtml(preview)}</pre>`;
+    $('pdfStatus').textContent=`Đã đọc ${result.numPages} trang.${result.legacyDetected?' Phát hiện font/mã tiếng Việt cũ và đã thử chuyển sang Unicode.':''} Hãy xem phần xem trước trước khi đăng.`;
+    $('publishPdf').disabled=false;
+  }catch(e){
+    $('pdfStatus').textContent=e.message||String(e);
+  }finally{
+    $('analyzePdf').disabled=false;
+  }
+});
+
+$('publishPdf').addEventListener('click',async()=>{
+  let book=null;
+  try{
+    const imp=window.__gnttPdfImport;
+    if(!imp) throw new Error('Hãy bấm “Đọc & xem trước PDF” trước.');
     const title=$('pdfTitle').value.trim();
     const author=$('pdfAuthor').value.trim();
     const description=$('pdfDescription').value.trim();
-    const file=$('pdfFile').files?.[0];
-    if(!title) throw new Error('Chưa nhập tên sách PDF');
-    if(!file) throw new Error('Chưa chọn file PDF');
-    if(file.type && file.type!=='application/pdf') throw new Error('File đã chọn không phải PDF');
-    if(file.size>15*1024*1024) throw new Error('V21.1 giới hạn PDF 15 MB mỗi file');
+    const chapterTitle=$('pdfChapter').value.trim()||'NỘI DUNG SÁCH';
+    const per=Math.max(1,Math.min(50,Number($('pdfPagesPerLesson').value)||10));
+    if(!title) throw new Error('Chưa nhập tên sách');
+
     const id=uniqueId(slug(title),DATA.books.map(b=>b.id));
-    const pdfPath='pdf/'+id+'.pdf';
-    $('pdfStatus').textContent='Đang đọc PDF…';
-    const pdfBase64=await fileToBase64(file);
-    const book={id,title,author,description:description||author||'Sách PDF',type:'pdf',pdfUrl:pdfPath,chapters:[]};
-    DATA.books.push(book);
-    setPublishState('Đang đăng PDF…','busy'); $('pdfStatus').textContent='Đang tải PDF và danh mục lên GitHub…';
-    try{
-      await apiRequest('/publish-pdf-v21-1',{method:'POST',body:JSON.stringify({pdfPath,pdfBase64,dataJs:buildDataJs(),catalogJs:buildCatalogJs(),message:'Thêm sách PDF: '+title})});
-    }catch(e){
-      DATA.books=DATA.books.filter(b=>b!==book); throw e;
+    const chapterId=slug(chapterTitle);
+    const lessons=[];
+    for(let start=0, part=1;start<imp.pages.length;start+=per,part++){
+      const end=Math.min(start+per,imp.pages.length);
+      const text=imp.pages.slice(start,end).join('\n\n');
+      const contentHtml=pageTextToHtml(text);
+      lessons.push({
+        id:`${id}-${chapterId}-phan-${part}`,
+        title:`PHẦN ${part} · TRANG ${start+1}–${end}`,
+        subtitle:[author,description].filter(Boolean).join(' · '),
+        youtube:'',
+        contentHtml
+      });
     }
-    selected={bookId:id,chapterId:null,lessonId:null};
+    book={
+      id,title,author,
+      description:description||author||'Sách đọc trực tuyến',
+      type:'reader',
+      sourceType:'pdf',
+      chapters:[{id:chapterId,title:chapterTitle,lessons}]
+    };
+    DATA.books.push(book);
+
+    setPublishState('Đang đăng…','busy');
+    $('pdfStatus').textContent=`Đang đăng ${lessons.length} phần Reader lên GitHub…`;
+    try{
+      await apiRequest('/publish-v21',{
+        method:'POST',
+        body:JSON.stringify({
+          dataJs:buildDataJs(),
+          catalogJs:buildCatalogJs(),
+          message:'Nhập PDF thành Reader: '+title
+        })
+      });
+    }catch(e){
+      DATA.books=DATA.books.filter(b=>b!==book);
+      throw e;
+    }
+
+    selected={bookId:id,chapterId,lessonId:lessons[0]?.id||null};
     refreshSelectors();
+    loadSelected();
+    $('pdfPanel').hidden=true;
     setPublishState('Đã đăng thành công','ok');
-    $('pdfStatus').innerHTML='Đã đăng sách PDF. <a href="pdf-reader.html?book='+encodeURIComponent(id)+'&v=21.1" target="_blank">Mở sách PDF ↗</a>';
-    alert('Đăng sách PDF thành công! GitHub Pages thường cập nhật sau 1–3 phút.');
-  }catch(e){ setPublishState('Đăng thất bại','error'); $('pdfStatus').textContent=e.message||String(e); alert('Chưa đăng được PDF:\n'+(e.message||e)); }
+    setStatus(`Đã tạo ${lessons.length} phần Reader từ PDF. GitHub Pages sẽ cập nhật sau ít phút.`);
+    alert(`Đăng sách thành công!\n\nĐã tạo ${lessons.length} phần. Tất cả đều đọc bằng Reader giống Bài 40.`);
+  }catch(e){
+    if(book) DATA.books=DATA.books.filter(b=>b!==book);
+    setPublishState('Đăng thất bại','error');
+    $('pdfStatus').textContent=e.message||String(e);
+    alert('Chưa đăng được sách:\n'+(e.message||e));
+  }
 });
 
 document.addEventListener('DOMContentLoaded',()=>{
