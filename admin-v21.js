@@ -1,6 +1,6 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="22.6";
+DATA.version="22.7";
 const DRAFT_KEY='gntt_v21_draft';
 const API_KEY='gntt_v21_publish_api_url';
 const PASS_KEY='gntt_v21_publish_password';
@@ -60,7 +60,7 @@ function loadSelected(){
   lessonSubtitle.value=l?.subtitle||'';
   editor.innerHTML=l?.contentHtml||'';
   preview.textContent=l?.title||'Chọn hoặc tạo bài học';
-  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=22.6`:'reader.html?v=22.6';
+  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=22.7`:'reader.html?v=22.7';
   setStatus(l?'Đã tải bài':'Chưa có bài');
 }
 
@@ -174,7 +174,7 @@ function upsertFromForm(){
   refreshSelectors();
   lessonSelect.value=l.id;
   preview.textContent=l.title;
-  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=22.6`;
+  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=22.7`;
   return l;
 }
 
@@ -185,7 +185,7 @@ function buildCatalogJs(){
     chapters:(b.chapters||[]).map(c=>({
       id:c.id,title:c.title,
       lessons:(c.lessons||[]).map(l=>({
-        id:l.id,title:l.title,subtitle:l.subtitle||'',tocLevel:Number(l.tocLevel)||2,href:`reader.html?id=${l.id}&v=22.6`
+        id:l.id,title:l.title,subtitle:l.subtitle||'',tocLevel:Number(l.tocLevel)||2,href:`reader.html?id=${l.id}&v=22.7`
       }))
     }))
   }))};
@@ -307,17 +307,29 @@ function looksLikeLegacyVni(text){
 function convertMixedVniText(text){
   let converted=0;
   const lines=String(text||'').split(/\r?\n/).map(line=>{
+    let out=line;
     if(looksLikeLegacyVniLine(line)){
       converted++;
-      return vniToUnicode(line);
+      out=vniToUnicode(line);
     }
-    return line;
+    return fixKnownPdfSpacing(out);
   });
   return {text:lines.join('\n'),converted};
 }
+
+function fixKnownPdfSpacing(text){
+  // V22.7: PDF này đôi khi tách riêng chữ "u" trong "Tiểu":
+  // "Tiể u Sử" -> "Tiểu Sử".
+  // Chỉ sửa mẫu đã xác nhận để tránh ghép nhầm các từ bình thường khác.
+  return String(text||'')
+    .replace(/\bTiể\s+u\b/g,'Tiểu')
+    .replace(/\btiể\s+u\b/g,'tiểu')
+    .replace(/\bTIỂ\s+U\b/g,'TIỂU');
+}
+
 function escapePdfText(v){return String(v||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
 function normalizeTocTitle(v){
-  return String(v||'')
+  return fixKnownPdfSpacing(String(v||''))
     .replace(/^[*∗•·\-–—]+\s*/,'')
     .replace(/\.{2,}.*$/,'')
     .replace(/\s+/g,' ').trim();
@@ -515,6 +527,8 @@ async function extractPdfForReader(file,fixVni){
       convertedLines+=r.converted;
       return r.text;
     });
+  }else{
+    finalPages=pages.map(pageText=>fixKnownPdfSpacing(pageText));
   }
   const toc=detectTocEntries(finalPages);
   const offset=detectPageOffset(toc,finalPages);
@@ -583,7 +597,7 @@ $('analyzePdf').addEventListener('click',async()=>{
         : (result.legacyDetected
             ? 'Có dấu hiệu VNI cũ nhưng chức năng sửa VNI đang tắt.'
             : 'Giữ nguyên chữ PDF.');
-      $('pdfStatus').textContent=`${textMode} Đã nhận ${result.toc.length} mục từ đầu Mục lục và tự phân 3 cấp Chương/Mục/Mục con. Độ lệch trang ước tính: ${result.pageOffset>=0?'+':''}${result.pageOffset}. Hãy kiểm tra chữ và Mục lục trước khi đăng.`;
+      $('pdfStatus').textContent=`${textMode} Đã nhận ${result.toc.length} mục từ đầu Mục lục, đã sửa lỗi “Tiể u” và tự phân 3 cấp Chương/Mục/Mục con. Độ lệch trang ước tính: ${result.pageOffset>=0?'+':''}${result.pageOffset}. Hãy kiểm tra chữ và Mục lục trước khi đăng.`;
     }else{
       $('tocEditor').hidden=true;
       $('pdfStatus').textContent=`Không nhận được Mục lục tự động. Bạn có thể chọn “Theo số trang” hoặc thêm mục thủ công.`;
