@@ -1,0 +1,34 @@
+GÓC NHỎ TU HỌC – V23.1 PWA SAFE
+=================================
+
+ĐÂY LÀ BẢN SỬA AN TOÀN
+- Không chứa data.js
+- Không chứa catalog.js
+=> Upload bản PWA này sẽ KHÔNG ghi đè sách/bài đang có trên website.
+
+CÁCH UPLOAD
+1. Giải nén ZIP.
+2. GitHub → Add file → Upload files.
+3. Kéo TOÀN BỘ 10 file trong thư mục đã giải nén lên repo.
+4. Commit changes.
+5. Chờ GitHub Pages deploy xanh.
+6. Mở: index.html?v=23.1
+
+LƯU Ý QUAN TRỌNG
+- KHÔNG xóa data.js hoặc catalog.js đang có trên GitHub.
+- Bản V23 trước đã ghi đè data.js/catalog.js nên cuốn Tứ Niệm Xứ đang không còn trên trang.
+- Sau khi V23.1 chạy ổn, vào Admin và đăng lại Tứ Niệm Xứ một lần.
+- Từ V23.1 trở đi, cập nhật PWA sẽ không làm mất dữ liệu sách theo cách này nữa.
+
+PWA V23.1
+- Cài lên iPhone/Android.
+- Chạy standalone như app.
+- Icon app.
+- Cache phần giao diện.
+- data.js/catalog.js luôn là dữ liệu động trên website, không đóng gói trong bản nâng cấp PWA.
+- Không cần sửa Cloudflare Worker.
+- Không thêm dịch vụ trả phí.
+
+ĐÃ KIỂM TRA
+- manifest hợp lệ.
+- sw.js, pwa.js, app.js: JavaScript syntax PASS.
