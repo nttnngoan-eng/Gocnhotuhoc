@@ -3,8 +3,8 @@
   const editor = document.getElementById('editor');
   const status = document.getElementById('status');
   const titleInput = document.getElementById('lessonTitle');
-  const partInput = document.getElementById('lessonPart');
-  const categoryInput = document.getElementById('lessonCategory');
+  const bookInput = document.getElementById('bookTitle');
+  const chapterInput = document.getElementById('chapterTitle');
   const youtubeInput = document.getElementById('youtubeUrl');
   const subtitleInput = document.getElementById('lessonSubtitle');
   const titlePreview = document.getElementById('editorTitlePreview');
@@ -46,11 +46,9 @@
       const currentSubtitle = paper?.querySelector(':scope > .subtitle')?.textContent?.trim() || 'Bài đọc trực tuyến · Có thể tùy chỉnh theo sở thích';
 
       titleInput.value = currentTitle;
-      categoryInput.value = currentCategory;
+      bookInput.value = article.dataset.bookTitle || '';
+      chapterInput.value = article.dataset.chapterTitle || currentCategory || '';
       subtitleInput.value = currentSubtitle;
-
-      const partMatch = currentTitle.match(/\((P\.\s*\d+)\)/i) || currentTitle.match(/\b(P\.\s*\d+)\b/i);
-      partInput.value = partMatch ? partMatch[1].replace(/\s+/g,'') : '';
 
       youtubeInput.value = firstYouTubeHref(article);
       updatePreview();
@@ -101,7 +99,7 @@
     setStatus('Có thay đổi chưa lưu');
   });
 
-  [titleInput, partInput, categoryInput, youtubeInput, subtitleInput].forEach(inp => {
+  [bookInput, chapterInput, titleInput, youtubeInput, subtitleInput].forEach(inp => {
     inp.addEventListener('input', () => {
       dirty = true;
       updatePreview();
@@ -117,9 +115,9 @@
   function collectDraft(){
     return {
       html: editor.innerHTML,
+      book: bookInput.value,
+      chapter: chapterInput.value,
       title: titleInput.value,
-      part: partInput.value,
-      category: categoryInput.value,
       youtube: youtubeInput.value,
       subtitle: subtitleInput.value,
       savedAt: Date.now()
@@ -140,9 +138,9 @@
         return;
       }
       if(d.html) editor.innerHTML = d.html;
+      if(typeof d.book === 'string') bookInput.value = d.book;
+      if(typeof d.chapter === 'string') chapterInput.value = d.chapter;
       if(typeof d.title === 'string') titleInput.value = d.title;
-      if(typeof d.part === 'string') partInput.value = d.part;
-      if(typeof d.category === 'string') categoryInput.value = d.category;
       if(typeof d.youtube === 'string') youtubeInput.value = d.youtube;
       if(typeof d.subtitle === 'string') subtitleInput.value = d.subtitle;
       updatePreview();
@@ -231,7 +229,11 @@
     const titleEl = paper.querySelector(':scope > h1');
     const subtitleEl = paper.querySelector(':scope > .subtitle');
 
-    if(categoryEl) categoryEl.textContent = categoryInput.value.trim() || 'PHẬT PHÁP CĂN BẢN';
+    const bookName = bookInput.value.trim();
+    const chapterName = chapterInput.value.trim();
+    if(categoryEl){
+      categoryEl.textContent = [bookName, chapterName].filter(Boolean).join(' · ') || 'PHẬT PHÁP CĂN BẢN';
+    }
     if(titleEl) titleEl.textContent = titleInput.value.trim() || 'Chưa đặt tên bài';
     if(subtitleEl) subtitleEl.textContent = subtitleInput.value.trim();
 
@@ -241,9 +243,9 @@
     }
 
     // Metadata useful for later multi-lesson admin.
+    article.dataset.bookTitle = bookInput.value.trim();
+    article.dataset.chapterTitle = chapterInput.value.trim();
     article.dataset.lessonTitle = titleInput.value.trim();
-    article.dataset.lessonPart = partInput.value.trim();
-    article.dataset.lessonCategory = categoryInput.value.trim();
 
     const output = '<!doctype html>\n' + doc.documentElement.outerHTML;
     const blob = new Blob([output], {type:'text/html;charset=utf-8'});
