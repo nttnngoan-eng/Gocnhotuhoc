@@ -1,10 +1,12 @@
 
 const STORE='phap_hoc_reader_settings';
+
 function loadSettings(){
   try{return JSON.parse(localStorage.getItem(STORE))||{font:'palatino',size:20,theme:'paper'};}
   catch(e){return {font:'palatino',size:20,theme:'paper'};}
 }
 function saveSettings(s){localStorage.setItem(STORE,JSON.stringify(s));}
+
 const fontMap={
   palatino:'"Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif',
   merriweather:'Merriweather, Georgia, serif',
@@ -12,6 +14,7 @@ const fontMap={
   calibri:'Calibri, Carlito, Arial, sans-serif',
   arial:'Arial, Helvetica, sans-serif'
 };
+
 function applyReaderSettings(){
   const s=loadSettings(), root=document.body, content=document.querySelector('.reader-content');
   if(!content)return;
@@ -22,363 +25,506 @@ function applyReaderSettings(){
   document.querySelectorAll('[data-font]').forEach(b=>b.classList.toggle('active',b.dataset.font===s.font));
   document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===s.theme));
 }
+
 document.addEventListener('DOMContentLoaded',()=>{
   applyReaderSettings();
+
   const panel=document.getElementById('settingsPanel');
   const open=document.getElementById('openSettings');
-  if(open&&panel)open.addEventListener('click',()=>panel.classList.toggle('open'));
-  document.querySelectorAll('[data-font]').forEach(b=>b.addEventListener('click',()=>{const s=loadSettings();s.font=b.dataset.font;saveSettings(s);applyReaderSettings();}));
-  document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{const s=loadSettings();s.theme=b.dataset.theme;saveSettings(s);applyReaderSettings();}));
-  document.getElementById('smaller')?.addEventListener('click',()=>{const s=loadSettings();s.size=Math.max(15,s.size-1);saveSettings(s);applyReaderSettings();});
-  document.getElementById('larger')?.addEventListener('click',()=>{const s=loadSettings();s.size=Math.min(32,s.size+1);saveSettings(s);applyReaderSettings();});
+  if(open&&panel) open.addEventListener('click',()=>panel.classList.toggle('open'));
+
+  document.querySelectorAll('[data-font]').forEach(b=>b.addEventListener('click',()=>{
+    const s=loadSettings(); s.font=b.dataset.font; saveSettings(s); applyReaderSettings();
+  }));
+  document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{
+    const s=loadSettings(); s.theme=b.dataset.theme; saveSettings(s); applyReaderSettings();
+  }));
+  document.getElementById('smaller')?.addEventListener('click',()=>{
+    const s=loadSettings(); s.size=Math.max(15,s.size-1); saveSettings(s); applyReaderSettings();
+  });
+  document.getElementById('larger')?.addEventListener('click',()=>{
+    const s=loadSettings(); s.size=Math.min(32,s.size+1); saveSettings(s); applyReaderSettings();
+  });
 
   const search=document.getElementById('lessonSearch');
   if(search){
     search.addEventListener('input',()=>{
       const q=search.value.toLowerCase();
-      document.querySelectorAll('.lesson').forEach(x=>x.style.display=x.innerText.toLowerCase().includes(q)?'flex':'none');
+      document.querySelectorAll('.lesson').forEach(x=>{
+        x.style.display=x.innerText.toLowerCase().includes(q)?'flex':'none';
+      });
     });
   }
 });
 
+document.addEventListener('DOMContentLoaded',()=>{
+  const article=document.querySelector('.reader-content');
+  if(!article) return;
 
-// ===== V2: Progress + Resume + Highlight =====
-document.addEventListener('DOMContentLoaded', function () {
-  const article = document.querySelector('.reader-content');
-  if (!article) return;
+  const ARTICLE_ID='bai40-bon-vo-luong-tam-p1';
+  const progressKey='phap_hoc_progress_'+ARTICLE_ID;
+  const highlightKey='gocnho_highlights_v3_'+ARTICLE_ID;
 
-  const articleId = 'bai40-bon-vo-luong-tam-p1';
-  const progressKey = 'phap_hoc_progress_' + articleId;
-  const highlightKey = 'phap_hoc_highlights_' + articleId;
+  // Remove old demo toolbar if it still exists in reader.html.
+  document.querySelectorAll('#highlightToolbar').forEach(el=>el.remove());
 
-  const bar = document.getElementById('readingProgressBar');
-  const percentText = document.getElementById('readingPercent');
-  const modal = document.getElementById('resumeModal');
-  const toolbar = document.getElementById('highlightToolbar');
+  // ===== Reading progress =====
+  const bar=document.getElementById('readingProgressBar');
+  const percentText=document.getElementById('readingPercent');
+  const modal=document.getElementById('resumeModal');
 
-  function progressData() {
-    const articleTop = article.getBoundingClientRect().top + window.scrollY;
-    const articleHeight = article.offsetHeight;
-    const viewportBottom = window.scrollY + window.innerHeight;
-    const raw = ((viewportBottom - articleTop) / articleHeight) * 100;
-    return Math.max(0, Math.min(100, Math.round(raw)));
+  function progressPercent(){
+    const articleTop=article.getBoundingClientRect().top+window.scrollY;
+    const articleHeight=article.offsetHeight;
+    const viewportBottom=window.scrollY+window.innerHeight;
+    const raw=((viewportBottom-articleTop)/articleHeight)*100;
+    return Math.max(0,Math.min(100,Math.round(raw)));
   }
 
-  function updateProgress() {
-    const pct = progressData();
-    if (bar) bar.style.width = pct + '%';
-    if (percentText) percentText.textContent = pct + '%';
+  function updateProgress(){
+    const pct=progressPercent();
+    if(bar) bar.style.width=pct+'%';
+    if(percentText) percentText.textContent=pct+'%';
     return pct;
   }
 
-  function saveProgress() {
-    localStorage.setItem(progressKey, JSON.stringify({
-      y: window.scrollY,
-      percent: updateProgress(),
-      savedAt: Date.now()
+  function saveProgress(){
+    localStorage.setItem(progressKey,JSON.stringify({
+      y:window.scrollY,
+      percent:updateProgress(),
+      savedAt:Date.now()
     }));
   }
 
-  // Restore prompt
-  setTimeout(function () {
-    let saved = null;
-    try { saved = JSON.parse(localStorage.getItem(progressKey)); } catch (e) {}
-    if (saved && saved.y > 120 && saved.percent > 1) {
-      const text = document.getElementById('resumeText');
-      if (text) text.textContent = 'Lần trước bạn đã đọc khoảng ' + saved.percent + '% bài này.';
-      modal.classList.add('show');
-      document.getElementById('resumeYes').onclick = function () {
-        modal.classList.remove('show');
-        window.scrollTo({ top: saved.y, behavior: 'smooth' });
-      };
-      document.getElementById('resumeNo').onclick = function () {
-        modal.classList.remove('show');
-        localStorage.removeItem(progressKey);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      };
-    }
-  }, 700);
-
-  let timer = null;
-  window.addEventListener('scroll', function () {
+  let progressTimer=null;
+  window.addEventListener('scroll',()=>{
     updateProgress();
-    clearTimeout(timer);
-    timer = setTimeout(saveProgress, 300);
-  }, { passive: true });
-  window.addEventListener('beforeunload', saveProgress);
+    clearTimeout(progressTimer);
+    progressTimer=setTimeout(saveProgress,250);
+  },{passive:true});
+  window.addEventListener('beforeunload',saveProgress);
   updateProgress();
 
-  // Highlight helpers
-  function saveHighlights() {
-    const data = [];
-    article.querySelectorAll('mark.user-highlight').forEach(function (mark) {
-      const color = ['yellow', 'green', 'pink'].find(c => mark.classList.contains(c)) || 'yellow';
-      data.push({ text: mark.textContent, color: color });
-    });
-    localStorage.setItem(highlightKey, JSON.stringify(data));
-  }
+  setTimeout(()=>{
+    let saved=null;
+    try{saved=JSON.parse(localStorage.getItem(progressKey));}catch(e){}
+    if(saved&&saved.y>120&&saved.percent>1&&modal){
+      const text=document.getElementById('resumeText');
+      if(text) text.textContent='Lần trước bạn đã đọc khoảng '+saved.percent+'% bài này.';
+      modal.classList.add('show');
 
-  function markFirstOccurrence(text, color, shouldSave) {
-    if (!text) return false;
-    const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT);
-    let node;
-    while ((node = walker.nextNode())) {
-      if (node.parentElement && node.parentElement.closest('mark.user-highlight')) continue;
-      const value = node.nodeValue;
-      const idx = value.indexOf(text);
-      if (idx !== -1) {
-        const before = document.createTextNode(value.slice(0, idx));
-        const mark = document.createElement('mark');
-        mark.className = 'user-highlight ' + color;
-        mark.textContent = text;
-        const after = document.createTextNode(value.slice(idx + text.length));
-        const parent = node.parentNode;
-        parent.replaceChild(after, node);
-        parent.insertBefore(mark, after);
-        parent.insertBefore(before, mark);
-        if (shouldSave) saveHighlights();
-        return true;
-      }
+      const yes=document.getElementById('resumeYes');
+      const no=document.getElementById('resumeNo');
+
+      if(yes) yes.onclick=()=>{
+        modal.classList.remove('show');
+        window.scrollTo({top:saved.y,behavior:'smooth'});
+      };
+      if(no) no.onclick=()=>{
+        modal.classList.remove('show');
+        localStorage.removeItem(progressKey);
+        window.scrollTo({top:0,behavior:'smooth'});
+      };
     }
-    return false;
-  }
+  },600);
 
-  function restoreHighlights() {
-    let saved = [];
-    try { saved = JSON.parse(localStorage.getItem(highlightKey)) || []; } catch (e) {}
-    saved.forEach(item => markFirstOccurrence(item.text, item.color, false));
-  }
-
-  restoreHighlights();
-
-  // Show toolbar only after user has selected text
-  document.getElementById('highlightBtn').addEventListener('click', function () {
-    const selection = window.getSelection();
-    const text = selection ? selection.toString().trim() : '';
-    if (!text) {
-      alert('Hãy bôi chọn đoạn văn bạn tâm đắc trước, sau đó bấm nút 🖍 Highlight.');
-      return;
-    }
-    toolbar.classList.add('show');
+  document.getElementById('clearProgress')?.addEventListener('click',()=>{
+    localStorage.removeItem(progressKey);
+    window.scrollTo({top:0,behavior:'smooth'});
   });
 
-  document.querySelectorAll('[data-highlight]').forEach(function (button) {
-    button.addEventListener('click', function () {
-      const selection = window.getSelection();
-      const color = button.dataset.highlight;
-      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
-
-      const selectedText = selection.toString().trim();
-      const range = selection.getRangeAt(0);
-
-      try {
-        const mark = document.createElement('mark');
-        mark.className = 'user-highlight ' + color;
-        range.surroundContents(mark);
-        saveHighlights();
-      } catch (e) {
-        markFirstOccurrence(selectedText, color, true);
-      }
-
-      selection.removeAllRanges();
-      toolbar.classList.remove('show');
-    });
-  });
-
-  // Remove highlight: tap/click existing highlighted text first
-  article.addEventListener('click', function (event) {
-    if (event.target.matches('mark.user-highlight')) {
-      const range = document.createRange();
-      range.selectNodeContents(event.target);
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
-      toolbar.classList.add('show');
+  // ===== Plain web links =====
+  const urlRe=/(https?:\/\/[^\s<]+)/g;
+  const walker=document.createTreeWalker(article,NodeFilter.SHOW_TEXT);
+  const urlNodes=[];
+  let wn;
+  while((wn=walker.nextNode())){
+    if(wn.parentElement && !wn.parentElement.closest('a,script,style,mark,.goc-user-highlight')){
+      urlRe.lastIndex=0;
+      if(urlRe.test(wn.nodeValue)) urlNodes.push(wn);
     }
-  });
-
-  document.getElementById('removeHighlight').addEventListener('click', function () {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-    let node = selection.getRangeAt(0).commonAncestorContainer;
-    if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-    const mark = node.closest ? node.closest('mark.user-highlight') : null;
-    if (mark) {
-      const parent = mark.parentNode;
-      while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
-      mark.remove();
-      parent.normalize();
-      saveHighlights();
-    }
-    selection.removeAllRanges();
-    toolbar.classList.remove('show');
-  });
-});
-
-// ===== V3: automatic floating highlight toolbar + live URLs =====
-document.addEventListener('DOMContentLoaded', function(){
-  const article = document.querySelector('.reader-content');
-  const toolbar = document.getElementById('highlightToolbar');
-  if(!article || !toolbar) return;
-
-  // Existing top button is intentionally removed in V3.
-  const oldBtn = document.getElementById('highlightBtn');
-  if(oldBtn) oldBtn.style.display='none';
-
-  function positionToolbar(){
-    const sel = window.getSelection();
-    if(!sel || sel.rangeCount===0 || sel.isCollapsed || !sel.toString().trim()){
-      toolbar.classList.remove('show'); return;
-    }
-    const range = sel.getRangeAt(0);
-    if(!article.contains(range.commonAncestorContainer)){
-      toolbar.classList.remove('show'); return;
-    }
-    const rect = range.getBoundingClientRect();
-    toolbar.classList.add('show');
-    requestAnimationFrame(function(){
-      const tw=toolbar.offsetWidth, th=toolbar.offsetHeight;
-      let left = rect.left + rect.width/2 - tw/2;
-      left = Math.max(8, Math.min(window.innerWidth-tw-8,left));
-      let top = rect.top - th - 9;
-      if(top < 8) top = rect.bottom + 9;
-      toolbar.style.left = left+'px';
-      toolbar.style.top = top+'px';
-    });
   }
 
-  document.addEventListener('mouseup', ()=>setTimeout(positionToolbar,20));
-  document.addEventListener('touchend', ()=>setTimeout(positionToolbar,120));
-  article.addEventListener('keyup', ()=>setTimeout(positionToolbar,20));
-
-  // Make plain-text URLs clickable without changing already-linked content.
-  const urlRe = /(https?:\/\/[^\s<]+)/g;
-  const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT);
-  const nodes=[]; let n;
-  while(n=walker.nextNode()){
-    if(n.parentElement && !n.parentElement.closest('a,script,style,mark') && urlRe.test(n.nodeValue)){
-      nodes.push(n);
-    }
-    urlRe.lastIndex=0;
-  }
-  nodes.forEach(function(node){
+  urlNodes.forEach(node=>{
+    const text=node.nodeValue;
     const frag=document.createDocumentFragment();
     let last=0;
-    node.nodeValue.replace(urlRe,function(url,_,offset){
-      frag.appendChild(document.createTextNode(node.nodeValue.slice(last,offset)));
-      const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener noreferrer'; a.textContent=url;
-      frag.appendChild(a); last=offset+url.length;
+    text.replace(urlRe,(url,_,offset)=>{
+      frag.appendChild(document.createTextNode(text.slice(last,offset)));
+      const a=document.createElement('a');
+      a.href=url;
+      a.target='_blank';
+      a.rel='noopener noreferrer';
+      a.textContent=url;
+      frag.appendChild(a);
+      last=offset+url.length;
       return url;
     });
-    frag.appendChild(document.createTextNode(node.nodeValue.slice(last)));
+    frag.appendChild(document.createTextNode(text.slice(last)));
     node.parentNode.replaceChild(frag,node);
   });
-});
 
-document.addEventListener('DOMContentLoaded', function(){
-  const article = document.querySelector('.reader-content');
-  if(!article) return;
-
+  // ===== YouTube auto embed =====
   function parseYouTube(url){
     try{
-      const u = new URL(url, window.location.href);
-      let id = '';
+      const u=new URL(url,window.location.href);
+      let id='';
       if(u.hostname.includes('youtu.be')){
-        id = u.pathname.split('/').filter(Boolean)[0] || '';
-      } else if(u.hostname.includes('youtube.com')){
-        if(u.pathname === '/watch') id = u.searchParams.get('v') || '';
-        else if(u.pathname.startsWith('/shorts/')) id = u.pathname.split('/')[2] || '';
-        else if(u.pathname.startsWith('/embed/')) id = u.pathname.split('/')[2] || '';
+        id=u.pathname.split('/').filter(Boolean)[0]||'';
+      }else if(u.hostname.includes('youtube.com')){
+        if(u.pathname==='/watch') id=u.searchParams.get('v')||'';
+        else if(u.pathname.startsWith('/shorts/')) id=u.pathname.split('/')[2]||'';
+        else if(u.pathname.startsWith('/embed/')) id=u.pathname.split('/')[2]||'';
       }
       if(!id) return null;
 
-      let start = 0;
-      const t = u.searchParams.get('t') || u.searchParams.get('start') || '';
+      let start=0;
+      const t=u.searchParams.get('t')||u.searchParams.get('start')||'';
       if(t){
-        if(/^\d+$/.test(t)) start = parseInt(t,10);
-        else {
-          const h = (t.match(/(\d+)h/)||[])[1];
-          const m = (t.match(/(\d+)m/)||[])[1];
-          const s = (t.match(/(\d+)s/)||[])[1];
-          start = (parseInt(h||0)*3600)+(parseInt(m||0)*60)+parseInt(s||0);
+        if(/^\d+$/.test(t)) start=parseInt(t,10);
+        else{
+          const h=(t.match(/(\d+)h/)||[])[1];
+          const m=(t.match(/(\d+)m/)||[])[1];
+          const s=(t.match(/(\d+)s/)||[])[1];
+          start=(parseInt(h||0)*3600)+(parseInt(m||0)*60)+parseInt(s||0);
         }
       }
-      return {id, start};
-    }catch(e){ return null; }
+      return {id,start};
+    }catch(e){return null;}
   }
 
-  const links = [...article.querySelectorAll('a[href]')];
-  links.forEach(function(a){
-    const info = parseYouTube(a.href);
-    if(!info) return;
-    if(a.dataset.youtubeEmbedded === '1') return;
-    a.dataset.youtubeEmbedded = '1';
+  [...article.querySelectorAll('a[href]')].forEach(a=>{
+    const info=parseYouTube(a.href);
+    if(!info||a.dataset.youtubeEmbedded==='1') return;
+    a.dataset.youtubeEmbedded='1';
 
-    const card = document.createElement('div');
-    card.className = 'youtube-inline-card';
+    const card=document.createElement('div');
+    card.className='youtube-inline-card';
 
-    const wrap = document.createElement('div');
-    wrap.className = 'youtube-embed-wrap';
+    const wrap=document.createElement('div');
+    wrap.className='youtube-embed-wrap';
 
-    const iframe = document.createElement('iframe');
-    iframe.src = 'https://www.youtube.com/embed/' + info.id + (info.start ? '?start=' + info.start : '');
-    iframe.title = 'Video YouTube';
-    iframe.loading = 'lazy';
-    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-    iframe.allowFullscreen = true;
+    const iframe=document.createElement('iframe');
+    iframe.src='https://www.youtube.com/embed/'+info.id+(info.start?'?start='+info.start:'');
+    iframe.title='Video YouTube';
+    iframe.loading='lazy';
+    iframe.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    iframe.allowFullscreen=true;
 
-    const ext = document.createElement('a');
-    ext.className = 'youtube-external';
-    ext.href = a.href;
-    ext.target = '_blank';
-    ext.rel = 'noopener noreferrer';
-    ext.textContent = 'Xem trên YouTube ↗';
+    const ext=document.createElement('a');
+    ext.className='youtube-external';
+    ext.href=a.href;
+    ext.target='_blank';
+    ext.rel='noopener noreferrer';
+    ext.textContent='Xem trên YouTube ↗';
 
     wrap.appendChild(iframe);
     card.appendChild(wrap);
     card.appendChild(ext);
 
-    const p = a.closest('p');
-    if(p) p.insertAdjacentElement('afterend', card);
-    else a.insertAdjacentElement('afterend', card);
+    const p=a.closest('p');
+    if(p) p.insertAdjacentElement('afterend',card);
+    else a.insertAdjacentElement('afterend',card);
   });
-});
 
-// ===== Official V1 extras =====
-document.addEventListener('DOMContentLoaded', function(){
-  const article=document.querySelector('.reader-content');
-  if(!article) return;
+  // ===== Highlight V3: no layout shift =====
+  // It highlights only text-node fragments, never moves paragraphs/block elements.
+  const menu=document.createElement('div');
+  menu.className='goc-highlight-menu-v3';
+  menu.innerHTML=`
+    <button type="button" class="hl-square yellow" data-color="yellow" aria-label="Highlight vàng"></button>
+    <button type="button" class="hl-square green" data-color="green" aria-label="Highlight xanh"></button>
+    <button type="button" class="hl-square pink" data-color="pink" aria-label="Highlight hồng"></button>
+    <button type="button" class="hl-square remove" data-remove="1" aria-label="Bỏ highlight"></button>
+  `;
 
-  const articleId='bai40-bon-vo-luong-tam-p1';
-  const progressKey='phap_hoc_progress_'+articleId;
-  const highlightKey='phap_hoc_highlights_'+articleId;
+  Object.assign(menu.style,{
+    position:'fixed',
+    zIndex:'99999',
+    display:'none',
+    alignItems:'center',
+    gap:'7px',
+    padding:'7px 8px',
+    background:'#fffdf8',
+    border:'1px solid rgba(90,70,40,.18)',
+    borderRadius:'11px',
+    boxShadow:'0 8px 28px rgba(0,0,0,.18)'
+  });
 
+  menu.querySelectorAll('.hl-square').forEach(btn=>{
+    Object.assign(btn.style,{
+      width:'25px',height:'25px',padding:'0',
+      borderRadius:'5px',cursor:'pointer',
+      boxSizing:'border-box'
+    });
+  });
+  Object.assign(menu.querySelector('.yellow').style,{background:'#ffe99a',border:'1px solid #e1ca69'});
+  Object.assign(menu.querySelector('.green').style,{background:'#ccefcf',border:'1px solid #8bc994'});
+  Object.assign(menu.querySelector('.pink').style,{background:'#ffd2df',border:'1px solid #dc91aa'});
+  Object.assign(menu.querySelector('.remove').style,{background:'#fff',border:'2px solid #aaa'});
+
+  document.body.appendChild(menu);
+
+  let savedRange=null;
+  let activeHighlightId=null;
+
+  function getSaved(){
+    try{return JSON.parse(localStorage.getItem(highlightKey)||'[]');}
+    catch(e){return [];}
+  }
+  function setSaved(items){
+    localStorage.setItem(highlightKey,JSON.stringify(items));
+  }
+
+  function allTextNodes(){
+    const out=[];
+    const w=document.createTreeWalker(article,NodeFilter.SHOW_TEXT,{
+      acceptNode(node){
+        const p=node.parentElement;
+        if(!p) return NodeFilter.FILTER_REJECT;
+        if(p.closest('script,style')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    let n;
+    while((n=w.nextNode())) out.push(n);
+    return out;
+  }
+
+  function boundaryToOffset(container,offset){
+    const nodes=allTextNodes();
+    let total=0;
+
+    for(const node of nodes){
+      if(node===container) return total+Math.min(offset,node.nodeValue.length);
+      if(container.nodeType===Node.ELEMENT_NODE && container.contains(node)){
+        // For unusual element-boundary selections, use a Range fallback.
+        try{
+          const r=document.createRange();
+          r.setStart(article,0);
+          r.setEnd(container,offset);
+          return r.toString().length;
+        }catch(e){}
+      }
+      total+=node.nodeValue.length;
+    }
+
+    try{
+      const r=document.createRange();
+      r.setStart(article,0);
+      r.setEnd(container,offset);
+      return r.toString().length;
+    }catch(e){return total;}
+  }
+
+  function rangeOffsets(range){
+    let start=boundaryToOffset(range.startContainer,range.startOffset);
+    let end=boundaryToOffset(range.endContainer,range.endOffset);
+    if(end<start){const t=start;start=end;end=t;}
+    return {start,end};
+  }
+
+  function colorValue(color){
+    if(color==='green') return '#ccefcf';
+    if(color==='pink') return '#ffd2df';
+    return '#ffe99a';
+  }
+
+  function applyHighlight(item){
+    const nodes=allTextNodes();
+    let cursor=0;
+    const targets=[];
+
+    nodes.forEach(node=>{
+      if(node.parentElement?.closest('.goc-user-highlight')) {
+        cursor+=node.nodeValue.length;
+        return;
+      }
+      const len=node.nodeValue.length;
+      const nodeStart=cursor;
+      const nodeEnd=cursor+len;
+      const s=Math.max(item.start,nodeStart);
+      const e=Math.min(item.end,nodeEnd);
+
+      if(e>s){
+        targets.push({
+          node,
+          start:s-nodeStart,
+          end:e-nodeStart
+        });
+      }
+      cursor=nodeEnd;
+    });
+
+    // Work backwards so splitting one text node never invalidates later offsets.
+    targets.reverse().forEach(t=>{
+      const node=t.node;
+      if(!node.parentNode) return;
+
+      const full=node.nodeValue;
+      const before=full.slice(0,t.start);
+      const middle=full.slice(t.start,t.end);
+      const after=full.slice(t.end);
+
+      const frag=document.createDocumentFragment();
+      if(before) frag.appendChild(document.createTextNode(before));
+
+      const span=document.createElement('span');
+      span.className='goc-user-highlight';
+      span.dataset.hid=item.id;
+      span.dataset.color=item.color;
+      span.textContent=middle;
+      span.style.backgroundColor=colorValue(item.color);
+      span.style.borderRadius='2px';
+      span.style.padding='0';
+      span.style.margin='0';
+      span.style.boxDecorationBreak='clone';
+      span.style.webkitBoxDecorationBreak='clone';
+      frag.appendChild(span);
+
+      if(after) frag.appendChild(document.createTextNode(after));
+      node.parentNode.replaceChild(frag,node);
+    });
+  }
+
+  function unwrapHighlightElements(id){
+    article.querySelectorAll('.goc-user-highlight[data-hid="'+CSS.escape(id)+'"]').forEach(span=>{
+      const parent=span.parentNode;
+      if(!parent) return;
+      while(span.firstChild) parent.insertBefore(span.firstChild,span);
+      span.remove();
+      parent.normalize();
+    });
+  }
+
+  function restoreHighlights(){
+    const items=getSaved().slice().sort((a,b)=>a.start-b.start);
+    items.forEach(applyHighlight);
+  }
+
+  function hideMenu(){
+    menu.style.display='none';
+    savedRange=null;
+    activeHighlightId=null;
+  }
+
+  function placeMenu(rect){
+    menu.style.display='flex';
+    requestAnimationFrame(()=>{
+      const mw=menu.offsetWidth, mh=menu.offsetHeight;
+      let left=rect.left+rect.width/2-mw/2;
+      left=Math.max(8,Math.min(window.innerWidth-mw-8,left));
+      let top=rect.top-mh-9;
+      if(top<8) top=rect.bottom+9;
+      menu.style.left=left+'px';
+      menu.style.top=top+'px';
+    });
+  }
+
+  function showForSelection(){
+    const sel=window.getSelection();
+    if(!sel||!sel.rangeCount||sel.isCollapsed||!sel.toString().trim()) return;
+    const range=sel.getRangeAt(0);
+    if(!article.contains(range.commonAncestorContainer)) return;
+    savedRange=range.cloneRange();
+    activeHighlightId=null;
+    placeMenu(range.getBoundingClientRect());
+  }
+
+  document.addEventListener('mouseup',()=>setTimeout(showForSelection,15));
+  document.addEventListener('touchend',()=>setTimeout(showForSelection,180));
+
+  menu.addEventListener('mousedown',e=>e.preventDefault());
+
+  menu.querySelectorAll('[data-color]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(!savedRange) return;
+
+      const offsets=rangeOffsets(savedRange);
+      if(offsets.end<=offsets.start) return;
+
+      const item={
+        id:'h'+Date.now()+Math.random().toString(36).slice(2,6),
+        start:offsets.start,
+        end:offsets.end,
+        color:btn.dataset.color
+      };
+
+      const items=getSaved();
+      items.push(item);
+      setSaved(items);
+      applyHighlight(item);
+
+      window.getSelection()?.removeAllRanges();
+      hideMenu();
+    });
+  });
+
+  function removeById(id){
+    if(!id) return;
+    unwrapHighlightElements(id);
+    setSaved(getSaved().filter(x=>x.id!==id));
+  }
+
+  menu.querySelector('[data-remove]').addEventListener('click',()=>{
+    if(activeHighlightId){
+      removeById(activeHighlightId);
+      hideMenu();
+      return;
+    }
+
+    if(savedRange){
+      const offsets=rangeOffsets(savedRange);
+      const items=getSaved();
+      const overlapping=items.filter(x=>x.start<offsets.end && x.end>offsets.start);
+      overlapping.forEach(x=>unwrapHighlightElements(x.id));
+      setSaved(items.filter(x=>!(x.start<offsets.end && x.end>offsets.start)));
+      window.getSelection()?.removeAllRanges();
+    }
+    hideMenu();
+  });
+
+  article.addEventListener('click',e=>{
+    const span=e.target.closest('.goc-user-highlight');
+    if(!span) return;
+    activeHighlightId=span.dataset.hid;
+    savedRange=null;
+    placeMenu(span.getBoundingClientRect());
+  });
+
+  document.addEventListener('mousedown',e=>{
+    if(menu.contains(e.target)) return;
+    if(e.target.closest?.('.goc-user-highlight')) return;
+    if(!article.contains(e.target)) hideMenu();
+  });
+
+  restoreHighlights();
+
+  // ===== Saved highlight drawer =====
   const drawer=document.getElementById('highlightsDrawer');
   const list=document.getElementById('highlightList');
 
-  function readSavedHighlights(){
-    try{return JSON.parse(localStorage.getItem(highlightKey))||[]}catch(e){return[]}
-  }
-
   function renderHighlightList(){
-    const items=readSavedHighlights();
+    if(!list) return;
+    const items=getSaved();
     list.innerHTML='';
     if(!items.length){
-      list.innerHTML='<p style="opacity:.65;font-family:var(--ui-font);font-size:13px">Chưa có đoạn nào được đánh dấu.</p>';
+      list.innerHTML='<p style="opacity:.65;font-family:Arial,sans-serif;font-size:13px">Chưa có đoạn nào được đánh dấu.</p>';
       return;
     }
-    items.forEach((item,i)=>{
+
+    items.forEach(item=>{
+      const spans=[...article.querySelectorAll('.goc-user-highlight[data-hid="'+CSS.escape(item.id)+'"]')];
+      const text=spans.map(s=>s.textContent).join('');
       const el=document.createElement('div');
-      el.className='saved-highlight '+(item.color||'yellow');
+      el.className='saved-highlight '+item.color;
       el.innerHTML='<div></div><small>Nhấn để tìm đoạn này trong bài</small>';
-      el.querySelector('div').textContent=item.text;
+      el.querySelector('div').textContent=text;
       el.onclick=()=>{
-        const marks=[...article.querySelectorAll('mark.user-highlight')];
-        const target=marks.find(m=>m.textContent===item.text);
+        const target=article.querySelector('.goc-user-highlight[data-hid="'+CSS.escape(item.id)+'"]');
         if(target){
-          drawer.classList.remove('open');
+          drawer?.classList.remove('open');
           target.scrollIntoView({behavior:'smooth',block:'center'});
-          target.animate([{outline:'0 solid transparent'},{outline:'4px solid rgba(138,106,63,.25)'},{outline:'0 solid transparent'}],{duration:1100});
         }
       };
       list.appendChild(el);
@@ -386,169 +532,10 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   document.getElementById('showHighlights')?.addEventListener('click',()=>{
-    renderHighlightList(); drawer.classList.add('open');
+    renderHighlightList();
+    drawer?.classList.add('open');
   });
-  document.getElementById('closeHighlights')?.addEventListener('click',()=>drawer.classList.remove('open'));
-  document.getElementById('clearProgress')?.addEventListener('click',()=>{
-    localStorage.removeItem(progressKey);
-    window.scrollTo({top:0,behavior:'smooth'});
+  document.getElementById('closeHighlights')?.addEventListener('click',()=>{
+    drawer?.classList.remove('open');
   });
-
-  // Refresh drawer after highlight actions.
-  document.querySelectorAll('[data-highlight]').forEach(btn=>{
-    btn.addEventListener('click',()=>setTimeout(renderHighlightList,100));
-  });
-  document.getElementById('removeHighlight')?.addEventListener('click',()=>setTimeout(renderHighlightList,100));
-});
-
-
-/* ===== Robust Highlight V2 ===== */
-document.addEventListener('DOMContentLoaded', () => {
-  const article = document.querySelector('.reader-content');
-  if (!article) return;
-
-  const ARTICLE_ID = 'bai40-bon-vo-luong-tam-p1';
-  const KEY = 'gocnho_highlights_' + ARTICLE_ID;
-  let savedRange = null;
-
-  // Remove older toolbar if present and create a fresh one.
-  document.querySelectorAll('#highlightToolbar, .goc-highlight-menu').forEach(el => el.remove());
-
-  const menu = document.createElement('div');
-  menu.className = 'goc-highlight-menu';
-  menu.innerHTML = `
-    <button type="button" data-c="yellow" title="Vàng">🟨</button>
-    <button type="button" data-c="green" title="Xanh">🟩</button>
-    <button type="button" data-c="pink" title="Hồng">🩷</button>
-    <button type="button" data-remove title="Bỏ đánh dấu">✕</button>`;
-  Object.assign(menu.style, {
-    position:'fixed', display:'none', zIndex:'99999', padding:'6px',
-    border:'1px solid rgba(80,60,35,.18)', borderRadius:'10px',
-    background:'#fffdf8', boxShadow:'0 8px 28px rgba(0,0,0,.18)',
-    gap:'4px', alignItems:'center'
-  });
-  menu.querySelectorAll('button').forEach(b => Object.assign(b.style,{
-    border:'0', background:'transparent', cursor:'pointer', fontSize:'19px',
-    padding:'5px 7px', borderRadius:'7px'
-  }));
-  document.body.appendChild(menu);
-
-  function getData(){
-    try { return JSON.parse(localStorage.getItem(KEY) || '[]'); }
-    catch(e){ return []; }
-  }
-  function setData(v){ localStorage.setItem(KEY, JSON.stringify(v)); }
-
-  function pathOf(node){
-    const path=[];
-    while(node && node !== article){
-      const p=node.parentNode;
-      if(!p) break;
-      path.unshift(Array.prototype.indexOf.call(p.childNodes,node));
-      node=p;
-    }
-    return path;
-  }
-  function nodeAt(path){
-    let n=article;
-    for(const i of path){ if(!n || !n.childNodes[i]) return null; n=n.childNodes[i]; }
-    return n;
-  }
-  function serializeRange(r, color){
-    return {
-      sp:pathOf(r.startContainer), so:r.startOffset,
-      ep:pathOf(r.endContainer), eo:r.endOffset,
-      text:r.toString(), color, id:'h'+Date.now()+Math.random().toString(36).slice(2,7)
-    };
-  }
-  function wrapRange(r, color, id){
-    if(r.collapsed) return false;
-    const mark=document.createElement('mark');
-    mark.className='goc-user-highlight';
-    mark.dataset.hid=id;
-    mark.dataset.color=color;
-    mark.style.background = color==='green' ? '#ccefcf' : color==='pink' ? '#ffd2df' : '#ffe99a';
-    mark.style.padding='0 .04em';
-    mark.style.borderRadius='2px';
-    try { r.surroundContents(mark); return true; }
-    catch(e){
-      try {
-        const frag=r.extractContents();
-        mark.appendChild(frag);
-        r.insertNode(mark);
-        return true;
-      } catch(err){ return false; }
-    }
-  }
-
-  function restore(){
-    const items=getData();
-    // Restore backwards so DOM paths remain valid as long as possible.
-    [...items].reverse().forEach(item=>{
-      const s=nodeAt(item.sp), e=nodeAt(item.ep);
-      if(!s || !e) return;
-      try{
-        const r=document.createRange();
-        r.setStart(s, Math.min(item.so, s.length ?? item.so));
-        r.setEnd(e, Math.min(item.eo, e.length ?? item.eo));
-        wrapRange(r,item.color,item.id);
-      }catch(err){}
-    });
-  }
-
-  function hide(){ menu.style.display='none'; savedRange=null; }
-
-  function showForSelection(){
-    const sel=window.getSelection();
-    if(!sel || !sel.rangeCount || sel.isCollapsed || !sel.toString().trim()){ return; }
-    const r=sel.getRangeAt(0);
-    if(!article.contains(r.commonAncestorContainer)) return;
-    savedRange=r.cloneRange();
-    const rect=r.getBoundingClientRect();
-    menu.style.display='flex';
-    requestAnimationFrame(()=>{
-      let left=rect.left + rect.width/2 - menu.offsetWidth/2;
-      left=Math.max(8,Math.min(innerWidth-menu.offsetWidth-8,left));
-      let top=rect.top-menu.offsetHeight-8;
-      if(top<8) top=rect.bottom+8;
-      menu.style.left=left+'px'; menu.style.top=top+'px';
-    });
-  }
-
-  document.addEventListener('mouseup', ()=>setTimeout(showForSelection, 10));
-  document.addEventListener('touchend', ()=>setTimeout(showForSelection, 180));
-
-  menu.addEventListener('mousedown', e=>e.preventDefault());
-  menu.addEventListener('touchstart', e=>e.stopPropagation(), {passive:true});
-
-  menu.querySelectorAll('[data-c]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      if(!savedRange) return;
-      const item=serializeRange(savedRange,btn.dataset.c);
-      if(wrapRange(savedRange,btn.dataset.c,item.id)){
-        const items=getData(); items.push(item); setData(items);
-      }
-      window.getSelection()?.removeAllRanges();
-      hide();
-    });
-  });
-
-  menu.querySelector('[data-remove]').addEventListener('click', hide);
-
-  // Click an existing highlight to remove it.
-  article.addEventListener('click', e=>{
-    const mark=e.target.closest('mark.goc-user-highlight');
-    if(!mark) return;
-    const id=mark.dataset.hid;
-    const parent=mark.parentNode;
-    while(mark.firstChild) parent.insertBefore(mark.firstChild,mark);
-    mark.remove(); parent.normalize();
-    setData(getData().filter(x=>x.id!==id));
-  });
-
-  document.addEventListener('mousedown', e=>{
-    if(!menu.contains(e.target) && !article.contains(e.target)) hide();
-  });
-
-  restore();
 });
