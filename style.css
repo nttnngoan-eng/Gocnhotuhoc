@@ -769,3 +769,203 @@ body.page-mode .reader-content{
     column-gap:28px !important;
   }
 }
+
+
+/* ===== V12: FIX pagination on mobile/laptop ===== */
+
+/* IMPORTANT:
+   Use exactly ONE visible CSS column per page.
+   Extra content flows into the next horizontal column/page.
+   This prevents a slice of the next page appearing at the right edge. */
+body.page-mode .reader-content{
+  column-count:1 !important;
+  column-width:auto !important;
+  column-gap:32px !important;
+  column-rule:none !important;
+
+  width:100% !important;
+  max-width:100% !important;
+  box-sizing:border-box !important;
+
+  padding-left:0 !important;
+  padding-right:0 !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+
+  overflow-x:hidden !important;
+  overflow-y:hidden !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  border-radius:0 !important;
+}
+
+/* Give text comfortable inner margins without changing the page/column width. */
+body.page-mode .reader-content > *{
+  margin-left:28px !important;
+  margin-right:28px !important;
+  max-width:calc(100% - 56px) !important;
+  box-sizing:border-box !important;
+}
+
+/* The page itself is centered with equal breathing room. */
+body.page-mode .reader-paper{
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  border-right:1px solid var(--line) !important;
+}
+
+/* Compact the actual top elements. Previous versions targeted .reader-topbar,
+   but this page uses .reader-top. */
+body.page-mode .reader-shell{
+  padding-top:4px !important;
+}
+
+body.page-mode .reader-top{
+  min-height:40px !important;
+  padding:3px 0 !important;
+  margin:0 0 4px !important;
+}
+
+body.page-mode .reader-top .back{
+  font-size:13px !important;
+}
+
+body.page-mode .reader-top .icon-btn{
+  min-width:46px !important;
+  min-height:36px !important;
+  padding:5px 9px !important;
+}
+
+body.page-mode .progress-info{
+  margin:3px 0 4px !important;
+  gap:8px !important;
+}
+
+body.page-mode .progress-track{
+  height:5px !important;
+}
+
+body.page-mode .reader-utility{
+  margin:3px 0 7px !important;
+}
+
+/* Desktop/laptop */
+@media(min-width:701px){
+  body.page-mode .reader-shell{
+    max-width:900px !important;
+    padding-left:18px !important;
+    padding-right:18px !important;
+  }
+
+  body.page-mode .reader-paper{
+    width:100% !important;
+    max-width:860px !important;
+    padding:18px 20px 12px !important;
+  }
+
+  body.page-mode .reader-content{
+    height:calc(100vh - 205px) !important;
+    min-height:500px !important;
+    column-gap:40px !important;
+  }
+
+  body.page-mode .reader-content > *{
+    margin-left:34px !important;
+    margin-right:34px !important;
+    max-width:calc(100% - 68px) !important;
+  }
+
+  body.page-mode .reader-utility button{
+    min-height:30px !important;
+    padding:4px 9px !important;
+  }
+}
+
+/* Phone/tablet */
+@media(max-width:700px){
+  body.page-mode .site-header .nav{
+    min-height:42px !important;
+    padding:5px 12px !important;
+  }
+
+  body.page-mode .brand{
+    font-size:16px !important;
+  }
+
+  body.page-mode .nav-links{
+    gap:9px !important;
+    font-size:11px !important;
+  }
+
+  body.page-mode .reader-shell{
+    width:auto !important;
+    max-width:none !important;
+    margin-left:10px !important;
+    margin-right:10px !important;
+    padding:4px 0 12px !important;
+  }
+
+  body.page-mode .reader-top{
+    min-height:38px !important;
+    padding:2px 0 !important;
+    margin-bottom:2px !important;
+  }
+
+  body.page-mode .progress-info{
+    margin:2px 0 3px !important;
+  }
+
+  body.page-mode .reader-utility{
+    gap:4px !important;
+    margin:3px 0 5px !important;
+  }
+
+  body.page-mode .reader-utility button,
+  body.page-mode #togglePageMode{
+    min-height:34px !important;
+    padding:4px 6px !important;
+    font-size:12px !important;
+  }
+
+  body.page-mode .reader-paper{
+    width:100% !important;
+    max-width:none !important;
+    margin:0 auto !important;
+    padding:10px 0 7px !important;
+    border-radius:15px !important;
+  }
+
+  body.page-mode .reader-content{
+    height:calc(100svh - 255px) !important;
+    min-height:390px !important;
+    column-gap:24px !important;
+    font-size:17px !important;
+    line-height:1.62 !important;
+  }
+
+  body.page-mode .reader-content > *{
+    margin-left:18px !important;
+    margin-right:18px !important;
+    max-width:calc(100% - 36px) !important;
+  }
+
+  body.page-mode .page-turn-controls{
+    margin:3px auto 0 !important;
+  }
+}
+
+/* Narrow phones */
+@media(max-width:420px){
+  body.page-mode .reader-content{
+    column-gap:20px !important;
+  }
+
+  body.page-mode .reader-content > *{
+    margin-left:16px !important;
+    margin-right:16px !important;
+    max-width:calc(100% - 32px) !important;
+  }
+}

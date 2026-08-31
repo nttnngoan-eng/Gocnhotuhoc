@@ -803,3 +803,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setTimeout(syncTitleForCurrentPage, 350);
 });
+
+
+/* ===== V12: precise page snap after layout changes ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  const article = document.querySelector('.reader-content');
+  const pageNumber = document.getElementById('pageNumber');
+  if (!article || !pageNumber) return;
+
+  function currentPageFromLabel(){
+    const m = (pageNumber.textContent || '').match(/Trang\s+(\d+)/i);
+    return m ? Math.max(0, parseInt(m[1],10)-1) : 0;
+  }
+
+  function snapToCurrentPage(){
+    if (!document.body.classList.contains('page-mode')) return;
+    const gap = parseFloat(getComputedStyle(article).columnGap) || 0;
+    const step = article.clientWidth + gap;
+    article.scrollLeft = currentPageFromLabel() * step;
+  }
+
+  document.getElementById('togglePageMode')?.addEventListener('click', () => {
+    setTimeout(snapToCurrentPage, 180);
+  });
+
+  window.addEventListener('resize', () => {
+    setTimeout(snapToCurrentPage, 250);
+  });
+
+  setTimeout(snapToCurrentPage, 500);
+});
