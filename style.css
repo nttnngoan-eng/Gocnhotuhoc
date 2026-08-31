@@ -233,739 +233,255 @@ mark.user-highlight.pink{background:#ffc9d8}
   .reader-utility button{flex:1}
 }
 
+/* ===== V13: LẬT TRANG - xây lại sạch, 1 trang / 1 màn hình ===== */
 
-/* ===== V5: Chế độ lật trang ===== */
 .page-mode-toggle[aria-pressed="true"]{
-  background:rgba(118,86,46,.12);
-  border-color:rgba(118,86,46,.4);
+  background:rgba(118,86,46,.10);
+  border-color:rgba(118,86,46,.38);
   font-weight:600;
 }
+
 .page-turn-controls{
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:14px;
-  margin:18px auto 2px;
+  gap:12px;
+  margin:7px auto 0;
   font-family:var(--ui-font);
   user-select:none;
 }
 .page-turn-controls[hidden]{display:none!important}
 .page-turn-controls button{
-  width:46px;
-  height:46px;
+  width:42px;
+  height:42px;
   border-radius:50%;
   border:1px solid var(--line);
-  background:rgba(255,255,255,.48);
+  background:var(--paper);
   color:inherit;
-  font-size:30px;
+  font-size:27px;
   line-height:1;
   cursor:pointer;
 }
-.page-turn-controls button:disabled{
-  opacity:.32;
-  cursor:default;
+.page-turn-controls button:disabled{opacity:.3;cursor:default}
+.page-turn-status{min-width:150px;text-align:center;display:grid;gap:1px}
+.page-turn-status span{font-size:13px;font-weight:600}
+.page-turn-status small{font-size:10px;opacity:.6}
+
+/* Page shell: centered, balanced left/right */
+body.page-mode .reader-shell{
+  width:min(920px, calc(100% - 28px));
+  margin:0 auto;
+  padding-top:5px;
 }
-.page-turn-status{
-  min-width:180px;
-  text-align:center;
-  display:grid;
-  gap:2px;
-}
-.page-turn-status span{
-  font-size:14px;
-  font-weight:600;
-}
-.page-turn-status small{
-  font-size:11px;
-  opacity:.62;
+body.page-mode .reader-paper{
+  width:100%;
+  max-width:880px;
+  margin:0 auto;
+  padding:18px 26px 12px;
+  overflow:hidden;
+  box-sizing:border-box;
+  border:1px solid var(--line);
+  box-shadow:0 8px 28px rgba(54,40,17,.05);
 }
 
-/* Only the lesson body becomes a paged book. The DOM stays unchanged,
-   so highlights remain compatible with page mode. */
+/* Compact only; keep all controls visible */
+body.page-mode .reader-top{
+  position:static;
+  min-height:36px;
+  margin:3px 0 3px;
+  padding:2px 0;
+}
+body.page-mode .reader-top .back{font-size:13px}
+body.page-mode .reader-top .icon-btn{
+  min-height:34px;
+  padding:5px 9px;
+}
+body.page-mode .progress-info{
+  margin:2px 0 4px;
+  gap:8px;
+}
+body.page-mode .progress-track{height:5px}
+body.page-mode .reader-utility{
+  margin:3px 0 6px;
+  gap:6px;
+}
+body.page-mode .reader-utility button{
+  min-height:32px;
+  padding:5px 9px;
+  font-size:12px;
+  border-radius:9px;
+}
+
+/* The lesson itself becomes horizontal CSS columns.
+   JS sets --book-page-width to exactly the visible content width. */
 body.page-mode .reader-content{
-  --page-gap:48px;
-  height:min(68vh,720px);
-  min-height:430px;
-  overflow:hidden;
-  column-width:calc(100vw - 96px);
-  column-gap:var(--page-gap);
+  --book-page-width: 760px;
+  width:100%;
+  max-width:none;
+  height:calc(100vh - 215px);
+  min-height:480px;
+
+  column-count:auto;
+  column-width:var(--book-page-width);
+  column-gap:var(--book-page-gap, 36px);
   column-fill:auto;
-  scroll-behavior:smooth;
-  overscroll-behavior-x:contain;
+  column-rule:none;
+
+  overflow-x:auto;
+  overflow-y:hidden;
+  box-sizing:border-box;
+  padding:0;
+  margin:0;
+  border:0;
+  outline:0;
+  box-shadow:none;
+  border-radius:0;
+
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y pinch-zoom;
+  scroll-behavior:auto;
 }
+body.page-mode .reader-content::-webkit-scrollbar{display:none}
+
+/* Comfortable inner margin INSIDE each page.
+   Do not use margin on every paragraph because that changes column geometry. */
 body.page-mode .reader-content > *{
-  break-inside:avoid;
+  box-sizing:border-box;
+  padding-left:26px;
+  padding-right:26px;
 }
+
+/* Paragraphs may split naturally between pages, like an ebook. */
 body.page-mode .reader-content p{
-  orphans:3;
-  widows:3;
+  break-inside:auto;
+  orphans:2;
+  widows:2;
 }
+
+/* Title block is moved by JS into reader-content in page mode,
+   therefore it naturally exists only on page 1. */
+body.page-mode .reader-content > .reader-category{
+  padding-top:8px;
+  text-align:center;
+  font-family:var(--ui-font);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#8a6a3f;
+}
+body.page-mode .reader-content > h1{
+  text-align:center;
+  font-family:var(--ui-font);
+  font-size:24px!important;
+  line-height:1.16!important;
+  margin:8px 0 5px!important;
+  color:#3d2f1b;
+}
+body.page-mode .reader-content > .subtitle{
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  margin:0 0 18px;
+}
+
 body.page-mode .youtube-inline-card{
   break-inside:avoid;
 }
-body.page-mode .reader-paper{
-  overflow:hidden;
-}
-body.page-mode .progress-info{
-  position:sticky;
-  top:0;
-  z-index:20;
-}
-body.page-mode .page-turn-controls{
-  display:flex;
+
+/* Normal reading: smaller lesson title as previously requested */
+.reader-paper > h1{
+  font-size:28px!important;
+  line-height:1.18!important;
 }
 
-/* A subtle page edge */
-body.page-mode .reader-content{
-  border-radius:8px;
-  box-shadow:inset -1px 0 rgba(90,70,40,.08);
-}
-
-@media(max-width:700px){
-  body.page-mode .reader-content{
-    --page-gap:28px;
-    height:66vh;
-    min-height:390px;
-    column-width:calc(100vw - 48px);
-  }
-  .reader-utility{
-    flex-wrap:wrap;
-  }
-  .reader-utility button{
-    min-width:calc(50% - 6px);
-  }
-  .page-turn-status{
-    min-width:150px;
-  }
-  .page-turn-status small{
-    display:none;
-  }
-}
-
-@media(max-width:420px){
-  body.page-mode .reader-content{
-    --page-gap:22px;
-    height:64vh;
-    min-height:360px;
-    column-width:calc(100vw - 34px);
-  }
-  .page-turn-controls{
-    gap:8px;
-  }
-  .page-turn-controls button{
-    width:44px;
-    height:44px;
-  }
-  .page-turn-status{
-    min-width:120px;
-  }
-}
-
-
-/* ===== V6: Mobile page mode compact + smaller Bài 40 text ===== */
-
-/* Bài 40: smaller default reading text on phone */
+/* Mobile */
 @media(max-width:700px){
   .reader-content{
-    font-size:17px !important;
-    line-height:1.72 !important;
+    font-size:17px!important;
+    line-height:1.68!important;
   }
 
-  /* Compact the whole area above the book while page mode is active */
-  body.page-mode .site-header{
-    padding-top:4px !important;
-    padding-bottom:4px !important;
-  }
   body.page-mode .site-header .nav{
-    min-height:44px !important;
+    min-height:43px;
+    padding:6px 10px;
   }
+  body.page-mode .brand{font-size:16px}
+  body.page-mode .nav-links{gap:9px;font-size:11px}
 
   body.page-mode .reader-shell{
-    padding-top:8px !important;
-  }
-
-  body.page-mode .reader-topbar{
-    min-height:44px !important;
-    margin-bottom:4px !important;
-    padding:0 !important;
-  }
-
-  /* Hide large/secondary controls in book mode */
-  body.page-mode .progress-wrap,
-  body.page-mode .progress-info,
-  body.page-mode #showHighlights,
-  body.page-mode #clearProgress{
-    display:none !important;
-  }
-
-  body.page-mode .reader-utility{
-    margin:4px 0 6px !important;
-    padding:0 !important;
-    display:flex !important;
-    justify-content:flex-end !important;
-  }
-
-  body.page-mode #togglePageMode{
-    min-width:auto !important;
-    width:auto !important;
-    padding:8px 12px !important;
-    min-height:40px !important;
-    font-size:14px !important;
-  }
-
-  /* Hide the large lesson cover/title only in page mode.
-     It remains visible in normal vertical reading mode. */
-  body.page-mode .reader-content .eyebrow,
-  body.page-mode .reader-content h1,
-  body.page-mode .reader-content h1 + p{
-    display:none !important;
-  }
-
-  body.page-mode .reader-paper{
-    padding-top:8px !important;
-  }
-
-  /* Give most of the phone screen to the actual lesson page */
-  body.page-mode .reader-content{
-    height:calc(100svh - 215px) !important;
-    min-height:520px !important;
-    padding-top:10px !important;
-    padding-bottom:8px !important;
-    font-size:17px !important;
-    line-height:1.68 !important;
-  }
-
-  /* Compact page navigation */
-  body.page-mode .page-turn-controls{
-    margin:6px auto 0 !important;
-    gap:8px !important;
-  }
-  body.page-mode .page-turn-controls button{
-    width:40px !important;
-    height:40px !important;
-    font-size:26px !important;
-  }
-  body.page-mode .page-turn-status{
-    min-width:110px !important;
-  }
-  body.page-mode .page-turn-status span{
-    font-size:13px !important;
-  }
-}
-
-/* Very short phones: squeeze controls a little more */
-@media(max-width:700px) and (max-height:750px){
-  body.page-mode .reader-content{
-    height:calc(100svh - 190px) !important;
-    min-height:430px !important;
-  }
-  body.page-mode .site-header{
-    display:none !important;
-  }
-}
-
-
-/* ===== V7: Giữ đầy đủ các phần, chỉ thu gọn tối ưu chiều cao ===== */
-@media(max-width:700px){
-
-  /* Không ẩn bất kỳ phần nào trong chế độ lật trang */
-  body.page-mode .site-header,
-  body.page-mode .progress-wrap,
-  body.page-mode .progress-info,
-  body.page-mode #showHighlights,
-  body.page-mode #clearProgress,
-  body.page-mode .reader-content .eyebrow,
-  body.page-mode .reader-content h1,
-  body.page-mode .reader-content h1 + p{
-    display:revert !important;
-  }
-
-  /* Header gọn hơn nhưng vẫn hiển thị */
-  body.page-mode .site-header{
-    padding:2px 0 !important;
-  }
-  body.page-mode .site-header .nav{
-    min-height:40px !important;
-    padding-top:2px !important;
-    padding-bottom:2px !important;
-  }
-
-  /* Khu vực đầu trang */
-  body.page-mode .reader-shell{
-    padding-top:5px !important;
-  }
-  body.page-mode .reader-topbar{
-    min-height:38px !important;
-    margin-bottom:3px !important;
-  }
-
-  /* Thanh tiến độ vẫn giữ, nhưng mảnh và sát hơn */
-  body.page-mode .progress-wrap{
-    margin:4px 0 5px !important;
-  }
-  body.page-mode .progress-info{
-    min-height:auto !important;
-    margin:0 !important;
-    padding:0 !important;
-    font-size:13px !important;
-  }
-  body.page-mode .progress-track,
-  body.page-mode .reading-progress-track{
-    height:6px !important;
-  }
-
-  /* Ba nút chức năng vẫn hiển thị, thu nhỏ chiều cao */
-  body.page-mode .reader-utility{
-    display:grid !important;
-    grid-template-columns:1fr 1fr !important;
-    gap:5px !important;
-    margin:4px 0 6px !important;
-  }
-  body.page-mode .reader-utility button{
-    min-height:36px !important;
-    padding:5px 8px !important;
-    font-size:13px !important;
-    line-height:1.15 !important;
-    border-radius:10px !important;
-  }
-  body.page-mode #togglePageMode{
-    min-width:0 !important;
-    width:auto !important;
-    padding:5px 8px !important;
-    min-height:36px !important;
-    font-size:13px !important;
-  }
-  body.page-mode #clearProgress{
-    grid-column:1 / -1 !important;
-  }
-
-  /* Khung bài học: giảm padding */
-  body.page-mode .reader-paper{
-    padding:12px 12px 8px !important;
-    border-radius:16px !important;
-  }
-
-  /* Tiêu đề bài vẫn hiện, nhưng thu nhỏ rõ rệt */
-  body.page-mode .reader-content .eyebrow{
-    margin:0 0 3px !important;
-    font-size:12px !important;
-    letter-spacing:.08em !important;
-  }
-  body.page-mode .reader-content h1{
-    margin:0 0 4px !important;
-    font-size:24px !important;
-    line-height:1.12 !important;
-  }
-  body.page-mode .reader-content h1 + p{
-    margin:0 0 10px !important;
-    font-size:13px !important;
-    line-height:1.35 !important;
-  }
-
-  /* Giữ cỡ chữ nội dung nhỏ gọn */
-  body.page-mode .reader-content{
-    font-size:17px !important;
-    line-height:1.62 !important;
-    height:calc(100svh - 300px) !important;
-    min-height:410px !important;
-    padding-top:4px !important;
-    padding-bottom:4px !important;
-  }
-
-  /* Điều hướng trang gọn */
-  body.page-mode .page-turn-controls{
-    margin:4px auto 0 !important;
-    gap:6px !important;
-  }
-  body.page-mode .page-turn-controls button{
-    width:36px !important;
-    height:36px !important;
-    font-size:24px !important;
-  }
-  body.page-mode .page-turn-status{
-    min-width:100px !important;
-  }
-  body.page-mode .page-turn-status span{
-    font-size:12px !important;
-  }
-}
-
-/* Với màn hình thấp vẫn giữ đủ các phần, chỉ siết khoảng cách thêm */
-@media(max-width:700px) and (max-height:750px){
-  body.page-mode .site-header{
-    display:block !important;
-  }
-  body.page-mode .reader-content{
-    height:calc(100svh - 270px) !important;
-    min-height:350px !important;
-  }
-  body.page-mode .reader-content h1{
-    font-size:21px !important;
-  }
-  body.page-mode .reader-content h1 + p{
-    font-size:12px !important;
-    margin-bottom:7px !important;
-  }
-}
-
-
-/* ===== V8: Thu nhỏ tiêu đề Bài 40 ===== */
-/* Máy tính / màn hình lớn */
-.reader-content h1{
-  font-size:28px !important;
-  line-height:1.18 !important;
-}
-
-/* Điện thoại: áp dụng cho cả Cuộn dọc và Lật trang */
-@media(max-width:700px){
-  .reader-content h1,
-  body.page-mode .reader-content h1{
-    font-size:20px !important;
-    line-height:1.18 !important;
-    margin-top:0 !important;
-    margin-bottom:6px !important;
-  }
-}
-
-/* Điện thoại nhỏ vẫn giữ 20px, không bị rule cũ ghi đè */
-@media(max-width:700px) and (max-height:750px){
-  body.page-mode .reader-content h1{
-    font-size:20px !important;
-  }
-}
-
-
-/* ===== V9: Tiêu đề đầu bài chỉ hiện ở trang 1 trong chế độ Lật trang ===== */
-body.page-mode.page-after-first .reader-content .eyebrow,
-body.page-mode.page-after-first .reader-content h1,
-body.page-mode.page-after-first .reader-content h1 + p{
-  visibility:hidden !important;
-}
-
-/* Keep their original space inside CSS columns so page calculations/content
-   do not jump when moving between pages. Since those nodes live in column 1,
-   later columns are unaffected visually. */
-
-
-/* ===== V10 FIX: Tiêu đề thực tế nằm ngoài .reader-content ===== */
-/* Chỉ ẩn phần đầu bài khi đang ở trang 2 trở đi của chế độ Lật trang. */
-body.page-mode.page-after-first .reader-paper > .reader-category,
-body.page-mode.page-after-first .reader-paper > h1,
-body.page-mode.page-after-first .reader-paper > .subtitle{
-  display:none !important;
-}
-
-/* Khi quay lại trang 1 hoặc dùng Cuộn dọc, hiện lại bình thường. */
-body:not(.page-after-first) .reader-paper > .reader-category,
-body:not(.page-after-first) .reader-paper > h1,
-body:not(.page-after-first) .reader-paper > .subtitle{
-  display:block;
-}
-
-
-/* ===== V11: Thu gọn phần trên + căn trang sách cân hai bên ===== */
-
-/* Bỏ đường kẻ/mép giả bên phải do hiệu ứng inset cũ */
-body.page-mode .reader-content{
-  box-shadow:none !important;
-  border-right:0 !important;
-  outline:none !important;
-}
-
-/* Toàn bộ khối đọc căn giữa, không sát mép màn hình */
-.reader-shell{
-  max-width:900px !important;
-  margin-left:auto !important;
-  margin-right:auto !important;
-}
-
-.reader-paper{
-  width:auto !important;
-  max-width:860px !important;
-  margin-left:auto !important;
-  margin-right:auto !important;
-  box-sizing:border-box !important;
-}
-
-/* Máy tính: thu gọn phần phía trên để dành nhiều chỗ hơn cho bài */
-@media(min-width:701px){
-  body.page-mode .site-header{
-    padding-top:0 !important;
-    padding-bottom:0 !important;
-  }
-  body.page-mode .site-header .nav{
-    min-height:42px !important;
-  }
-
-  body.page-mode .reader-shell{
-    padding-top:10px !important;
-  }
-
-  body.page-mode .reader-topbar{
-    min-height:40px !important;
-    margin-bottom:4px !important;
-  }
-
-  body.page-mode .progress-wrap{
-    margin:5px 0 5px !important;
-  }
-
-  body.page-mode .progress-info{
-    margin:0 !important;
-    min-height:auto !important;
-    font-size:12px !important;
-  }
-
-  body.page-mode .reader-utility{
-    margin:4px 0 8px !important;
-    gap:7px !important;
-  }
-
-  body.page-mode .reader-utility button{
-    min-height:32px !important;
-    padding:5px 10px !important;
-    font-size:12px !important;
-    border-radius:9px !important;
-  }
-
-  body.page-mode .reader-paper{
-    padding:22px 34px 18px !important;
-  }
-
-  body.page-mode .reader-content{
-    height:calc(100vh - 230px) !important;
-    min-height:500px !important;
-    padding:0 30px 8px !important;
-    column-width:calc(860px - 128px) !important;
-    column-gap:54px !important;
-  }
-
-  body.page-mode .page-turn-controls{
-    margin-top:4px !important;
-  }
-}
-
-/* Mobile/tablet: giữ khoảng thở hai bên, không sát mép */
-@media(max-width:700px){
-  .reader-shell{
-    width:auto !important;
-    margin-left:10px !important;
-    margin-right:10px !important;
-  }
-
-  .reader-paper{
-    margin-left:0 !important;
-    margin-right:0 !important;
-    padding-left:14px !important;
-    padding-right:14px !important;
-  }
-
-  body.page-mode .reader-content{
-    box-shadow:none !important;
-    border-right:0 !important;
-    padding-left:14px !important;
-    padding-right:14px !important;
-    column-width:calc(100vw - 68px) !important;
-    column-gap:28px !important;
-  }
-}
-
-
-/* ===== V12: FIX pagination on mobile/laptop ===== */
-
-/* IMPORTANT:
-   Use exactly ONE visible CSS column per page.
-   Extra content flows into the next horizontal column/page.
-   This prevents a slice of the next page appearing at the right edge. */
-body.page-mode .reader-content{
-  column-count:1 !important;
-  column-width:auto !important;
-  column-gap:32px !important;
-  column-rule:none !important;
-
-  width:100% !important;
-  max-width:100% !important;
-  box-sizing:border-box !important;
-
-  padding-left:0 !important;
-  padding-right:0 !important;
-  margin-left:0 !important;
-  margin-right:0 !important;
-
-  overflow-x:hidden !important;
-  overflow-y:hidden !important;
-  border:0 !important;
-  outline:0 !important;
-  box-shadow:none !important;
-  border-radius:0 !important;
-}
-
-/* Give text comfortable inner margins without changing the page/column width. */
-body.page-mode .reader-content > *{
-  margin-left:28px !important;
-  margin-right:28px !important;
-  max-width:calc(100% - 56px) !important;
-  box-sizing:border-box !important;
-}
-
-/* The page itself is centered with equal breathing room. */
-body.page-mode .reader-paper{
-  overflow:hidden !important;
-  box-sizing:border-box !important;
-  margin-left:auto !important;
-  margin-right:auto !important;
-  border-right:1px solid var(--line) !important;
-}
-
-/* Compact the actual top elements. Previous versions targeted .reader-topbar,
-   but this page uses .reader-top. */
-body.page-mode .reader-shell{
-  padding-top:4px !important;
-}
-
-body.page-mode .reader-top{
-  min-height:40px !important;
-  padding:3px 0 !important;
-  margin:0 0 4px !important;
-}
-
-body.page-mode .reader-top .back{
-  font-size:13px !important;
-}
-
-body.page-mode .reader-top .icon-btn{
-  min-width:46px !important;
-  min-height:36px !important;
-  padding:5px 9px !important;
-}
-
-body.page-mode .progress-info{
-  margin:3px 0 4px !important;
-  gap:8px !important;
-}
-
-body.page-mode .progress-track{
-  height:5px !important;
-}
-
-body.page-mode .reader-utility{
-  margin:3px 0 7px !important;
-}
-
-/* Desktop/laptop */
-@media(min-width:701px){
-  body.page-mode .reader-shell{
-    max-width:900px !important;
-    padding-left:18px !important;
-    padding-right:18px !important;
-  }
-
-  body.page-mode .reader-paper{
-    width:100% !important;
-    max-width:860px !important;
-    padding:18px 20px 12px !important;
-  }
-
-  body.page-mode .reader-content{
-    height:calc(100vh - 205px) !important;
-    min-height:500px !important;
-    column-gap:40px !important;
-  }
-
-  body.page-mode .reader-content > *{
-    margin-left:34px !important;
-    margin-right:34px !important;
-    max-width:calc(100% - 68px) !important;
-  }
-
-  body.page-mode .reader-utility button{
-    min-height:30px !important;
-    padding:4px 9px !important;
-  }
-}
-
-/* Phone/tablet */
-@media(max-width:700px){
-  body.page-mode .site-header .nav{
-    min-height:42px !important;
-    padding:5px 12px !important;
-  }
-
-  body.page-mode .brand{
-    font-size:16px !important;
-  }
-
-  body.page-mode .nav-links{
-    gap:9px !important;
-    font-size:11px !important;
-  }
-
-  body.page-mode .reader-shell{
-    width:auto !important;
-    max-width:none !important;
-    margin-left:10px !important;
-    margin-right:10px !important;
-    padding:4px 0 12px !important;
+    width:calc(100% - 20px);
+    padding:4px 0 10px;
   }
 
   body.page-mode .reader-top{
-    min-height:38px !important;
-    padding:2px 0 !important;
-    margin-bottom:2px !important;
+    min-height:34px;
+    margin:1px 0 2px;
   }
-
-  body.page-mode .progress-info{
-    margin:2px 0 3px !important;
+  body.page-mode .reader-top .back{font-size:12px}
+  body.page-mode .reader-top .icon-btn{
+    min-height:32px;
+    padding:4px 8px;
   }
 
   body.page-mode .reader-utility{
-    gap:4px !important;
-    margin:3px 0 5px !important;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:4px;
+    margin:2px 0 5px;
   }
-
-  body.page-mode .reader-utility button,
-  body.page-mode #togglePageMode{
-    min-height:34px !important;
-    padding:4px 6px !important;
-    font-size:12px !important;
+  body.page-mode .reader-utility button{
+    min-height:33px;
+    padding:4px 6px;
+    font-size:12px;
   }
+  body.page-mode #clearProgress{grid-column:1 / -1}
 
   body.page-mode .reader-paper{
-    width:100% !important;
-    max-width:none !important;
-    margin:0 auto !important;
-    padding:10px 0 7px !important;
-    border-radius:15px !important;
+    padding:9px 0 7px;
+    border-radius:14px;
   }
 
   body.page-mode .reader-content{
-    height:calc(100svh - 255px) !important;
-    min-height:390px !important;
-    column-gap:24px !important;
-    font-size:17px !important;
-    line-height:1.62 !important;
+    height:calc(100svh - 250px);
+    min-height:390px;
+    font-size:17px!important;
+    line-height:1.62!important;
+    --book-page-gap:20px;
   }
-
   body.page-mode .reader-content > *{
-    margin-left:18px !important;
-    margin-right:18px !important;
-    max-width:calc(100% - 36px) !important;
+    padding-left:18px;
+    padding-right:18px;
   }
 
-  body.page-mode .page-turn-controls{
-    margin:3px auto 0 !important;
+  body.page-mode .reader-content > h1{
+    font-size:20px!important;
+    line-height:1.16!important;
   }
+  body.page-mode .reader-content > .subtitle{
+    margin-bottom:12px;
+  }
+
+  .page-turn-controls{
+    margin-top:4px;
+    gap:7px;
+  }
+  .page-turn-controls button{
+    width:38px;
+    height:38px;
+    font-size:24px;
+  }
+  .page-turn-status{min-width:110px}
+  .page-turn-status small{display:none}
 }
 
-/* Narrow phones */
-@media(max-width:420px){
-  body.page-mode .reader-content{
-    column-gap:20px !important;
-  }
-
-  body.page-mode .reader-content > *{
-    margin-left:16px !important;
-    margin-right:16px !important;
-    max-width:calc(100% - 32px) !important;
+/* Normal vertical mode title on phone */
+@media(max-width:700px){
+  .reader-paper > h1{
+    font-size:20px!important;
+    line-height:1.18!important;
+    margin:8px 0 5px!important;
   }
 }

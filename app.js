@@ -540,110 +540,146 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 });
 
-
-/* ===== V5: Chế độ lật trang ===== */
+/* ===== V13: Lật trang - một engine duy nhất ===== */
 document.addEventListener('DOMContentLoaded', () => {
   const article = document.querySelector('.reader-content');
+  const paper = document.querySelector('.reader-paper');
   const toggle = document.getElementById('togglePageMode');
   const controls = document.getElementById('pageTurnControls');
   const prev = document.getElementById('prevPage');
   const next = document.getElementById('nextPage');
-  const pageNumber = document.getElementById('pageNumber');
-  if (!article || !toggle || !controls || !prev || !next || !pageNumber) return;
+  const label = document.getElementById('pageNumber');
+
+  if (!article || !paper || !toggle || !controls || !prev || !next || !label) return;
 
   const MODE_KEY = 'gocnho_reader_view_mode';
   const PAGE_KEY = 'gocnho_page_position_bai40-bon-vo-luong-tam-p1';
 
-  let pageMode = localStorage.getItem(MODE_KEY) === 'page';
+  const category = paper.querySelector(':scope > .reader-category');
+  const title = paper.querySelector(':scope > h1');
+  const subtitle = paper.querySelector(':scope > .subtitle');
+
+  let pageMode = false;
   let currentPage = 0;
   let totalPages = 1;
-  let resizeTimer = null;
-  let touchStartX = 0;
-  let touchStartY = 0;
+  let resizeTimer = 0;
+  let touchX = 0;
+  let touchY = 0;
+  let isAnimating = false;
 
-  function pageStep() {
-    const style = getComputedStyle(article);
-    const gap = parseFloat(style.columnGap) || 0;
-    return article.clientWidth + gap;
+  function moveTitleIntoBook(){
+    if (category && category.parentNode === paper) article.insertBefore(category, article.firstChild);
+    if (title && title.parentNode === paper) article.insertBefore(title, category ? category.nextSibling : article.firstChild);
+    if (subtitle && subtitle.parentNode === paper) article.insertBefore(subtitle, title ? title.nextSibling : article.firstChild);
   }
 
-  function calculatePages() {
-    if (!pageMode) return;
+  function moveTitleOutOfBook(){
+    if (category && category.parentNode === article) paper.insertBefore(category, article);
+    if (title && title.parentNode === article) paper.insertBefore(title, article);
+    if (subtitle && subtitle.parentNode === article) paper.insertBefore(subtitle, article);
+  }
+
+  function pageGap(){
+    return parseFloat(getComputedStyle(article).columnGap) || 0;
+  }
+
+  function pageWidth(){
+    return article.clientWidth;
+  }
+
+  function pageStep(){
+    return pageWidth() + pageGap();
+  }
+
+  function setExactColumnWidth(){
+    const w = Math.max(1, Math.floor(article.clientWidth));
+    article.style.setProperty('--book-page-width', w + 'px');
+  }
+
+  function countPages(){
+    setExactColumnWidth();
+    // Force layout after updating the column width.
+    void article.offsetWidth;
+
     const step = pageStep();
-    if (!step) return;
-
-    // scrollWidth includes all CSS columns laid horizontally.
-    totalPages = Math.max(1, Math.round((article.scrollWidth + (parseFloat(getComputedStyle(article).columnGap) || 0)) / step));
+    const sw = article.scrollWidth;
+    totalPages = Math.max(1, Math.round((sw + pageGap()) / step));
     currentPage = Math.max(0, Math.min(totalPages - 1, currentPage));
-    article.scrollLeft = currentPage * step;
-    updatePageUI();
+    updateUI();
   }
 
-  function updatePageUI() {
-    pageNumber.textContent = `Trang ${currentPage + 1} / ${totalPages}`;
+  function updateUI(){
+    label.textContent = `Trang ${currentPage + 1} / ${totalPages}`;
     prev.disabled = currentPage <= 0;
     next.disabled = currentPage >= totalPages - 1;
 
-    const pct = totalPages <= 1 ? 100 : Math.round(((currentPage + 1) / totalPages) * 100);
+    const pct = Math.round(((currentPage + 1) / totalPages) * 100);
     const bar = document.getElementById('readingProgressBar');
     const percent = document.getElementById('readingPercent');
     if (bar) bar.style.width = pct + '%';
     if (percent) percent.textContent = pct + '%';
 
-    localStorage.setItem(PAGE_KEY, JSON.stringify({
-      page: currentPage,
-      total: totalPages,
-      savedAt: Date.now()
-    }));
+    try{
+      localStorage.setItem(PAGE_KEY, JSON.stringify({page:currentPage, savedAt:Date.now()}));
+    }catch(e){}
   }
 
-  function goToPage(index, smooth = true) {
-    if (!pageMode) return;
+  function goToPage(index, smooth = true){
+    if (!pageMode || isAnimating) return;
     currentPage = Math.max(0, Math.min(totalPages - 1, index));
+    const left = Math.round(currentPage * pageStep());
+
+    isAnimating = smooth;
     article.scrollTo({
-      left: currentPage * pageStep(),
-      top: 0,
-      behavior: smooth ? 'smooth' : 'auto'
+      left,
+      top:0,
+      behavior:smooth ? 'smooth' : 'auto'
     });
-    updatePageUI();
+
+    if (smooth){
+      setTimeout(() => {
+        // iOS/Safari can stop on a fractional offset; force the exact page.
+        article.scrollLeft = left;
+        isAnimating = false;
+      }, 340);
+    }
+    updateUI();
   }
 
-  function restorePage() {
-    try {
+  function restorePage(){
+    try{
       const saved = JSON.parse(localStorage.getItem(PAGE_KEY) || 'null');
       if (saved && Number.isFinite(saved.page)) currentPage = Math.max(0, saved.page);
-    } catch (e) {}
+    }catch(e){}
   }
 
-  function enablePageMode(restore = true) {
+  function enablePageMode(restore = true){
     pageMode = true;
     document.body.classList.add('page-mode');
-    toggle.setAttribute('aria-pressed', 'true');
+    toggle.setAttribute('aria-pressed','true');
     toggle.textContent = '↕ Cuộn dọc';
     controls.hidden = false;
-    localStorage.setItem(MODE_KEY, 'page');
-
+    moveTitleIntoBook();
+    try{localStorage.setItem(MODE_KEY,'page')}catch(e){}
     if (restore) restorePage();
 
-    // Let browser finish column layout before measuring.
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        calculatePages();
+        countPages();
         goToPage(currentPage, false);
       });
     });
   }
 
-  function disablePageMode() {
+  function disablePageMode(){
     pageMode = false;
+    article.scrollLeft = 0;
     document.body.classList.remove('page-mode');
-    toggle.setAttribute('aria-pressed', 'false');
+    toggle.setAttribute('aria-pressed','false');
     toggle.textContent = '📖 Lật trang';
     controls.hidden = true;
-    article.scrollLeft = 0;
-    localStorage.setItem(MODE_KEY, 'scroll');
-
-    // Return progress display to the normal vertical reader calculation.
+    moveTitleOutOfBook();
+    try{localStorage.setItem(MODE_KEY,'scroll')}catch(e){}
     window.dispatchEvent(new Event('scroll'));
   }
 
@@ -655,181 +691,74 @@ document.addEventListener('DOMContentLoaded', () => {
   prev.addEventListener('click', () => goToPage(currentPage - 1));
   next.addEventListener('click', () => goToPage(currentPage + 1));
 
-  article.addEventListener('touchstart', e => {
-    if (!pageMode || e.touches.length !== 1) return;
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-  }, { passive: true });
-
-  article.addEventListener('touchend', e => {
-    if (!pageMode || !e.changedTouches.length) return;
-
-    // Do not flip while the user is selecting text for highlighting.
-    const selection = window.getSelection();
-    if (selection && !selection.isCollapsed && selection.toString().trim()) return;
-
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    const dy = e.changedTouches[0].clientY - touchStartY;
-
-    if (Math.abs(dx) >= 45 && Math.abs(dx) > Math.abs(dy) * 1.25) {
-      if (dx < 0) goToPage(currentPage + 1);
-      else goToPage(currentPage - 1);
-    }
-  }, { passive: true });
-
-  article.setAttribute('tabindex', '0');
+  // Keyboard support on laptop
+  article.tabIndex = 0;
   article.addEventListener('keydown', e => {
     if (!pageMode) return;
-    const tag = (e.target.tagName || '').toLowerCase();
-    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
-
-    if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown'){
       e.preventDefault();
       goToPage(currentPage + 1);
-    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+    }else if (e.key === 'ArrowLeft' || e.key === 'PageUp'){
       e.preventDefault();
       goToPage(currentPage - 1);
     }
   });
 
-  window.addEventListener('resize', () => {
+  // Reliable swipe on phones; does not depend on browser horizontal scrolling.
+  article.addEventListener('touchstart', e => {
+    if (!pageMode || e.touches.length !== 1) return;
+    touchX = e.touches[0].clientX;
+    touchY = e.touches[0].clientY;
+  }, {passive:true});
+
+  article.addEventListener('touchend', e => {
+    if (!pageMode || !e.changedTouches.length) return;
+
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed && sel.toString().trim()) return;
+
+    const dx = e.changedTouches[0].clientX - touchX;
+    const dy = e.changedTouches[0].clientY - touchY;
+
+    if (Math.abs(dx) >= 38 && Math.abs(dx) > Math.abs(dy) * 1.15){
+      if (dx < 0) goToPage(currentPage + 1);
+      else goToPage(currentPage - 1);
+    }
+  }, {passive:true});
+
+  // Recalculate after font/size changes
+  function repaginate(){
     if (!pageMode) return;
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-      calculatePages();
+      countPages();
       goToPage(currentPage, false);
-    }, 180);
-  });
+    }, 140);
+  }
 
-  // Recalculate after changing font size/font family.
-  document.getElementById('smaller')?.addEventListener('click', () => setTimeout(calculatePages, 60));
-  document.getElementById('larger')?.addEventListener('click', () => setTimeout(calculatePages, 60));
-  document.querySelectorAll('[data-font]').forEach(btn => {
-    btn.addEventListener('click', () => setTimeout(calculatePages, 60));
-  });
+  window.addEventListener('resize', repaginate);
+  document.getElementById('smaller')?.addEventListener('click', repaginate);
+  document.getElementById('larger')?.addEventListener('click', repaginate);
+  document.querySelectorAll('[data-font]').forEach(b => b.addEventListener('click', repaginate));
 
-  // "Đọc từ đầu" also resets to page 1 in book mode.
   document.getElementById('clearProgress')?.addEventListener('click', () => {
-    localStorage.removeItem(PAGE_KEY);
+    try{localStorage.removeItem(PAGE_KEY)}catch(e){}
     if (pageMode) goToPage(0, false);
   });
 
-  // If the user had selected page mode before, restore it automatically.
-  if (pageMode) enablePageMode(true);
-});
-
-
-/* ===== V6: Bài 40 default mobile font size ===== */
-document.addEventListener('DOMContentLoaded', () => {
-  const article = document.querySelector('.reader-content');
-  if (!article) return;
-
-  // Keep A-/A+ working. On mobile, start Bài 40 at a calmer 17px
-  // when the old default 20px is still being used.
-  if (window.matchMedia('(max-width:700px)').matches) {
-    try {
+  // Start Bài 40 smaller on mobile if the old 20px default is still saved.
+  if (window.matchMedia('(max-width:700px)').matches){
+    try{
       const s = loadSettings();
-      if (!s.size || s.size === 20) {
+      if (!s.size || s.size === 20){
         s.size = 17;
         saveSettings(s);
         applyReaderSettings();
       }
-    } catch(e) {}
-  }
-});
-
-
-/* ===== V9: Chỉ hiện phần đầu bài ở trang 1 ===== */
-document.addEventListener('DOMContentLoaded', () => {
-  const article = document.querySelector('.reader-content');
-  if (!article) return;
-
-  function syncFirstPageHeader(){
-    if (!document.body.classList.contains('page-mode')){
-      document.body.classList.remove('page-after-first');
-      return;
-    }
-    // In page mode, page 1 starts at scrollLeft 0.
-    // Use a small tolerance for mobile/browser fractional pixels.
-    document.body.classList.toggle('page-after-first', article.scrollLeft > 20);
+    }catch(e){}
   }
 
-  article.addEventListener('scroll', syncFirstPageHeader, {passive:true});
-
-  document.getElementById('togglePageMode')?.addEventListener('click', () => {
-    setTimeout(syncFirstPageHeader, 120);
-  });
-  document.getElementById('prevPage')?.addEventListener('click', () => {
-    setTimeout(syncFirstPageHeader, 380);
-  });
-  document.getElementById('nextPage')?.addEventListener('click', () => {
-    setTimeout(syncFirstPageHeader, 380);
-  });
-
-  window.addEventListener('resize', () => setTimeout(syncFirstPageHeader, 220));
-  setTimeout(syncFirstPageHeader, 300);
-});
-
-
-/* ===== V10 FIX: xác định trang hiện tại từ bộ đếm Trang X / Y ===== */
-document.addEventListener('DOMContentLoaded', () => {
-  const pageNumber = document.getElementById('pageNumber');
-  const toggle = document.getElementById('togglePageMode');
-  if (!pageNumber) return;
-
-  function syncTitleForCurrentPage(){
-    if (!document.body.classList.contains('page-mode')){
-      document.body.classList.remove('page-after-first');
-      return;
-    }
-
-    const m = (pageNumber.textContent || '').match(/Trang\s+(\d+)/i);
-    const page = m ? parseInt(m[1], 10) : 1;
-    document.body.classList.toggle('page-after-first', page > 1);
-  }
-
-  const observer = new MutationObserver(syncTitleForCurrentPage);
-  observer.observe(pageNumber, {childList:true, characterData:true, subtree:true});
-
-  document.getElementById('prevPage')?.addEventListener('click', () => {
-    setTimeout(syncTitleForCurrentPage, 50);
-    setTimeout(syncTitleForCurrentPage, 400);
-  });
-  document.getElementById('nextPage')?.addEventListener('click', () => {
-    setTimeout(syncTitleForCurrentPage, 50);
-    setTimeout(syncTitleForCurrentPage, 400);
-  });
-  toggle?.addEventListener('click', () => setTimeout(syncTitleForCurrentPage, 150));
-
-  setTimeout(syncTitleForCurrentPage, 350);
-});
-
-
-/* ===== V12: precise page snap after layout changes ===== */
-document.addEventListener('DOMContentLoaded', () => {
-  const article = document.querySelector('.reader-content');
-  const pageNumber = document.getElementById('pageNumber');
-  if (!article || !pageNumber) return;
-
-  function currentPageFromLabel(){
-    const m = (pageNumber.textContent || '').match(/Trang\s+(\d+)/i);
-    return m ? Math.max(0, parseInt(m[1],10)-1) : 0;
-  }
-
-  function snapToCurrentPage(){
-    if (!document.body.classList.contains('page-mode')) return;
-    const gap = parseFloat(getComputedStyle(article).columnGap) || 0;
-    const step = article.clientWidth + gap;
-    article.scrollLeft = currentPageFromLabel() * step;
-  }
-
-  document.getElementById('togglePageMode')?.addEventListener('click', () => {
-    setTimeout(snapToCurrentPage, 180);
-  });
-
-  window.addEventListener('resize', () => {
-    setTimeout(snapToCurrentPage, 250);
-  });
-
-  setTimeout(snapToCurrentPage, 500);
+  let savedMode = 'scroll';
+  try{savedMode = localStorage.getItem(MODE_KEY) || 'scroll'}catch(e){}
+  if (savedMode === 'page') enablePageMode(true);
 });
