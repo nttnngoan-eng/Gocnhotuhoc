@@ -1,6 +1,6 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="22.5";
+DATA.version="22.6";
 const DRAFT_KEY='gntt_v21_draft';
 const API_KEY='gntt_v21_publish_api_url';
 const PASS_KEY='gntt_v21_publish_password';
@@ -60,7 +60,7 @@ function loadSelected(){
   lessonSubtitle.value=l?.subtitle||'';
   editor.innerHTML=l?.contentHtml||'';
   preview.textContent=l?.title||'Chọn hoặc tạo bài học';
-  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=22.5`:'reader.html?v=22.5';
+  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=22.6`:'reader.html?v=22.6';
   setStatus(l?'Đã tải bài':'Chưa có bài');
 }
 
@@ -174,7 +174,7 @@ function upsertFromForm(){
   refreshSelectors();
   lessonSelect.value=l.id;
   preview.textContent=l.title;
-  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=22.5`;
+  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=22.6`;
   return l;
 }
 
@@ -185,7 +185,7 @@ function buildCatalogJs(){
     chapters:(b.chapters||[]).map(c=>({
       id:c.id,title:c.title,
       lessons:(c.lessons||[]).map(l=>({
-        id:l.id,title:l.title,subtitle:l.subtitle||'',href:`reader.html?id=${l.id}&v=22.5`
+        id:l.id,title:l.title,subtitle:l.subtitle||'',tocLevel:Number(l.tocLevel)||2,href:`reader.html?id=${l.id}&v=22.6`
       }))
     }))
   }))};
@@ -323,97 +323,131 @@ function normalizeTocTitle(v){
     .replace(/\s+/g,' ').trim();
 }
 function tocLevelFromTitle(raw){
-  const t=String(raw||'').trim();
+  const t=normalizeTocTitle(raw);
 
-  // Cấp lớn: I., II., III., IV. / A) 1- ... / B) 1- ... / 2- TỨ THÁNH ĐẾ / tiêu đề lớn.
+  // Cấp 1: phần lớn / chương lớn.
   if(/^(I|II|III|IV|V|VI|VII|VIII|IX|X)[\s.\-–—)]/i.test(t)) return 1;
-  if(/^[A-ZÀ-Ỹ]\)\s*\d+\s*[-–—]/i.test(t)) return 1;
-  if(/^\d+\s*[-–—]\s*[A-ZÀ-Ỹ0-9 ]{4,}$/i.test(t)) return 1;
-
-  // Một số đầu mục lớn thường gặp trong sách Phật học.
   if(/^(TIỂU SỬ|LỜI GIỚI THIỆU|DẪN NHẬP|LỜI KHAI THỊ|LỄ PHẬT|KINH TỨ NIỆM XỨ|ĐỊNH NGHĨA|HẢI TRIỀU ÂM TOÀN TẬP)$/i.test(t)) return 1;
 
-  // Cấp con: mục ngắn, không có ký hiệu đánh số lớn.
-  return 2;
+  // Cấp 2: nhóm bên trong một chương.
+  if(/^[A-ZÀ-Ỹ]\)\s*\d+\s*[-–—]/i.test(t)) return 2;
+  if(/^\d+\s*[-–—]/i.test(t)) return 2;
+
+  // Tạm thời là mục con; refineTocLevels sẽ nâng lên cấp 2 khi cần.
+  return 3;
 }
 
 function refineTocLevels(entries){
   const arr=entries.map(x=>({...x}));
+  let currentMajor=false;
+  let hasNumberedSubgroup=false;
 
   for(const e of arr){
     const t=e.title.trim();
-    if(/^[A-ZÀ-Ỹ]\)\s*\d+\s*[-–—]/i.test(t) || /^\d+\s*[-–—]\s*[A-ZÀ-Ỹ0-9 ]{4,}$/i.test(t)){
-      e.level=1;
-    }
-  }
 
-  let currentMajorIndex=-1;
-  for(let i=0;i<arr.length;i++){
-    const e=arr[i];
-    if(e.level===1){
-      currentMajorIndex=i;
+    if(/^(I|II|III|IV|V|VI|VII|VIII|IX|X)[\s.\-–—)]/i.test(t) ||
+       /^(TIỂU SỬ|LỜI GIỚI THIỆU|DẪN NHẬP|LỜI KHAI THỊ|LỄ PHẬT|KINH TỨ NIỆM XỨ|ĐỊNH NGHĨA|HẢI TRIỀU ÂM TOÀN TẬP)$/i.test(t)){
+      e.level=1;
+      currentMajor=true;
+      hasNumberedSubgroup=false;
       continue;
     }
-    if(currentMajorIndex>=0){
-      e.level=2;
-    }
-  }
 
-  const childNames=[
-    'Ái dục','Sân hận','Thùy miên','Trạo hối','Nghi',
-    'Niệm','Trạch pháp','Tinh tấn','Hỷ','Khinh an','Định','Xả',
-    'Khổ','Khổ Tập','Khổ Diệt','Khổ Diệt Đạo'
-  ];
-  for(const e of arr){
-    if(childNames.some(n=>e.title.localeCompare(n,'vi',{sensitivity:'base'})===0)){
+    if(/^[A-ZÀ-Ỹ]\)\s*\d+\s*[-–—]/i.test(t) || /^\d+\s*[-–—]/i.test(t)){
       e.level=2;
+      hasNumberedSubgroup=true;
+      continue;
     }
-  }
 
-  const introPatterns=/^(TIỂU SỬ|LỜI GIỚI THIỆU|DẪN NHẬP|LỜI KHAI THỊ|LỄ PHẬT|KINH TỨ NIỆM XỨ|ĐỊNH NGHĨA|HẢI TRIỀU ÂM TOÀN TẬP)$/i;
-  for(const e of arr){
-    if(introPatterns.test(e.title.trim())) e.level=1;
+    // Sau I- QUÁN THÂN / II- QUÁN THỌ... nếu chưa xuất hiện nhóm đánh số,
+    // các dòng như Hơi thở, Oai nghi... là Mục trực tiếp (cấp 2).
+    if(currentMajor && !hasNumberedSubgroup){
+      e.level=2;
+    }else{
+      // Sau NĂM TRIỀN CÁI / BẢY GIÁC CHI / TỨ THÁNH ĐẾ...
+      // các dòng Ái dục, Niệm, Khổ... là Mục con (cấp 3).
+      e.level=3;
+    }
   }
   return arr;
 }
+
+function parseTocLine(line,nextLine){
+  const txt=String(line||'').replace(/\u00a0/g,' ').trim();
+  if(!txt) return null;
+
+  // Tên .... 123
+  let m=txt.match(/^(.*?)(?:\.{2,}|…{2,}|\s{2,}|\s+\.+\s*)\s*(\d{1,4})\s*$/);
+
+  // Tên 123 (dự phòng)
+  if(!m) m=txt.match(/^(.{2,160}?)\s+(\d{1,4})\s*$/);
+
+  // PDF.js đôi khi tách số trang thành dòng kế tiếp.
+  if(!m && nextLine && /^\s*\d{1,4}\s*$/.test(nextLine)){
+    m=[null,txt,String(nextLine).trim()];
+  }
+  if(!m) return null;
+
+  const raw=String(m[1]||'').trim();
+  const page=Number(m[2]);
+  const title=normalizeTocTitle(raw);
+  if(!title || page<1 || page>2000 || title.length<2) return null;
+  if(/^(MỤC LỤC|TỨ NIỆM XỨ|GIẢNG NGHĨA)$/i.test(title)) return null;
+  return {title,page,level:tocLevelFromTitle(raw),enabled:true};
+}
+
 function detectTocEntries(pages){
   const found=[];
-  const max=Math.min(25,pages.length);
-  let inToc=false, tocSeen=false, quiet=0;
+  const max=Math.min(40,pages.length);
+  let inToc=false, tocSeen=false, quietPages=0;
+
   for(let pi=0;pi<max;pi++){
-    const lines=String(pages[pi]||'').split('\n').map(x=>x.trim()).filter(Boolean);
-    if(lines.some(x=>/M[ỤU]C\s+L[ỤU]C/i.test(x))){
-      inToc=true; tocSeen=true; quiet=0; continue;
+    const allLines=String(pages[pi]||'').split('\n').map(x=>x.trim()).filter(Boolean);
+    let startAt=0;
+
+    const tocIndex=allLines.findIndex(x=>/M[ỤU]C\s+L[ỤU]C/i.test(x));
+    if(tocIndex>=0){
+      inToc=true;
+      tocSeen=true;
+      quietPages=0;
+      // QUAN TRỌNG V22.6: không bỏ cả trang có chữ MỤC LỤC.
+      // Đọc ngay các dòng phía sau chữ MỤC LỤC trên chính trang này.
+      startAt=tocIndex+1;
     }
     if(!inToc) continue;
+
+    const lines=allLines.slice(startAt);
     let pageHits=0;
     for(let i=0;i<lines.length;i++){
-      let line=lines[i];
-      let m=line.match(/^(.*?)(?:\.{2,}|\s{2,})\s*(\d{1,4})\s*$/);
-      if(!m) m=line.match(/^(.{3,120}?)\s+(\d{1,4})\s*$/);
-      if(!m && i+1<lines.length && /^\d{1,4}$/.test(lines[i+1])){
-        m=[null,line,lines[i+1]]; i++;
-      }
-      if(!m) continue;
-      const page=Number(m[2]);
-      const raw=m[1].trim();
-      const title=normalizeTocTitle(raw);
-      if(!title || page<1 || page>2000 || title.length<2) continue;
-      if(/^(TỨ NIỆM XỨ|Giảng nghĩa)$/i.test(title)) continue;
-      found.push({title,page,level:tocLevelFromTitle(raw),enabled:true});
+      const parsed=parseTocLine(lines[i],lines[i+1]);
+      if(!parsed) continue;
+
+      // Nếu parse dùng dòng tiếp theo làm số trang thì bỏ qua dòng số đó.
+      if(i+1<lines.length && /^\s*\d{1,4}\s*$/.test(lines[i+1]) &&
+         !/\d{1,4}\s*$/.test(lines[i])) i++;
+
+      found.push(parsed);
       pageHits++;
     }
-    quiet = pageHits ? 0 : quiet+1;
-    if(tocSeen && quiet>=2 && found.length>=3) break;
+
+    if(pageHits>0) quietPages=0;
+    else if(tocSeen) quietPages++;
+
+    // Chỉ kết thúc sau 2 trang liên tiếp không còn mục, và đã có đủ một lượng mục hợp lý.
+    if(tocSeen && quietPages>=2 && found.length>=5) break;
   }
+
   const seen=new Set();
   const unique=found.filter(x=>{
-    const key=x.title.toLowerCase()+'|'+x.page;
+    const key=x.title.toLocaleLowerCase('vi')+'|'+x.page;
     if(seen.has(key)) return false;
-    seen.add(key); return true;
-  });
+    seen.add(key);
+    return true;
+  }).sort((a,b)=>a.page-b.page);
+
   return refineTocLevels(unique);
 }
+
 function detectPageOffset(entries,pages){
   // Tìm vài tiêu đề mục lục trong phần thân sách để ước lượng: PDF index - số trang in.
   const candidates=entries.filter(x=>x.title.length>=4).slice(0,12);
@@ -494,7 +528,11 @@ function addTocRow(item={title:'Mục mới',page:1,level:1,enabled:true}){
   const tr=document.createElement('tr');
   tr.innerHTML=`
     <td><input class="toc-use" type="checkbox" ${item.enabled!==false?'checked':''}></td>
-    <td><select class="toc-level"><option value="1" ${Number(item.level)===1?'selected':''}>Chương</option><option value="2" ${Number(item.level)===2?'selected':''}>Mục</option></select></td>
+    <td><select class="toc-level">
+      <option value="1" ${Number(item.level)===1?'selected':''}>Chương</option>
+      <option value="2" ${Number(item.level)===2?'selected':''}>Mục</option>
+      <option value="3" ${Number(item.level)===3?'selected':''}>Mục con</option>
+    </select></td>
     <td><input class="toc-title" type="text" value="${escapeHtml(item.title||'')}"></td>
     <td><input class="toc-page" type="number" min="1" value="${Number(item.page)||1}"></td>
     <td><button type="button" class="toc-del" title="Xóa">✕</button></td>`;
@@ -545,7 +583,7 @@ $('analyzePdf').addEventListener('click',async()=>{
         : (result.legacyDetected
             ? 'Có dấu hiệu VNI cũ nhưng chức năng sửa VNI đang tắt.'
             : 'Giữ nguyên chữ PDF.');
-      $('pdfStatus').textContent=`${textMode} Đã nhận ${result.toc.length} mục và tự phân cấp Chương/Mục. Độ lệch trang ước tính: ${result.pageOffset>=0?'+':''}${result.pageOffset}. Hãy kiểm tra chữ và Mục lục trước khi đăng.`;
+      $('pdfStatus').textContent=`${textMode} Đã nhận ${result.toc.length} mục từ đầu Mục lục và tự phân 3 cấp Chương/Mục/Mục con. Độ lệch trang ước tính: ${result.pageOffset>=0?'+':''}${result.pageOffset}. Hãy kiểm tra chữ và Mục lục trước khi đăng.`;
     }else{
       $('tocEditor').hidden=true;
       $('pdfStatus').textContent=`Không nhận được Mục lục tự động. Bạn có thể chọn “Theo số trang” hoặc thêm mục thủ công.`;
@@ -574,7 +612,7 @@ function buildReaderBookFromToc({title,author,description,id,imp,toc}){
         id:`${id}-${current.id}-mo-dau`,
         title:e.title,
         subtitle:[author,description,`Trang ${e.page}${end>=start?'–'+(end-offset):''}`].filter(Boolean).join(' · '),
-        youtube:'',contentHtml
+        youtube:'',contentHtml,tocLevel:1
       });
     }else{
       const lid=uniqueId(slug(e.title)||('muc-'+(current.lessons.length+1)),current.lessons.map(l=>l.id));
@@ -582,7 +620,7 @@ function buildReaderBookFromToc({title,author,description,id,imp,toc}){
         id:`${id}-${current.id}-${lid}`,
         title:e.title,
         subtitle:[author,description,`Trang ${e.page}${end>=start?'–'+(end-offset):''}`].filter(Boolean).join(' · '),
-        youtube:'',contentHtml
+        youtube:'',contentHtml,tocLevel:e.level
       });
     }
   }

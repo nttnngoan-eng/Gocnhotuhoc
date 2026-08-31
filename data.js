@@ -1,5 +1,5 @@
 window.GNTT_DATA = {
-  "version": 22.5,
+  "version": 22.6,
   "books": [
     {
       "id": "a-ti-dat-ma-phap-uan-tuc-luan",

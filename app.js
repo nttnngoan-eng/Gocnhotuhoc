@@ -785,7 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.innerHTML = books.map(book => {
       const chapterCount = (book.chapters || []).length;
       const lessonCount = countLessons(book);
-      const href = `library.html?v=22.5&book=${encodeURIComponent(book.id)}`;
+      const href = `library.html?v=22.6&book=${encodeURIComponent(book.id)}`;
       return `<a class="book-card" href="${href}">
         <div class="book-icon">📚</div>
         <div class="book-card-body">
@@ -821,7 +821,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <h3 class="chapter-title">${esc(ch.title)}</h3>
           <div class="chapter-lessons">
             ${lessons.map((lesson,idx) => `
-              <a class="lesson lesson-v19" href="${esc(lesson.href)}">
+              <a class="lesson lesson-v19 toc-level-${Number(lesson.tocLevel)||2}" href="${esc(lesson.href)}">
                 <div class="meta">
                   <span class="badge">${idx+1}</span>
                   <div>

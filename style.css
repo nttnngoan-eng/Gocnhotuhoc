@@ -754,3 +754,10 @@ body.page-mode .reader-title-footer{
     font-size:.82rem;
   }
 }
+
+/* V22.6: hiển thị Mục con thụt vào trong Thư viện */
+.chapter-lessons .lesson.toc-level-3{margin-left:28px;width:calc(100% - 28px);}
+.chapter-lessons .lesson.toc-level-3 h4{font-size:.96em;}
+@media (max-width:640px){
+  .chapter-lessons .lesson.toc-level-3{margin-left:16px;width:calc(100% - 16px);}
+}
