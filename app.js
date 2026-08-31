@@ -400,3 +400,155 @@ document.addEventListener('DOMContentLoaded', function(){
   });
   document.getElementById('removeHighlight')?.addEventListener('click',()=>setTimeout(renderHighlightList,100));
 });
+
+
+/* ===== Robust Highlight V2 ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  const article = document.querySelector('.reader-content');
+  if (!article) return;
+
+  const ARTICLE_ID = 'bai40-bon-vo-luong-tam-p1';
+  const KEY = 'gocnho_highlights_' + ARTICLE_ID;
+  let savedRange = null;
+
+  // Remove older toolbar if present and create a fresh one.
+  document.querySelectorAll('#highlightToolbar, .goc-highlight-menu').forEach(el => el.remove());
+
+  const menu = document.createElement('div');
+  menu.className = 'goc-highlight-menu';
+  menu.innerHTML = `
+    <button type="button" data-c="yellow" title="Vàng">🟨</button>
+    <button type="button" data-c="green" title="Xanh">🟩</button>
+    <button type="button" data-c="pink" title="Hồng">🩷</button>
+    <button type="button" data-remove title="Bỏ đánh dấu">✕</button>`;
+  Object.assign(menu.style, {
+    position:'fixed', display:'none', zIndex:'99999', padding:'6px',
+    border:'1px solid rgba(80,60,35,.18)', borderRadius:'10px',
+    background:'#fffdf8', boxShadow:'0 8px 28px rgba(0,0,0,.18)',
+    gap:'4px', alignItems:'center'
+  });
+  menu.querySelectorAll('button').forEach(b => Object.assign(b.style,{
+    border:'0', background:'transparent', cursor:'pointer', fontSize:'19px',
+    padding:'5px 7px', borderRadius:'7px'
+  }));
+  document.body.appendChild(menu);
+
+  function getData(){
+    try { return JSON.parse(localStorage.getItem(KEY) || '[]'); }
+    catch(e){ return []; }
+  }
+  function setData(v){ localStorage.setItem(KEY, JSON.stringify(v)); }
+
+  function pathOf(node){
+    const path=[];
+    while(node && node !== article){
+      const p=node.parentNode;
+      if(!p) break;
+      path.unshift(Array.prototype.indexOf.call(p.childNodes,node));
+      node=p;
+    }
+    return path;
+  }
+  function nodeAt(path){
+    let n=article;
+    for(const i of path){ if(!n || !n.childNodes[i]) return null; n=n.childNodes[i]; }
+    return n;
+  }
+  function serializeRange(r, color){
+    return {
+      sp:pathOf(r.startContainer), so:r.startOffset,
+      ep:pathOf(r.endContainer), eo:r.endOffset,
+      text:r.toString(), color, id:'h'+Date.now()+Math.random().toString(36).slice(2,7)
+    };
+  }
+  function wrapRange(r, color, id){
+    if(r.collapsed) return false;
+    const mark=document.createElement('mark');
+    mark.className='goc-user-highlight';
+    mark.dataset.hid=id;
+    mark.dataset.color=color;
+    mark.style.background = color==='green' ? '#ccefcf' : color==='pink' ? '#ffd2df' : '#ffe99a';
+    mark.style.padding='0 .04em';
+    mark.style.borderRadius='2px';
+    try { r.surroundContents(mark); return true; }
+    catch(e){
+      try {
+        const frag=r.extractContents();
+        mark.appendChild(frag);
+        r.insertNode(mark);
+        return true;
+      } catch(err){ return false; }
+    }
+  }
+
+  function restore(){
+    const items=getData();
+    // Restore backwards so DOM paths remain valid as long as possible.
+    [...items].reverse().forEach(item=>{
+      const s=nodeAt(item.sp), e=nodeAt(item.ep);
+      if(!s || !e) return;
+      try{
+        const r=document.createRange();
+        r.setStart(s, Math.min(item.so, s.length ?? item.so));
+        r.setEnd(e, Math.min(item.eo, e.length ?? item.eo));
+        wrapRange(r,item.color,item.id);
+      }catch(err){}
+    });
+  }
+
+  function hide(){ menu.style.display='none'; savedRange=null; }
+
+  function showForSelection(){
+    const sel=window.getSelection();
+    if(!sel || !sel.rangeCount || sel.isCollapsed || !sel.toString().trim()){ return; }
+    const r=sel.getRangeAt(0);
+    if(!article.contains(r.commonAncestorContainer)) return;
+    savedRange=r.cloneRange();
+    const rect=r.getBoundingClientRect();
+    menu.style.display='flex';
+    requestAnimationFrame(()=>{
+      let left=rect.left + rect.width/2 - menu.offsetWidth/2;
+      left=Math.max(8,Math.min(innerWidth-menu.offsetWidth-8,left));
+      let top=rect.top-menu.offsetHeight-8;
+      if(top<8) top=rect.bottom+8;
+      menu.style.left=left+'px'; menu.style.top=top+'px';
+    });
+  }
+
+  document.addEventListener('mouseup', ()=>setTimeout(showForSelection, 10));
+  document.addEventListener('touchend', ()=>setTimeout(showForSelection, 180));
+
+  menu.addEventListener('mousedown', e=>e.preventDefault());
+  menu.addEventListener('touchstart', e=>e.stopPropagation(), {passive:true});
+
+  menu.querySelectorAll('[data-c]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(!savedRange) return;
+      const item=serializeRange(savedRange,btn.dataset.c);
+      if(wrapRange(savedRange,btn.dataset.c,item.id)){
+        const items=getData(); items.push(item); setData(items);
+      }
+      window.getSelection()?.removeAllRanges();
+      hide();
+    });
+  });
+
+  menu.querySelector('[data-remove]').addEventListener('click', hide);
+
+  // Click an existing highlight to remove it.
+  article.addEventListener('click', e=>{
+    const mark=e.target.closest('mark.goc-user-highlight');
+    if(!mark) return;
+    const id=mark.dataset.hid;
+    const parent=mark.parentNode;
+    while(mark.firstChild) parent.insertBefore(mark.firstChild,mark);
+    mark.remove(); parent.normalize();
+    setData(getData().filter(x=>x.id!==id));
+  });
+
+  document.addEventListener('mousedown', e=>{
+    if(!menu.contains(e.target) && !article.contains(e.target)) hide();
+  });
+
+  restore();
+});
