@@ -785,12 +785,14 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.innerHTML = books.map(book => {
       const chapterCount = (book.chapters || []).length;
       const lessonCount = countLessons(book);
-      return `<a class="book-card" href="library.html?v=21&book=${encodeURIComponent(book.id)}">
+      const isPdf = book.type === 'pdf';
+      const href = isPdf ? `pdf-reader.html?book=${encodeURIComponent(book.id)}&v=21.1` : `library.html?v=21.1&book=${encodeURIComponent(book.id)}`;
+      return `<a class="book-card" href="${href}">
         <div class="book-icon">📚</div>
         <div class="book-card-body">
           <h3>${esc(book.title)}</h3>
           <p>${esc(book.description || '')}</p>
-          <div class="book-stats">${chapterCount} phẩm/chương · ${lessonCount} bài</div>
+          <div class="book-stats">${isPdf ? '📄 Sách PDF' : (chapterCount+' phẩm/chương · '+lessonCount+' bài')}</div>
         </div>
         <span class="book-arrow">→</span>
       </a>`;
@@ -809,6 +811,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     root.innerHTML = catalog.books.map(book => {
       if(selectedBook && selectedBook !== book.id) return '';
+      if(book.type === 'pdf'){
+        const hay=norm(book.title+' '+(book.author||'')+' '+(book.description||''));
+        if(q && !hay.includes(q)) return '';
+        visibleCount++;
+        return `<article class="library-book" data-book-id="${esc(book.id)}"><div class="library-book-head"><div class="book-icon">📄</div><div><div class="eyebrow">Sách PDF</div><h2>${esc(book.title)}</h2><p>${esc(book.author||book.description||'')}</p></div></div><section class="chapter-block"><a class="lesson lesson-v19" href="pdf-reader.html?book=${encodeURIComponent(book.id)}&v=21.1"><div class="meta"><span class="badge">PDF</span><div><h4>Đọc nguyên cuốn</h4><p>${esc(book.description||'Mở sách PDF trực tuyến')}</p></div></div><span>Đọc PDF →</span></a></section></article>`;
+      }
       const matchedChapters = (book.chapters || []).map(ch => {
         const lessons = (ch.lessons || []).filter(lesson => {
           const hay = norm(book.title + ' ' + ch.title + ' ' + lesson.title + ' ' + (lesson.subtitle||''));

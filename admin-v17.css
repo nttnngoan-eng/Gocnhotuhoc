@@ -362,3 +362,6 @@ code{background:#eee8dc;padding:2px 5px;border-radius:5px}
 .manager-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .manager-actions button{min-height:38px}
 @media(max-width:820px){.manager-grid{grid-template-columns:1fr}.manager-actions button{flex:1 1 auto}}
+
+/* ===== V21.1 PDF ===== */
+.pdf-panel{margin:12px 0;padding:14px;border:1px solid #d9c6aa;border-radius:12px;background:#fffaf1}.pdf-panel-head strong,.pdf-panel-head small{display:block}.pdf-panel-head small{margin-top:4px;color:#766b5e}.pdf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.pdf-grid label{display:flex;flex-direction:column;gap:5px}.pdf-grid label span{font-size:12px;color:#6d6255}.pdf-grid .wide{grid-column:1/-1}.pdf-grid input{box-sizing:border-box;width:100%;padding:10px 11px;border:1px solid #ddcfbc;border-radius:9px;background:#fff;font:inherit}.pdf-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}.pdf-status{margin-top:9px;font-size:13px;color:#6d6255}@media(max-width:700px){.pdf-grid{grid-template-columns:1fr}.pdf-grid .wide{grid-column:auto}.pdf-actions button{flex:1}}

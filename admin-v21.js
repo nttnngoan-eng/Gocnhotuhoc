@@ -1,5 +1,6 @@
 
-const DATA = window.GNTT_DATA || {version:21,books:[]};
+const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
+DATA.version="21.1";
 const DRAFT_KEY='gntt_v21_draft';
 const API_KEY='gntt_v21_publish_api_url';
 const PASS_KEY='gntt_v21_publish_password';
@@ -79,6 +80,18 @@ $('newBook').addEventListener('click',()=>{
   preview.textContent='Đầu sách mới · nhập bài đầu tiên'; setStatus('Đang tạo đầu sách mới');
   bookTitle.focus();
 });
+$('newPdfBook').addEventListener('click',()=>{
+  $('pdfPanel').hidden=false;
+  $('pdfTitle').value=''; $('pdfAuthor').value=''; $('pdfDescription').value=''; $('pdfFile').value='';
+  $('pdfStatus').textContent='Chưa chọn file PDF.';
+  $('pdfTitle').focus();
+});
+$('cancelPdf').addEventListener('click',()=>{$('pdfPanel').hidden=true;});
+$('pdfFile').addEventListener('change',()=>{
+  const f=$('pdfFile').files?.[0];
+  $('pdfStatus').textContent=f ? `Đã chọn: ${f.name} · ${(f.size/1024/1024).toFixed(1)} MB` : 'Chưa chọn file PDF.';
+});
+
 $('newChapter').addEventListener('click',()=>{
   const b=currentBook(); if(!b){alert('Hãy chọn hoặc tạo đầu sách trước.');return;}
   mode='new-chapter'; selected.chapterId=null; selected.lessonId=null;
@@ -157,7 +170,7 @@ function upsertFromForm(){
 function buildDataJs(){ return 'window.GNTT_DATA = '+JSON.stringify(DATA,null,2)+';\n'; }
 function buildCatalogJs(){
   const cat={books:DATA.books.map(b=>({
-    id:b.id,title:b.title,description:b.description||'',
+    id:b.id,title:b.title,description:b.description||'',type:b.type||'lesson',pdfUrl:b.pdfUrl||'',author:b.author||'',
     chapters:(b.chapters||[]).map(c=>({
       id:c.id,title:c.title,
       lessons:(c.lessons||[]).map(l=>({
@@ -230,6 +243,45 @@ document.querySelectorAll('[data-block]').forEach(btn=>btn.addEventListener('cli
 }));
 document.querySelectorAll('[data-color]').forEach(btn=>btn.addEventListener('click',()=>{editor.focus();document.execCommand('foreColor',false,btn.dataset.color);}));
 $('clearFormat').addEventListener('click',()=>{editor.focus();document.execCommand('removeFormat',false,null);});
+
+
+function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve(String(r.result).split(',')[1]||'');
+    r.onerror=()=>reject(new Error('Không đọc được file PDF'));
+    r.readAsDataURL(file);
+  });
+}
+$('publishPdf').addEventListener('click',async()=>{
+  try{
+    const title=$('pdfTitle').value.trim();
+    const author=$('pdfAuthor').value.trim();
+    const description=$('pdfDescription').value.trim();
+    const file=$('pdfFile').files?.[0];
+    if(!title) throw new Error('Chưa nhập tên sách PDF');
+    if(!file) throw new Error('Chưa chọn file PDF');
+    if(file.type && file.type!=='application/pdf') throw new Error('File đã chọn không phải PDF');
+    if(file.size>15*1024*1024) throw new Error('V21.1 giới hạn PDF 15 MB mỗi file');
+    const id=uniqueId(slug(title),DATA.books.map(b=>b.id));
+    const pdfPath='pdf/'+id+'.pdf';
+    $('pdfStatus').textContent='Đang đọc PDF…';
+    const pdfBase64=await fileToBase64(file);
+    const book={id,title,author,description:description||author||'Sách PDF',type:'pdf',pdfUrl:pdfPath,chapters:[]};
+    DATA.books.push(book);
+    setPublishState('Đang đăng PDF…','busy'); $('pdfStatus').textContent='Đang tải PDF và danh mục lên GitHub…';
+    try{
+      await apiRequest('/publish-pdf-v21-1',{method:'POST',body:JSON.stringify({pdfPath,pdfBase64,dataJs:buildDataJs(),catalogJs:buildCatalogJs(),message:'Thêm sách PDF: '+title})});
+    }catch(e){
+      DATA.books=DATA.books.filter(b=>b!==book); throw e;
+    }
+    selected={bookId:id,chapterId:null,lessonId:null};
+    refreshSelectors();
+    setPublishState('Đã đăng thành công','ok');
+    $('pdfStatus').innerHTML='Đã đăng sách PDF. <a href="pdf-reader.html?book='+encodeURIComponent(id)+'&v=21.1" target="_blank">Mở sách PDF ↗</a>';
+    alert('Đăng sách PDF thành công! GitHub Pages thường cập nhật sau 1–3 phút.');
+  }catch(e){ setPublishState('Đăng thất bại','error'); $('pdfStatus').textContent=e.message||String(e); alert('Chưa đăng được PDF:\n'+(e.message||e)); }
+});
 
 document.addEventListener('DOMContentLoaded',()=>{
   $('publishApiUrl').value=localStorage.getItem(API_KEY)||'https://gocnhotuhoc-publisher.nttn-ngoan.workers.dev';

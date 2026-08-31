@@ -6,19 +6,19 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Quản trị nội dung V21 - Góc nhỏ tu học</title>
-<link rel="stylesheet" href="admin-v17.css?v=21">
+<title>Quản trị nội dung V21.1 - Góc nhỏ tu học</title>
+<link rel="stylesheet" href="admin-v17.css?v=21.1">
 </head>
 <body>
 <header class="admin-header">
-  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V21</b></div>
+  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V21.1</b></div>
   <a id="openReaderLink" href="reader.html?v=21" target="_blank" rel="noopener">Mở bài đọc ↗</a>
 </header>
 
 <main class="admin-wrap">
   <section class="notice">
-    <strong>V21 · Nhiều sách → nhiều chương → nhiều bài</strong>
-    <span>Tạo thêm đầu sách, phẩm/chương và bài học mà không ghi đè các bài cũ.</span>
+    <strong>V21.1 · Thêm sách PDF</strong>
+    <span>Giữ nguyên sách/bài V21 và có thể đăng thêm nguyên cuốn PDF.</span>
   </section>
 
   <section class="library-manager">
@@ -29,9 +29,23 @@
     </div>
     <div class="manager-actions">
       <button type="button" id="newBook">➕ Đầu sách mới</button>
+      <button type="button" id="newPdfBook">📄 Sách PDF mới</button>
       <button type="button" id="newChapter">➕ Phẩm / Chương mới</button>
       <button type="button" id="newLesson" class="primary">➕ Bài mới</button>
     </div>
+  </section>
+
+
+  <section class="pdf-panel" id="pdfPanel" hidden>
+    <div class="pdf-panel-head"><strong>📄 Đăng nguyên cuốn sách PDF</strong><small>PDF sẽ được lưu trong thư mục pdf/ trên GitHub và xuất hiện trong Thư viện.</small></div>
+    <div class="pdf-grid">
+      <label><span>Tên sách PDF</span><input id="pdfTitle" type="text" placeholder="Ví dụ: TỨ NIỆM XỨ GIẢNG NGHĨA"></label>
+      <label><span>Tác giả / Giảng nghĩa</span><input id="pdfAuthor" type="text" placeholder="Ví dụ: Tỳ Kheo Ni Hải Triều Âm"></label>
+      <label class="wide"><span>Mô tả</span><input id="pdfDescription" type="text" placeholder="Ví dụ: Tái bản lần thứ 3, có sửa chữa"></label>
+      <label class="wide"><span>Chọn file PDF</span><input id="pdfFile" type="file" accept="application/pdf,.pdf"></label>
+    </div>
+    <div class="pdf-actions"><button type="button" id="cancelPdf">Hủy</button><button type="button" id="publishPdf" class="primary publish-primary">🚀 Đăng sách PDF lên website</button></div>
+    <div id="pdfStatus" class="pdf-status">Chưa chọn file PDF.</div>
   </section>
 
   <section class="admin-actions">
@@ -141,7 +155,7 @@
   </section>
 </main>
 
-<script src="data.js?v=21"></script>
-<script src="admin-v21.js?v=21"></script>
+<script src="data.js?v=21.1"></script>
+<script src="admin-v21.js?v=21.1"></script>
 </body>
 </html>
