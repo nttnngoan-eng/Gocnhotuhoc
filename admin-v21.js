@@ -1,6 +1,6 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="22.7";
+DATA.version="23";
 const DRAFT_KEY='gntt_v21_draft';
 const API_KEY='gntt_v21_publish_api_url';
 const PASS_KEY='gntt_v21_publish_password';
@@ -60,7 +60,7 @@ function loadSelected(){
   lessonSubtitle.value=l?.subtitle||'';
   editor.innerHTML=l?.contentHtml||'';
   preview.textContent=l?.title||'Chọn hoặc tạo bài học';
-  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=22.7`:'reader.html?v=22.7';
+  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=23`:'reader.html?v=23';
   setStatus(l?'Đã tải bài':'Chưa có bài');
 }
 
@@ -174,7 +174,7 @@ function upsertFromForm(){
   refreshSelectors();
   lessonSelect.value=l.id;
   preview.textContent=l.title;
-  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=22.7`;
+  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=23`;
   return l;
 }
 
@@ -185,7 +185,7 @@ function buildCatalogJs(){
     chapters:(b.chapters||[]).map(c=>({
       id:c.id,title:c.title,
       lessons:(c.lessons||[]).map(l=>({
-        id:l.id,title:l.title,subtitle:l.subtitle||'',tocLevel:Number(l.tocLevel)||2,href:`reader.html?id=${l.id}&v=22.7`
+        id:l.id,title:l.title,subtitle:l.subtitle||'',tocLevel:Number(l.tocLevel)||2,href:`reader.html?id=${l.id}&v=23`
       }))
     }))
   }))};
@@ -318,7 +318,7 @@ function convertMixedVniText(text){
 }
 
 function fixKnownPdfSpacing(text){
-  // V22.7: PDF này đôi khi tách riêng chữ "u" trong "Tiểu":
+  // V23: PDF này đôi khi tách riêng chữ "u" trong "Tiểu":
   // "Tiể u Sử" -> "Tiểu Sử".
   // Chỉ sửa mẫu đã xác nhận để tránh ghép nhầm các từ bình thường khác.
   return String(text||'')

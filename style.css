@@ -761,3 +761,5 @@ body.page-mode .reader-title-footer{
 @media (max-width:640px){
   .chapter-lessons .lesson.toc-level-3{margin-left:16px;width:calc(100% - 16px);}
 }
+
+.pwa-install-wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px}.pwa-install-btn{border:1px solid var(--border);border-radius:12px;padding:11px 15px;background:var(--paper);color:var(--text);font-weight:700}@media(display-mode:standalone){.pwa-install-wrap{display:none}}
