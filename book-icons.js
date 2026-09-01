@@ -12,7 +12,7 @@
     ['theme-scroll','Chủ đề','Luận · Cổ thư'],
     ['theme-openbook','Chủ đề','Tài liệu · Học tập']
   ].map(([id,group,label])=>({id,group,label}));
-  ns.icons=[...lotus,...bodhi,...themes];
+  ns.icons=[{id:'image-bodhi-red',group:'Ảnh icon',label:'Lá bồ đề non đỏ'},...lotus,...bodhi,...themes];
   ns.defaultId='theme-openbook';
 
   const wrap = inner => `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false" class="gntt-book-icon-svg" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
@@ -112,6 +112,7 @@
     return ['theme-lotus'].includes(id)?'#d98298':(['theme-wisdom'].includes(id)?'#5f7f45':'#8a6338');
   };
   ns.render=function(id,style='brown'){
+    if(id==='image-bodhi-red') return '<img class="gntt-book-icon-image" src="app-icon-hinh-so-1.png?v=24.2.3" alt="Lá bồ đề non đỏ">';
     const svg=ns.svg(id);
     const colors={brown:'#8a6338',pink:'#e76f91',green:'#5f7f45'};
     // Backward compatibility: old 'mono' = brown, old 'color' keeps its natural category color.
