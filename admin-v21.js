@@ -1,6 +1,6 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="23.4";
+DATA.version="23.5";
 const DRAFT_KEY='gntt_v21_draft';
 const API_KEY='gntt_v21_publish_api_url';
 const PASS_KEY='gntt_v21_publish_password';
@@ -9,6 +9,7 @@ const $=id=>document.getElementById(id);
 const bookSelect=$('bookSelect'), chapterSelect=$('chapterSelect'), lessonSelect=$('lessonSelect');
 const bookTitle=$('bookTitle'), chapterTitle=$('chapterTitle'), lessonTitle=$('lessonTitle');
 const youtubeUrl=$('youtubeUrl'), lessonSubtitle=$('lessonSubtitle'), lessonVisibility=$('lessonVisibility'), editor=$('editor');
+const bookIcon=$('bookIcon'), bookIconPicker=$('bookIconPicker'), bookIconPreview=$('bookIconPreview');
 const statusEl=$('status'), preview=$('editorTitlePreview');
 
 let selected={bookId:null,chapterId:null,lessonId:null};
@@ -49,11 +50,43 @@ function refreshSelectors(){
 }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
+function setBookIcon(id){
+  const lib=window.GNTT_BOOK_ICONS;
+  const valid=lib?.get(id)?.id || lib?.defaultId || 'theme-openbook';
+  if(bookIcon) bookIcon.value=valid;
+  if(bookIconPreview) bookIconPreview.innerHTML=lib?.svg(valid)||'';
+  if(bookIconPicker){
+    bookIconPicker.querySelectorAll('[data-book-icon]').forEach(btn=>btn.classList.toggle('selected',btn.dataset.bookIcon===valid));
+  }
+}
+function renderBookIconPicker(){
+  const lib=window.GNTT_BOOK_ICONS;
+  if(!bookIconPicker||!lib) return;
+  let lastGroup='';
+  let html='';
+  for(const item of lib.icons){
+    if(item.group!==lastGroup){
+      if(lastGroup) html+='</div></div>';
+      html+=`<div class="book-icon-group"><strong>${escapeHtml(item.group)}</strong><div class="book-icon-options">`;
+      lastGroup=item.group;
+    }
+    html+=`<button type="button" class="book-icon-choice" data-book-icon="${escapeHtml(item.id)}" title="${escapeHtml(item.label)}"><span>${lib.svg(item.id)}</span><small>${escapeHtml(item.label)}</small></button>`;
+  }
+  if(lastGroup) html+='</div></div>';
+  bookIconPicker.innerHTML=html;
+  bookIconPicker.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-book-icon]');
+    if(btn) setBookIcon(btn.dataset.bookIcon);
+  });
+}
+renderBookIconPicker();
+
 function loadSelected(){
   mode='edit';
   refreshSelectors();
   const b=currentBook(), c=currentChapter(), l=currentLesson();
   bookTitle.value=b?.title||'';
+  setBookIcon(b?.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
   chapterTitle.value=c?.title||'';
   lessonTitle.value=l?.title||'';
   youtubeUrl.value=l?.youtube||'';
@@ -61,7 +94,7 @@ function loadSelected(){
   lessonVisibility.value=(l?.visibility==='private'?'private':'public');
   editor.innerHTML=l?.contentHtml||'';
   preview.textContent=l?.title||'Chọn hoặc tạo bài học';
-  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=23.4`:'reader.html?v=23.4';
+  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=23.5`:'reader.html?v=23.5';
   setStatus(l?'Đã tải bài':'Chưa có bài');
 }
 
@@ -78,6 +111,7 @@ lessonSelect.addEventListener('change',()=>{
 $('newBook').addEventListener('click',()=>{
   mode='new-book'; selected={bookId:null,chapterId:null,lessonId:null};
   bookTitle.value=''; chapterTitle.value=''; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; lessonVisibility.value='private'; editor.innerHTML='';
+  setBookIcon('lotus-01');
   preview.textContent='Đầu sách mới · nhập bài đầu tiên'; setStatus('Đang tạo đầu sách mới');
   bookTitle.focus();
 });
@@ -108,12 +142,14 @@ $('newChapter').addEventListener('click',()=>{
   const b=currentBook(); if(!b){alert('Hãy chọn hoặc tạo đầu sách trước.');return;}
   mode='new-chapter'; selected.chapterId=null; selected.lessonId=null;
   bookTitle.value=b.title; chapterTitle.value=''; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; lessonVisibility.value='private'; editor.innerHTML='';
+  setBookIcon(b.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
   preview.textContent='Phẩm / Chương mới · nhập bài đầu tiên'; setStatus('Đang tạo chương mới'); chapterTitle.focus();
 });
 $('newLesson').addEventListener('click',()=>{
   const b=currentBook(), c=currentChapter(); if(!b||!c){alert('Hãy chọn đầu sách và phẩm/chương trước.');return;}
   mode='new-lesson'; selected.lessonId=null;
   bookTitle.value=b.title; chapterTitle.value=c.title; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; lessonVisibility.value='private'; editor.innerHTML='';
+  setBookIcon(b.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
   preview.textContent='Bài mới'; setStatus('Đang tạo bài mới'); lessonTitle.focus();
 });
 
@@ -131,9 +167,9 @@ function upsertFromForm(){
   let b=currentBook();
   if(mode==='new-book' || !b){
     const ids=DATA.books.map(x=>x.id);
-    b={id:uniqueId(slug(bTitle),ids),title:bTitle,description:'Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.',chapters:[]};
+    b={id:uniqueId(slug(bTitle),ids),title:bTitle,icon:(bookIcon?.value||'theme-openbook'),description:'Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.',chapters:[]};
     DATA.books.push(b); selected.bookId=b.id;
-  } else b.title=bTitle;
+  } else { b.title=bTitle; b.icon=(bookIcon?.value||b.icon||'theme-openbook'); }
 
   let c=(b.chapters||[]).find(x=>x.id===selected.chapterId);
   if(mode==='new-book'||mode==='new-chapter'||!c){
@@ -176,7 +212,7 @@ function upsertFromForm(){
   refreshSelectors();
   lessonSelect.value=l.id;
   preview.textContent=l.title;
-  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=23.4`;
+  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=23.5`;
   return l;
 }
 
@@ -191,7 +227,7 @@ function buildCatalogJs(){
           title:l.title,
           subtitle:l.subtitle||'',
           tocLevel:Number(l.tocLevel)||2,
-          href:`reader.html?id=${l.id}&v=23.4`
+          href:`reader.html?id=${l.id}&v=23.5`
         }));
       return {id:c.id,title:c.title,lessons};
     }).filter(c=>c.lessons.length);
@@ -199,6 +235,7 @@ function buildCatalogJs(){
     return {
       id:b.id,
       title:b.title,
+      icon:b.icon||'theme-openbook',
       description:b.description||'',
       type:b.type||'lesson',
       pdfUrl:b.pdfUrl||'',
@@ -257,13 +294,13 @@ $('publishNow').addEventListener('click',async()=>{
 
 $('reloadData').addEventListener('click',()=>location.reload());
 $('saveDraft').addEventListener('click',()=>{
-  const d={book:bookTitle.value,chapter:chapterTitle.value,title:lessonTitle.value,youtube:youtubeUrl.value,subtitle:lessonSubtitle.value,visibility:lessonVisibility.value,html:editor.innerHTML};
+  const d={book:bookTitle.value,bookIcon:bookIcon?.value||'theme-openbook',chapter:chapterTitle.value,title:lessonTitle.value,youtube:youtubeUrl.value,subtitle:lessonSubtitle.value,visibility:lessonVisibility.value,html:editor.innerHTML};
   localStorage.setItem(DRAFT_KEY,JSON.stringify(d));setStatus('Đã lưu bản nháp');
 });
 $('restoreDraft').addEventListener('click',()=>{
   try{
     const d=JSON.parse(localStorage.getItem(DRAFT_KEY)||'null'); if(!d){alert('Chưa có bản nháp.');return;}
-    bookTitle.value=d.book||'';chapterTitle.value=d.chapter||'';lessonTitle.value=d.title||'';youtubeUrl.value=d.youtube||'';lessonSubtitle.value=d.subtitle||'';lessonVisibility.value=d.visibility==='public'?'public':'private';editor.innerHTML=d.html||'';
+    bookTitle.value=d.book||'';setBookIcon(d.bookIcon||'theme-openbook');chapterTitle.value=d.chapter||'';lessonTitle.value=d.title||'';youtubeUrl.value=d.youtube||'';lessonSubtitle.value=d.subtitle||'';lessonVisibility.value=d.visibility==='public'?'public':'private';editor.innerHTML=d.html||'';
     mode='new-lesson';selected.lessonId=null;preview.textContent=lessonTitle.value||'Bản nháp';setStatus('Đã khôi phục bản nháp');
   }catch(e){alert('Không đọc được bản nháp.');}
 });
@@ -690,6 +727,7 @@ $('publishPdf').addEventListener('click',async()=>{
     }
 
     if(!book.chapters.length) throw new Error('Không tạo được Chương/Phần nào từ PDF.');
+    if(book && !book.icon) book.icon='theme-book';
     DATA.books.push(book);
     setPublishState('Đang đăng…','busy');
     $('pdfStatus').textContent=`Đang đăng ${book.chapters.length} chương/phần Reader lên GitHub…`;

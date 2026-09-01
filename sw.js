@@ -1,5 +1,5 @@
-const CACHE='gntt-v23-4-shell';
-const SHELL=['./','./index.html','./library.html','./reader.html','./style.css','./app.js','./pwa.js','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
+const CACHE='gntt-v23-5-shell';
+const SHELL=['./','./index.html','./library.html','./reader.html','./style.css','./app.js','./book-icons.js','./pwa.js','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));
@@ -19,7 +19,7 @@ self.addEventListener('fetch',e=>{
   const u=new URL(r.url);
   if(u.origin!==location.origin) return;
 
-  const core=/\/(index\.html|library\.html|reader\.html|style\.css|app\.js|pwa\.js|data\.js|catalog\.js|manifest\.webmanifest)$/.test(u.pathname)
+  const core=/\/(index\.html|library\.html|reader\.html|style\.css|app\.js|book-icons\.js|pwa\.js|data\.js|catalog\.js|manifest\.webmanifest)$/.test(u.pathname)
     || u.pathname.endsWith('/Gocnhotuhoc/');
 
   if(core){

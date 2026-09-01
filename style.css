@@ -828,3 +828,25 @@ body.page-mode .reader-title-footer{
     bottom:calc(86px + env(safe-area-inset-bottom));
   }
 }
+
+
+/* ===== V23.5: biểu tượng đầu sách + điều hướng bài ===== */
+.gntt-book-icon-svg{width:100%;height:100%;display:block}
+.book-icon{width:54px;height:54px;display:flex;align-items:center;justify-content:center;color:#8a6338;flex:0 0 54px}
+.book-icon .gntt-book-icon-svg{width:48px;height:48px}
+.lesson-bottom-nav{
+  display:grid;grid-template-columns:minmax(0,1fr) 58px minmax(0,1fr);align-items:center;gap:10px;
+  margin:18px auto 4px;padding:10px 0;max-width:760px;border-top:1px solid var(--border,#ded3c4);
+}
+.lesson-nav-btn,.lesson-home-btn{
+  min-height:44px;border:1px solid var(--border,#ded3c4);border-radius:12px;background:var(--paper,#fffdf8);color:var(--text,#4a3c2d);
+  font:inherit;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.lesson-nav-btn:first-child{justify-self:start;padding:0 14px}.lesson-nav-btn:last-child{justify-self:end;padding:0 14px}
+.lesson-home-btn{width:48px;height:48px;min-height:48px;justify-self:center;font-size:28px;line-height:1;padding-bottom:3px}
+.lesson-nav-btn:disabled{opacity:.34;cursor:default}
+@media(max-width:640px){
+  .lesson-bottom-nav{grid-template-columns:1fr 52px 1fr;gap:7px;margin-top:14px}
+  .lesson-nav-btn{font-size:13px;padding:0 9px!important;white-space:nowrap}
+  .lesson-home-btn{width:46px;height:46px;min-height:46px;font-size:27px}
+}

@@ -604,6 +604,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const MODE_KEY = 'gocnho_reader_view_mode';
   const PAGE_KEY = 'gocnho_page_position_' + (window.GNTT_CURRENT_LESSON_ID || document.querySelector('.reader-content')?.dataset.lessonId || 'reader-default');
+  const lessonNav = window.GNTT_READER_NAV || {prev:null,next:null};
+  const edge = new URLSearchParams(location.search).get('edge') || '';
+  function lessonHref(item, where='start'){
+    return item ? `reader.html?id=${encodeURIComponent(item.id)}&edge=${where}&v=23.5` : '';
+  }
+  function goLesson(item, where='start'){
+    if(item) location.href=lessonHref(item,where);
+  }
 
   const category = paper.querySelector(':scope > .reader-category');
   const title = paper.querySelector(':scope > h1');
@@ -660,8 +668,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateUI(){
     label.textContent = `Trang ${currentPage + 1} / ${totalPages}`;
-    prev.disabled = currentPage <= 0;
-    next.disabled = currentPage >= totalPages - 1;
+    prev.disabled = currentPage <= 0 && !lessonNav.prev;
+    next.disabled = currentPage >= totalPages - 1 && !lessonNav.next;
 
     const pct = Math.round(((currentPage + 1) / totalPages) * 100);
     const bar = document.getElementById('readingProgressBar');
@@ -676,6 +684,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function goToPage(index, smooth = true){
     if (!pageMode || isAnimating) return;
+    if(index >= totalPages && lessonNav.next){ goLesson(lessonNav.next,'start'); return; }
+    if(index < 0 && lessonNav.prev){ goLesson(lessonNav.prev,'end'); return; }
     currentPage = Math.max(0, Math.min(totalPages - 1, index));
     const left = Math.round(currentPage * pageStep());
 
@@ -716,6 +726,8 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         countPages();
+        if(edge==='end') currentPage=Math.max(0,totalPages-1);
+        else if(edge==='start') currentPage=0;
         goToPage(currentPage, false);
       });
     });
@@ -808,6 +820,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }catch(e){}
   }
 
+  const prevLessonBtn=document.getElementById('prevLessonBtn');
+  const nextLessonBtn=document.getElementById('nextLessonBtn');
+  if(prevLessonBtn){
+    prevLessonBtn.disabled=!lessonNav.prev;
+    prevLessonBtn.title=lessonNav.prev?.title||'';
+    prevLessonBtn.addEventListener('click',()=>goLesson(lessonNav.prev,'end'));
+  }
+  if(nextLessonBtn){
+    nextLessonBtn.disabled=!lessonNav.next;
+    nextLessonBtn.title=lessonNav.next?.title||'';
+    nextLessonBtn.addEventListener('click',()=>goLesson(lessonNav.next,'start'));
+  }
+
   let savedMode = 'scroll';
   try{savedMode = localStorage.getItem(MODE_KEY) || 'scroll'}catch(e){}
   if (savedMode === 'page') enablePageMode(true);
@@ -835,9 +860,9 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.innerHTML = books.map(book => {
       const chapterCount = (book.chapters || []).length;
       const lessonCount = countLessons(book);
-      const href = `library.html?v=23.4&book=${encodeURIComponent(book.id)}`;
+      const href = `library.html?v=23.5&book=${encodeURIComponent(book.id)}`;
       return `<a class="book-card" href="${href}">
-        <div class="book-icon">📚</div>
+        <div class="book-icon">${(window.GNTT_BOOK_ICONS?.svg(book.icon||'theme-openbook')) || '📚'}</div>
         <div class="book-card-body">
           <h3>${esc(book.title)}</h3>
           <p>${esc(book.description || '')}</p>
@@ -888,7 +913,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if(!matchedChapters.trim()) return '';
       return `<article class="library-book" data-book-id="${esc(book.id)}">
         <div class="library-book-head">
-          <div class="book-icon">📚</div>
+          <div class="book-icon">${(window.GNTT_BOOK_ICONS?.svg(book.icon||'theme-openbook')) || '📚'}</div>
           <div>
             <div class="eyebrow">Đầu sách</div>
             <h2>${esc(book.title)}</h2>
@@ -930,7 +955,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 
-/* ===== V23.4 HARD FIX: luôn tạo và hiển thị nút bút trên web/PWA ===== */
+/* ===== V23.5 HARD FIX: luôn tạo và hiển thị nút bút trên web/PWA ===== */
 (()=>{
   function ensureHighlightPen(){
     if(!document.querySelector('.reader-content')) return;
