@@ -126,7 +126,7 @@ window.GNTT_DATA = {
           ]
         }
       ],
-      "icon": "theme-meditation",
+      "icon": "lotus-12",
       "iconStyle": "pink",
       "coverImage": "",
       "creditRole": "none",
