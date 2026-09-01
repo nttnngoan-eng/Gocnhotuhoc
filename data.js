@@ -1,5 +1,5 @@
 window.GNTT_DATA = {
-  "version": "23.7.1",
+  "version": "24.1",
   "books": [
     {
       "id": "a-ti-dat-ma-phap-uan-tuc-luan",
@@ -28,7 +28,11 @@ window.GNTT_DATA = {
           ]
         }
       ],
-      "icon": "lotus-01"
+      "icon": "lotus-01",
+      "creditRole": "lecturer",
+      "creditName": "TT. Thích Huyền Châu",
+      "iconStyle": "brown",
+      "coverImage": "book-covers-v241/sach-sen.svg"
     },
     {
       "id": "kinh-tu-niem-xu-giang-nghia",
@@ -128,8 +132,9 @@ window.GNTT_DATA = {
     }
   ],
   "siteSettings": {
-    "homeIcon": "theme-openbook",
+    "homeIcon": "lotus-01",
     "accentTheme": "pink",
-    "coverImage": ""
+    "coverImage": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221400%22%20height%3D%22700%22%20viewBox%3D%220%200%201400%20700%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%3E%3Cstop%20stop-color%3D%22%23fff%22%20stop-opacity%3D%22.95%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23fff1f4%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22url(%23g)%22%2F%3E%3Ccircle%20cx%3D%22700%22%20cy%3D%22301%22%20r%3D%22190%22%20fill%3D%22%23fff%22%20opacity%3D%22.42%22%2F%3E%3Cg%20transform%3D%22translate(550%20151)%20scale(3)%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23e7a0b1%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M50%2076C27%2063%2025%2039%2050%2018c25%2021%2023%2045%200%2058Z%22%2F%3E%3Cpath%20d%3D%22M50%2076C35%2065%2018%2059%2014%2042c18%201%2030%208%2036%2021M50%2076c15-11%2032-17%2036-34-18%201-30%208-36%2021%22%2F%3E%3Cpath%20d%3D%22M18%2082h64%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cpath%20d%3D%22M168%20574%20Q700%20511%201232%20574%22%20fill%3D%22none%22%20stroke%3D%22%23e7a0b1%22%20stroke-opacity%3D%22.22%22%20stroke-width%3D%223%22%2F%3E%3C%2Fsvg%3E",
+    "homeIconStyle": "pink"
   }
 };
