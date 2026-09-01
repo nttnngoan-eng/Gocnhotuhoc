@@ -124,7 +124,7 @@ window.GNTT_CATALOG = {
     {
       "id": "cong-phu-khuya",
       "title": "CÔNG PHU KHUYA",
-      "icon": "theme-meditation",
+      "icon": "lotus-12",
       "iconStyle": "pink",
       "coverImage": "",
       "description": "Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.",
