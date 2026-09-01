@@ -1,6 +1,7 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="23.5";
+DATA.version="23.6";
+DATA.siteSettings = DATA.siteSettings || {homeIcon:"theme-openbook"};
 const DRAFT_KEY='gntt_v21_draft';
 const API_KEY='gntt_v21_publish_api_url';
 const PASS_KEY='gntt_v21_publish_password';
@@ -10,6 +11,7 @@ const bookSelect=$('bookSelect'), chapterSelect=$('chapterSelect'), lessonSelect
 const bookTitle=$('bookTitle'), chapterTitle=$('chapterTitle'), lessonTitle=$('lessonTitle');
 const youtubeUrl=$('youtubeUrl'), lessonSubtitle=$('lessonSubtitle'), lessonVisibility=$('lessonVisibility'), editor=$('editor');
 const bookIcon=$('bookIcon'), bookIconPicker=$('bookIconPicker'), bookIconPreview=$('bookIconPreview');
+const siteIcon=$('siteIcon'), siteIconPicker=$('siteIconPicker'), siteIconPreview=$('siteIconPreview');
 const statusEl=$('status'), preview=$('editorTitlePreview');
 
 let selected={bookId:null,chapterId:null,lessonId:null};
@@ -80,6 +82,28 @@ function renderBookIconPicker(){
   });
 }
 renderBookIconPicker();
+function setSiteIcon(id){
+  const lib=window.GNTT_BOOK_ICONS;
+  const valid=lib?.get(id)?.id || lib?.defaultId || 'theme-openbook';
+  DATA.siteSettings = DATA.siteSettings || {};
+  DATA.siteSettings.homeIcon=valid;
+  if(siteIcon) siteIcon.value=valid;
+  if(siteIconPreview) siteIconPreview.innerHTML=lib?.svg(valid)||'';
+  if(siteIconPicker) siteIconPicker.querySelectorAll('[data-site-icon]').forEach(btn=>btn.classList.toggle('selected',btn.dataset.siteIcon===valid));
+}
+function renderSiteIconPicker(){
+  const lib=window.GNTT_BOOK_ICONS; if(!siteIconPicker||!lib) return;
+  let lastGroup='',html='';
+  for(const item of lib.icons){
+    if(item.group!==lastGroup){ if(lastGroup) html+='</div></div>'; html+=`<div class="book-icon-group"><strong>${escapeHtml(item.group)}</strong><div class="book-icon-options">`; lastGroup=item.group; }
+    html+=`<button type="button" class="book-icon-choice" data-site-icon="${escapeHtml(item.id)}" title="${escapeHtml(item.label)}"><span>${lib.svg(item.id)}</span><small>${escapeHtml(item.label)}</small></button>`;
+  }
+  if(lastGroup) html+='</div></div>'; siteIconPicker.innerHTML=html;
+  siteIconPicker.addEventListener('click',e=>{const btn=e.target.closest('[data-site-icon]'); if(btn) setSiteIcon(btn.dataset.siteIcon);});
+  setSiteIcon(DATA.siteSettings?.homeIcon||'theme-openbook');
+}
+renderSiteIconPicker();
+
 
 function loadSelected(){
   mode='edit';
@@ -94,7 +118,7 @@ function loadSelected(){
   lessonVisibility.value=(l?.visibility==='private'?'private':'public');
   editor.innerHTML=l?.contentHtml||'';
   preview.textContent=l?.title||'Chọn hoặc tạo bài học';
-  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=23.5`:'reader.html?v=23.5';
+  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=23.6`:'reader.html?v=23.6';
   setStatus(l?'Đã tải bài':'Chưa có bài');
 }
 
@@ -212,7 +236,7 @@ function upsertFromForm(){
   refreshSelectors();
   lessonSelect.value=l.id;
   preview.textContent=l.title;
-  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=23.5`;
+  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=23.6`;
   return l;
 }
 
@@ -227,7 +251,7 @@ function buildCatalogJs(){
           title:l.title,
           subtitle:l.subtitle||'',
           tocLevel:Number(l.tocLevel)||2,
-          href:`reader.html?id=${l.id}&v=23.5`
+          href:`reader.html?id=${l.id}&v=23.6`
         }));
       return {id:c.id,title:c.title,lessons};
     }).filter(c=>c.lessons.length);
@@ -244,7 +268,7 @@ function buildCatalogJs(){
     };
   }).filter(b=>b.chapters.length);
 
-  const cat={books};
+  const cat={siteSettings:{homeIcon:DATA.siteSettings?.homeIcon||'theme-openbook'},books};
   return 'window.GNTT_CATALOG = '+JSON.stringify(cat,null,2)+';\n';
 }
 
@@ -274,6 +298,17 @@ $('testPublishConnection').addEventListener('click',async()=>{
     setPublishState('Không kết nối','error');
     setStatus(e.message);
   }
+});
+
+
+$('publishSiteIcon')?.addEventListener('click',async()=>{
+  const state=$('siteIconState');
+  try{
+    setSiteIcon(siteIcon?.value||DATA.siteSettings?.homeIcon||'theme-openbook');
+    if(state){state.textContent='Đang xuất bản…';state.className='publish-state';}
+    await apiRequest('/publish-v21',{method:'POST',body:JSON.stringify({dataJs:buildDataJs(),catalogJs:buildCatalogJs(),message:'Cập nhật biểu tượng Góc nhỏ tu học'})});
+    if(state){state.textContent='✓ Đã xuất bản';state.className='publish-state ok';}
+  }catch(e){if(state){state.textContent='Lỗi: '+e.message;state.className='publish-state err';}}
 });
 
 $('publishNow').addEventListener('click',async()=>{

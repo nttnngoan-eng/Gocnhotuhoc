@@ -850,3 +850,8 @@ body.page-mode .reader-title-footer{
   .lesson-nav-btn{font-size:13px;padding:0 9px!important;white-space:nowrap}
   .lesson-home-btn{width:46px;height:46px;min-height:46px;font-size:27px}
 }
+
+/* V23.6 - biểu tượng thương hiệu chọn từ Admin */
+.brand{display:inline-flex;align-items:center;gap:7px}
+.site-brand-icon{width:23px;height:23px;display:inline-flex;align-items:center;justify-content:center;color:#8a6338;flex:0 0 23px}
+.site-brand-icon svg{width:100%;height:100%;display:block}

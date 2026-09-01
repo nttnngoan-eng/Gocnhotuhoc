@@ -1,4 +1,16 @@
 
+function applySiteBrandIcon(){
+  const lib=window.GNTT_BOOK_ICONS; if(!lib) return;
+  const settings=(window.GNTT_CATALOG&&window.GNTT_CATALOG.siteSettings)||(window.GNTT_DATA&&window.GNTT_DATA.siteSettings)||{};
+  const id=settings.homeIcon||'theme-openbook';
+  document.querySelectorAll('.brand').forEach(el=>{
+    const text='Góc nhỏ tu học';
+    el.innerHTML=`<span class="site-brand-icon" aria-hidden="true">${lib.svg(id)}</span><span>${text}</span>`;
+  });
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applySiteBrandIcon); else applySiteBrandIcon();
+
+
 const STORE='phap_hoc_reader_settings';
 
 function loadSettings(){
@@ -607,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const lessonNav = window.GNTT_READER_NAV || {prev:null,next:null};
   const edge = new URLSearchParams(location.search).get('edge') || '';
   function lessonHref(item, where='start'){
-    return item ? `reader.html?id=${encodeURIComponent(item.id)}&edge=${where}&v=23.5` : '';
+    return item ? `reader.html?id=${encodeURIComponent(item.id)}&edge=${where}&v=23.6` : '';
   }
   function goLesson(item, where='start'){
     if(item) location.href=lessonHref(item,where);
@@ -860,7 +872,7 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.innerHTML = books.map(book => {
       const chapterCount = (book.chapters || []).length;
       const lessonCount = countLessons(book);
-      const href = `library.html?v=23.5&book=${encodeURIComponent(book.id)}`;
+      const href = `library.html?v=23.6&book=${encodeURIComponent(book.id)}`;
       return `<a class="book-card" href="${href}">
         <div class="book-icon">${(window.GNTT_BOOK_ICONS?.svg(book.icon||'theme-openbook')) || '📚'}</div>
         <div class="book-card-body">
@@ -955,7 +967,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 
-/* ===== V23.5 HARD FIX: luôn tạo và hiển thị nút bút trên web/PWA ===== */
+/* ===== V23.6 HARD FIX: luôn tạo và hiển thị nút bút trên web/PWA ===== */
 (()=>{
   function ensureHighlightPen(){
     if(!document.querySelector('.reader-content')) return;
