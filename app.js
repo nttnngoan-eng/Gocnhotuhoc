@@ -429,6 +429,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   function hideMenu(){
     menu.style.display='none';
+    menu.style.transform='';
+    menu.style.bottom='';
     savedRange=null;
     activeHighlightId=null;
   }
@@ -446,18 +448,40 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   }
 
-  function showForSelection(){
+  function saveSelectionOnly(){
     const sel=window.getSelection();
     if(!sel||!sel.rangeCount||sel.isCollapsed||!sel.toString().trim()) return;
     const range=sel.getRangeAt(0);
     if(!article.contains(range.commonAncestorContainer)) return;
     savedRange=range.cloneRange();
     activeHighlightId=null;
-    placeMenu(range.getBoundingClientRect());
   }
 
-  document.addEventListener('mouseup',()=>setTimeout(showForSelection,15));
-  document.addEventListener('touchend',()=>setTimeout(showForSelection,180));
+  // V23.3: chỉ lưu vùng bôi đen, KHÔNG tự bật bảng màu cạnh chữ.
+  // Như vậy menu iPhone (Sao chép / Hỏi ChatGPT...) không che bảng màu của website.
+  document.addEventListener('mouseup',()=>setTimeout(saveSelectionOnly,15));
+  document.addEventListener('touchend',()=>setTimeout(saveSelectionOnly,180));
+  document.addEventListener('selectionchange',()=>setTimeout(saveSelectionOnly,30));
+
+  function placeMenuBottom(){
+    menu.style.display='flex';
+    menu.style.left='50%';
+    menu.style.top='auto';
+    menu.style.bottom='max(18px, env(safe-area-inset-bottom))';
+    menu.style.transform='translateX(-50%)';
+  }
+
+  const highlightPenBtn=document.getElementById('highlightPenBtn');
+  highlightPenBtn?.addEventListener('click',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    saveSelectionOnly();
+    if(!savedRange){
+      alert('Hãy bôi đen đoạn chữ cần đánh dấu trước.');
+      return;
+    }
+    placeMenuBottom();
+  });
 
   menu.addEventListener('mousedown',e=>e.preventDefault());
 
@@ -514,11 +538,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(!span) return;
     activeHighlightId=span.dataset.hid;
     savedRange=null;
-    placeMenu(span.getBoundingClientRect());
+    placeMenuBottom();
   });
 
   document.addEventListener('mousedown',e=>{
     if(menu.contains(e.target)) return;
+    if(e.target.closest?.('#highlightPenBtn')) return;
     if(e.target.closest?.('.goc-user-highlight')) return;
     if(!article.contains(e.target)) hideMenu();
   });

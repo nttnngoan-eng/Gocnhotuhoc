@@ -5,7 +5,7 @@
 <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
 <meta content="no-cache" http-equiv="Pragma"/>
 <meta content="0" http-equiv="Expires"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
-<title>Đọc bài | Góc nhỏ tu học</title><link href="style.css?v=20" rel="stylesheet"/><link rel="manifest" href="manifest.webmanifest?v=23.2"><meta name="theme-color" content="#765b3a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Góc nhỏ tu học"><link rel="apple-touch-icon" href="icon-192.png"></head><body class="theme-paper">
+<title>Đọc bài | Góc nhỏ tu học</title><link href="style.css?v=20" rel="stylesheet"/><link rel="manifest" href="manifest.webmanifest?v=23.3"><meta name="theme-color" content="#765b3a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Góc nhỏ tu học"><link rel="apple-touch-icon" href="icon-192.png"></head><body class="theme-paper">
 <header class="site-header"><nav class="nav">
 <a class="brand" href="index.html">📖 Góc nhỏ tu học</a>
 <div class="nav-links">
@@ -50,6 +50,7 @@
 </div>
 </article>
 </main>
+<button type="button" id="highlightPenBtn" class="highlight-pen-btn" aria-label="Đánh dấu đoạn đã chọn" title="Đánh dấu">✏️</button>
 <div class="settings" id="settingsPanel">
 <h3>Thiết lập đọc</h3>
 <div class="setting-row"><label>Cỡ chữ</label><div class="option-row"><button id="smaller">A−</button><button id="larger">A+</button></div></div>
@@ -80,7 +81,7 @@
 <div class="highlight-list" id="highlightList"></div>
 </aside>
 <footer class="footer">Góc nhỏ tu học • Bản website đọc trực tuyến</footer>
-<script src="data.js?v=23.2"></script><script>
+<script src="data.js?v=23.3"></script><script>
 (function(){
   const data = window.GNTT_DATA || {books:[]};
   const params = new URLSearchParams(location.search);
@@ -135,4 +136,4 @@
     article.innerHTML = body;
   }
 })();
-</script><script src="app.js?v=23.2"></script><script src="pwa.js?v=23.2"></script></body></html>
+</script><script src="app.js?v=23.3"></script><script src="pwa.js?v=23.3"></script></body></html>
