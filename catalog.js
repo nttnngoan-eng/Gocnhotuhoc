@@ -44,8 +44,8 @@ window.GNTT_CATALOG = {
     {
       "id": "kinh-tu-niem-xu-giang-nghia",
       "title": "KINH TỨ NIỆM XỨ GIẢNG NGHĨA",
-      "icon": "theme-openbook",
-      "iconStyle": "brown",
+      "icon": "lotus-11",
+      "iconStyle": "pink",
       "coverImage": "",
       "description": "Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.",
       "type": "lesson",
