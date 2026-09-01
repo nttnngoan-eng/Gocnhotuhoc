@@ -3,7 +3,7 @@ window.GNTT_DATA = {
   "books": [
     {
       "id": "a-ti-dat-ma-phap-uan-tuc-luan",
-      "title": "A-TI-ĐẠT-MA PHÁP UẨN TÚC LUẬN",
+      "title": "A-TÌ-ĐẠT-MA PHÁP UẨN TÚC LUẬN",
       "description": "Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.",
       "chapters": [
         {
