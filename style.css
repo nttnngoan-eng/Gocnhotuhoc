@@ -400,7 +400,7 @@ body.page-mode .youtube-inline-card{
 /* Mobile */
 @media(max-width:700px){
   .reader-content{
-    font-size:17px!important;
+    font-size:var(--reader-user-size,17px)!important;
     line-height:1.68!important;
   }
 
@@ -447,7 +447,7 @@ body.page-mode .youtube-inline-card{
   body.page-mode .reader-content{
     height:calc(100svh - 250px);
     min-height:390px;
-    font-size:17px!important;
+    font-size:var(--reader-user-size,17px)!important;
     line-height:1.62!important;
     --book-page-gap:20px;
   }
@@ -763,3 +763,35 @@ body.page-mode .reader-title-footer{
 }
 
 .pwa-install-wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px}.pwa-install-btn{border:1px solid var(--border);border-radius:12px;padding:11px 15px;background:var(--paper);color:var(--text);font-weight:700}@media(display-mode:standalone){.pwa-install-wrap{display:none}}
+
+
+/* ===== V23.2: Reader font/size + settings OK ===== */
+.reader-content{
+  font-family:var(--reader-user-font, "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif)!important;
+  font-size:var(--reader-user-size,20px)!important;
+}
+.reader-content :where(p,div,span,li,ul,ol,blockquote,a,strong,em,b,i,u){
+  font-family:inherit!important;
+}
+.reader-content :where(p,span,div,li,a,strong,em,b,i,u){
+  font-size:inherit!important;
+}
+.reader-content h2{font-family:inherit!important;font-size:1.35em!important}
+.reader-content h3{font-family:inherit!important;font-size:1.16em!important}
+
+.settings-actions{
+  position:sticky;
+  bottom:0;
+  margin:18px -2px -2px;
+  padding:12px 2px 2px;
+  background:inherit;
+}
+.settings-ok{
+  width:100%;
+  min-height:48px;
+  border:0;
+  border-radius:12px;
+  font-size:17px;
+  font-weight:700;
+  cursor:pointer;
+}

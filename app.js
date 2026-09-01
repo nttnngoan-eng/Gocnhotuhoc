@@ -15,18 +15,43 @@ const fontMap={
   arial:'Arial, Helvetica, sans-serif'
 };
 
+function normalizeImportedReaderTypography(){
+  const content=document.querySelector('.reader-content');
+  if(!content) return;
+  content.querySelectorAll('*').forEach(el=>{
+    if(el.style){
+      el.style.removeProperty('font-family');
+      el.style.removeProperty('font-size');
+      el.style.removeProperty('font');
+      if(!el.getAttribute('style')?.trim()) el.removeAttribute('style');
+    }
+    if(el.tagName==='FONT'){
+      el.removeAttribute('face');
+      el.removeAttribute('size');
+    }
+  });
+}
+
 function applyReaderSettings(){
-  const s=loadSettings(), root=document.body, content=document.querySelector('.reader-content');
+  const st=loadSettings(), root=document.body, content=document.querySelector('.reader-content');
   if(!content)return;
   root.classList.remove('theme-paper','theme-white','theme-sepia','theme-dark');
-  root.classList.add('theme-'+s.theme);
-  content.style.fontFamily=fontMap[s.font]||fontMap.palatino;
-  content.style.fontSize=s.size+'px';
-  document.querySelectorAll('[data-font]').forEach(b=>b.classList.toggle('active',b.dataset.font===s.font));
-  document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===s.theme));
+  root.classList.add('theme-'+st.theme);
+
+  const chosenFont=fontMap[st.font]||fontMap.palatino;
+  const chosenSize=Math.max(15,Math.min(32,Number(st.size)||20));
+
+  content.style.setProperty('--reader-user-font',chosenFont);
+  content.style.setProperty('--reader-user-size',chosenSize+'px');
+  content.style.setProperty('font-family',chosenFont,'important');
+  content.style.setProperty('font-size',chosenSize+'px','important');
+
+  document.querySelectorAll('[data-font]').forEach(b=>b.classList.toggle('active',b.dataset.font===st.font));
+  document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===st.theme));
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
+  normalizeImportedReaderTypography();
   applyReaderSettings();
 
   const panel=document.getElementById('settingsPanel');
@@ -40,10 +65,10 @@ document.addEventListener('DOMContentLoaded',()=>{
     const s=loadSettings(); s.theme=b.dataset.theme; saveSettings(s); applyReaderSettings();
   }));
   document.getElementById('smaller')?.addEventListener('click',()=>{
-    const s=loadSettings(); s.size=Math.max(15,s.size-1); saveSettings(s); applyReaderSettings();
+    const s=loadSettings(); s.size=Math.max(15,(Number(s.size)||20)-1); saveSettings(s); applyReaderSettings();
   });
   document.getElementById('larger')?.addEventListener('click',()=>{
-    const s=loadSettings(); s.size=Math.min(32,s.size+1); saveSettings(s); applyReaderSettings();
+    const s=loadSettings(); s.size=Math.min(32,(Number(s.size)||20)+1); saveSettings(s); applyReaderSettings();
   });
 
   const search=document.getElementById('lessonSearch');
@@ -868,5 +893,13 @@ document.addEventListener('DOMContentLoaded', () => {
       renderLibrary('');
       libInput?.addEventListener('input', () => renderLibrary(libInput.value));
     }
+  
+  const settingsPanel=document.getElementById('settingsPanel');
+  const settingsOk=document.getElementById('settingsOk');
+  settingsOk?.addEventListener('click',()=>{
+    settingsPanel?.classList.remove('open');
+    settingsPanel?.setAttribute('aria-hidden','true');
   });
+
+});
 })();
