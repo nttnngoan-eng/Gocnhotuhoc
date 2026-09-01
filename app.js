@@ -835,7 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.innerHTML = books.map(book => {
       const chapterCount = (book.chapters || []).length;
       const lessonCount = countLessons(book);
-      const href = `library.html?v=23&book=${encodeURIComponent(book.id)}`;
+      const href = `library.html?v=23.3.2&book=${encodeURIComponent(book.id)}`;
       return `<a class="book-card" href="${href}">
         <div class="book-icon">📚</div>
         <div class="book-card-body">
@@ -927,4 +927,52 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+})();
+
+
+/* ===== V23.3.2 HARD FIX: luôn tạo và hiển thị nút bút trên web/PWA ===== */
+(()=>{
+  function ensureHighlightPen(){
+    if(!document.querySelector('.reader-content')) return;
+    let btn=document.getElementById('highlightPenBtn');
+    if(!btn){
+      btn=document.createElement('button');
+      btn.type='button';
+      btn.id='highlightPenBtn';
+      btn.className='highlight-pen-btn';
+      btn.textContent='✏️';
+      btn.title='Đánh dấu';
+      btn.setAttribute('aria-label','Đánh dấu đoạn đã chọn');
+      document.body.appendChild(btn);
+    }
+    // Inline style để không phụ thuộc cache CSS.
+    Object.assign(btn.style,{
+      position:'fixed',
+      right:'16px',
+      bottom:'88px',
+      zIndex:'2147483646',
+      width:'50px',
+      height:'50px',
+      display:'flex',
+      alignItems:'center',
+      justifyContent:'center',
+      borderRadius:'50%',
+      border:'1px solid rgba(90,70,45,.28)',
+      background:'#fffaf0',
+      color:'#4a3c2d',
+      fontSize:'24px',
+      lineHeight:'1',
+      boxShadow:'0 6px 20px rgba(0,0,0,.18)',
+      cursor:'pointer',
+      visibility:'visible',
+      opacity:'1'
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',ensureHighlightPen,{once:true});
+  }else{
+    ensureHighlightPen();
+  }
+  window.addEventListener('pageshow',ensureHighlightPen);
+  setTimeout(ensureHighlightPen,500);
 })();
