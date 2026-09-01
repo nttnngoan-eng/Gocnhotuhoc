@@ -76,6 +76,19 @@ window.GNTT_CATALOG = {
               "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-dan-nhap-dan-nhap&v=23"
             }
           ]
+        },
+        {
+          "id": "loi-khai-thi",
+          "title": "LỜI KHAI THỊ",
+          "lessons": [
+            {
+              "id": "kinh-tu-niem-xu-giang-nghia-loi-khai-thi-loi-khai-thi",
+              "title": "Lời khai thị",
+              "subtitle": "",
+              "tocLevel": 2,
+              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-loi-khai-thi-loi-khai-thi&v=23"
+            }
+          ]
         }
       ]
     }
