@@ -952,3 +952,46 @@ body.v24-app{background:#f3ede4;color:#4f4033}
 .v24-reader-fav{background:#fbf7f1}.v24-reader-fav.active{color:#b86f82;background:#f8ebe8}
 .v24-accent-lightbrown{--v24-accent:#c6aa88;--v24-accent-soft:#f1e6d8;--v24-accent-ink:#70573f;--accent-ui:#bfa07d}
 @media(max-width:760px){.v24-cover-title{font-size:12px}.v24-book-name{font-size:13px}.v24-book-credit{font-size:11.5px}}
+
+
+/* ===== V24.2: NÂU NHẠT TOÀN GIAO DIỆN + ĐẦU SÁCH ICON, KHÔNG BÌA ===== */
+body.v24-app{background:#f7f1e8;color:#4f4033}
+.v24-top{border-top:2px solid #d9c5ad;background:#fbf7f1}
+.v24-brand,.v24-brand span,.v24-top .brand,.v24-top .nav-links a,.v24-top .nav-links a.active{color:#765e47 !important}
+.v24-top .nav-links a.active{border-bottom-color:#a98968 !important}
+body[class*="accent-"] .brand,body[class*="accent-"] .nav-links a.active,body[class*="accent-"] .section-title a{color:#765e47 !important}
+.v24-profile-card,.v24-profile-row,.v24-quick button,.v24-search,.v24-settings-card,.v24-item{background:#fbf7f1;border-color:#dfcfbd}
+.v24-quick button{color:#705a45}.v24-quick button span{color:#9a7b5e}
+.v24-search button,.v24-app[class*="v24-accent-"] .v24-search button{background:#b89a78 !important;color:#fff}
+.v24-section-head a,.v24-app[class*="v24-accent-"] .v24-section-head a{color:#816649 !important}
+.v24-bottom-nav{background:rgba(251,247,241,.98);border-top-color:#dfcfbd}
+.v24-bottom-nav button,.v24-bottom-nav a{color:#75695d}
+.v24-bottom-nav .active,.v24-app[class*="v24-accent-"] .v24-bottom-nav .active{color:#806247 !important}
+.v24-choice-row button{border-color:#d9c8b6;background:#fbf7f1;color:#5c4a39}
+.v24-choice-row button.active,.v24-app[class*="v24-accent-"] .v24-choice-row button.active{border-color:#b99a78;background:#eee1d2;color:#604a35}
+
+/* Featured books: icon + name beside it, no cover image */
+.v24-book-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch}
+.v24-book-card.v242-icon-book{display:flex;flex-direction:row;align-items:center;gap:14px;min-height:104px;padding:14px 16px;border:1px solid #dfcfbd;border-radius:14px;background:#fbf7f1;box-shadow:0 4px 12px rgba(77,54,31,.05);text-align:left}
+.v242-book-icon{width:64px;height:64px;flex:0 0 64px;border-radius:14px;background:#eee2d3;display:grid;place-items:center;color:#896a4d}
+.v242-book-icon svg{width:46px;height:46px;display:block}
+.v242-book-info{min-width:0;flex:1}
+.v24-book-name{margin:0;text-align:left;font:700 14px/1.38 Inter,"Be Vietnam Pro",Arial,sans-serif;color:#4e3c2d}
+.v24-book-credit{margin-top:5px;text-align:left;color:#725f50;font-size:12px;line-height:1.35}
+.v24-book-lessons{display:inline-block;align-self:auto;min-width:0;margin-top:7px;padding:0;border:0;border-radius:0;background:transparent;text-align:left;font-size:12px;color:#8a7159}
+.v24-book-card .cover,.v24-cover-title{display:none !important}
+@media(max-width:900px){.v24-book-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.v24-book-grid{grid-template-columns:1fr}.v24-book-card.v242-icon-book{min-height:92px;padding:12px 14px}.v242-book-icon{width:58px;height:58px;flex-basis:58px}.v242-book-icon svg{width:42px;height:42px}}
+
+/* ===== V24.2.1 - Uploaded homepage cover: show full image, never crop ===== */
+.v24-cover.has-cover{
+  background-size:contain !important;
+  background-position:center center !important;
+  background-repeat:no-repeat !important;
+  background-color:#e8dccd !important;
+}
+.v24-cover:not(.has-cover){
+  background-size:cover;
+  background-position:center center;
+  background-repeat:no-repeat;
+}
