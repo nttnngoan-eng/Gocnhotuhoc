@@ -3,7 +3,7 @@ window.GNTT_CATALOG = {
     {
       "id": "a-ti-dat-ma-phap-uan-tuc-luan",
       "title": "A-TÌ-ĐẠT-MA PHÁP UẨN TÚC LUẬN",
-      "icon": "theme-openbook",
+      "icon": "lotus-01",
       "description": "Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.",
       "type": "lesson",
       "pdfUrl": "",
