@@ -983,7 +983,7 @@ body[class*="accent-"] .brand,body[class*="accent-"] .nav-links a.active,body[cl
 @media(max-width:900px){.v24-book-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.v24-book-grid{grid-template-columns:1fr}.v24-book-card.v242-icon-book{min-height:92px;padding:12px 14px}.v242-book-icon{width:58px;height:58px;flex-basis:58px}.v242-book-icon svg{width:42px;height:42px}}
 
-/* ===== V24.2.3 - Uploaded homepage cover: show full image, never crop ===== */
+/* ===== V24.2.4 - Uploaded homepage cover: show full image, never crop ===== */
 .v24-cover.has-cover{
   background-size:contain !important;
   background-position:center center !important;
@@ -997,7 +997,7 @@ body[class*="accent-"] .brand,body[class*="accent-"] .nav-links a.active,body[cl
 }
 
 
-/* ===== V24.2.3 - Cover upload đẹp, không cắt ảnh chính + không có hai mảng trống ===== */
+/* ===== V24.2.4 - Cover upload đẹp, không cắt ảnh chính + không có hai mảng trống ===== */
 .v24-cover.has-cover{
   position:relative;
   overflow:hidden;
@@ -1026,10 +1026,19 @@ body[class*="accent-"] .brand,body[class*="accent-"] .nav-links a.active,body[cl
 /* Danh sách sách: icon + tên sách */
 #featuredBooks.v24-book-grid{display:grid !important;}
 
-/* ===== V24.2.3 ===== */
+/* ===== V24.2.4 ===== */
 .gntt-book-icon-image{width:100%;height:100%;object-fit:contain;display:block;border-radius:12px}
 .book-icon .gntt-book-icon-image{width:58px;height:58px}
 .v242-book-icon .gntt-book-icon-image{width:54px;height:54px}
 .v24-avatar img{width:82px;height:82px;object-fit:contain;border-radius:50%}
 .library-book-head{display:flex;align-items:center;gap:16px}
 .library-book-cover,.book-cover-thumb{display:none!important}
+
+
+/* ===== V24.2.4 FIX: featured books + clean homepage cover ===== */
+.v242-cover-blur{display:none!important}
+.v24-cover.has-cover{position:relative;overflow:hidden;background:#e8dccd!important}
+.v24-cover.has-cover .v242-cover-full{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;object-position:center center}
+.v24-cover.has-cover:not([data-cover-fit="contain"]) .v242-cover-full{object-fit:cover}
+.v24-cover.has-cover[data-cover-fit="contain"] .v242-cover-full{object-fit:contain;background:#e8dccd}
+#featuredBooks.v24-book-grid{display:grid!important;min-height:1px}
