@@ -1128,3 +1128,24 @@ body.v24-app .v24-cover.has-cover[data-cover-fit="contain"] .v242-cover-full{obj
 /* Auto uu tien it cat hon: contain cho anh khong du ngang. */
 body.v24-app .v24-cover.has-cover[data-cover-fit="auto"] .v242-cover-full{object-fit:contain!important}
 @media(max-width:760px){body.v24-app .v24-cover{height:190px!important}}
+
+/* ===== V24.2.11 - GIU NGUYEN MOBILE V24.2.8, CHI SUA COVER DESKTOP ===== */
+/* Desktop/laptop: khung cao hon de anh cover bi cat it hon. */
+@media (min-width: 761px){
+  body.v24-app .v24-cover{
+    height:clamp(360px, 38vw, 460px)!important;
+    background:#eadfce!important;
+  }
+  body.v24-app .v24-cover.has-cover .v242-cover-full{
+    width:100%!important;
+    height:100%!important;
+    object-fit:cover!important;
+    object-position:center center!important;
+  }
+  body.v24-app .v24-cover.has-cover[data-cover-fit="contain"] .v242-cover-full{object-fit:contain!important;}
+  body.v24-app .v24-cover.has-cover[data-cover-fit="auto"] .v242-cover-full{object-fit:cover!important;}
+}
+/* Mobile/app: GIU NGUYEN CHINH XAC cach hien thi cua V24.2.8. */
+@media (max-width:760px){
+  body.v24-app .v24-cover{height:190px!important;}
+}
