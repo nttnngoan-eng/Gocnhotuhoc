@@ -1067,7 +1067,7 @@ body[class*="accent-"] .brand,body[class*="accent-"] .nav-links a.active,body[cl
 .cover-fit-field .field-label{display:block;font-weight:700;margin-bottom:7px;color:#5d4632}
 .cover-fit-field select{width:min(100%,560px);padding:9px 10px;border:1px solid #cdb69d;border-radius:8px;background:#fffdf9;color:#503c2b}
 
-/* V24.2.6 - fix avatar/logo bi cat boi profile card */
+/* V24.2.7 - fix avatar/logo bi cat boi profile card */
 .v24-profile-card{
   overflow:visible !important;
   position:relative;
@@ -1088,3 +1088,43 @@ body[class*="accent-"] .brand,body[class*="accent-"] .nav-links a.active,body[cl
   z-index:10;
   overflow:hidden;
 }
+
+/* ===== V24.2.7 - FIX avatar/logo: absolute overlap at cover edge ===== */
+.v24-profile-card{position:relative!important;overflow:visible!important}
+.v24-cover{position:relative!important;z-index:1!important;overflow:hidden!important}
+.v24-profile-row{position:relative!important;z-index:2!important;min-height:92px!important}
+.v24-avatar{
+  position:absolute!important;
+  left:28px!important;
+  top:-48px!important;
+  margin:0!important;
+  z-index:50!important;
+  width:96px!important;
+  height:96px!important;
+  border-radius:50%!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  border:5px solid #fff!important;
+  box-shadow:0 6px 20px rgba(60,40,20,.14)!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.v24-avatar img{width:82px!important;height:82px!important;object-fit:contain!important;border-radius:50%!important;display:block!important}
+@media(max-width:760px){
+  .v24-avatar{left:14px!important;top:-38px!important;width:76px!important;height:76px!important;border-width:4px!important}
+  .v24-avatar img{width:64px!important;height:64px!important}
+}
+
+
+/* ===== V24.2.8 - WEB cover: giam phong to/cat anh ===== */
+/* Tang chieu cao cover de ti le gan anh upload hon, nhờ vậy object-fit:cover cat it hon. */
+body.v24-app .v24-cover{height:320px!important;background-color:#eadfce!important}
+body.v24-app .v24-cover.has-cover .v242-cover-full{
+  width:100%!important;height:100%!important;object-fit:cover!important;
+  object-position:center center!important;transform:none!important;
+}
+/* Che do contain van ton trong Admin neu nguoi dung muon thay toan anh. */
+body.v24-app .v24-cover.has-cover[data-cover-fit="contain"] .v242-cover-full{object-fit:contain!important}
+/* Auto uu tien it cat hon: contain cho anh khong du ngang. */
+body.v24-app .v24-cover.has-cover[data-cover-fit="auto"] .v242-cover-full{object-fit:contain!important}
+@media(max-width:760px){body.v24-app .v24-cover{height:190px!important}}
