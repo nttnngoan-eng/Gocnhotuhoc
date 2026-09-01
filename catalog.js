@@ -28,14 +28,14 @@ window.GNTT_CATALOG = {
               "title": "BÀI 40 - TỪ VÔ LƯỢNG (Phần 1)",
               "subtitle": "Giảng thọ sư: TT Thích Huyền Châu",
               "tocLevel": 2,
-              "href": "reader.html?id=a-ti-dat-ma-phap-uan-tuc-luan-pham-12-vo-luong-bai-40&v=24.1"
+              "href": "reader.html?id=a-ti-dat-ma-phap-uan-tuc-luan-pham-12-vo-luong-bai-40&v=24.2.1"
             },
             {
               "id": "a-ti-dat-ma-phap-uan-tuc-luan-pham-12-vo-luong-bai-41",
               "title": "Bài 41 - TỪ VÔ LƯỢNG (Phần 2)",
               "subtitle": "Giảng thọ sư: TT Thích Huyền Châu",
               "tocLevel": 2,
-              "href": "reader.html?id=a-ti-dat-ma-phap-uan-tuc-luan-pham-12-vo-luong-bai-41&v=24.1"
+              "href": "reader.html?id=a-ti-dat-ma-phap-uan-tuc-luan-pham-12-vo-luong-bai-41&v=24.2.1"
             }
           ]
         }
@@ -63,7 +63,7 @@ window.GNTT_CATALOG = {
               "title": "Tiểu sử Cố Đại lão Sư trưởng Hải Triều Âm",
               "subtitle": "",
               "tocLevel": 2,
-              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-tieu-su-tieu-su-co-dai-lao-su-truong-hai-trieu-am&v=24.1"
+              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-tieu-su-tieu-su-co-dai-lao-su-truong-hai-trieu-am&v=24.2.1"
             }
           ]
         },
@@ -76,7 +76,7 @@ window.GNTT_CATALOG = {
               "title": "Lời giới thiệu",
               "subtitle": "",
               "tocLevel": 2,
-              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-loi-gioi-thieu-loi-gioi-thieu&v=24.1"
+              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-loi-gioi-thieu-loi-gioi-thieu&v=24.2.1"
             }
           ]
         },
@@ -89,7 +89,7 @@ window.GNTT_CATALOG = {
               "title": "Dẫn nhập",
               "subtitle": "",
               "tocLevel": 2,
-              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-dan-nhap-dan-nhap&v=24.1"
+              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-dan-nhap-dan-nhap&v=24.2.1"
             }
           ]
         },
@@ -102,7 +102,7 @@ window.GNTT_CATALOG = {
               "title": "Lời khai thị",
               "subtitle": "",
               "tocLevel": 2,
-              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-loi-khai-thi-loi-khai-thi&v=24.1"
+              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-loi-khai-thi-loi-khai-thi&v=24.2.1"
             }
           ]
         },
@@ -115,7 +115,7 @@ window.GNTT_CATALOG = {
               "title": "Lễ Phật",
               "subtitle": "",
               "tocLevel": 2,
-              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-le-phat-le-phat&v=24.1"
+              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-le-phat-le-phat&v=24.2.1"
             }
           ]
         }
@@ -143,7 +143,7 @@ window.GNTT_CATALOG = {
               "title": "CÔNG PHU KHUYA - CÚNG PHẬT - SÁM HỐI",
               "subtitle": "",
               "tocLevel": 2,
-              "href": "reader.html?id=cong-phu-khuya-chu-lang-nghiem-cong-phu-khuya-cung-phat-sam-hoi&v=24.1"
+              "href": "reader.html?id=cong-phu-khuya-chu-lang-nghiem-cong-phu-khuya-cung-phat-sam-hoi&v=24.2.1"
             }
           ]
         }
