@@ -29,6 +29,29 @@ window.GNTT_CATALOG = {
           ]
         }
       ]
+    },
+    {
+      "id": "kinh-tu-niem-xu-giang-nghia",
+      "title": "KINH TỨ NIỆM XỨ GIẢNG NGHĨA",
+      "description": "Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.",
+      "type": "lesson",
+      "pdfUrl": "",
+      "author": "",
+      "chapters": [
+        {
+          "id": "tieu-su",
+          "title": "TIỂU SỬ",
+          "lessons": [
+            {
+              "id": "kinh-tu-niem-xu-giang-nghia-tieu-su-tieu-su-co-dai-lao-su-truong-hai-trieu-am",
+              "title": "Tiểu sử Cố Đại lão Sư trưởng Hải Triều Âm",
+              "subtitle": "",
+              "tocLevel": 2,
+              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-tieu-su-tieu-su-co-dai-lao-su-truong-hai-trieu-am&v=23"
+            }
+          ]
+        }
+      ]
     }
   ]
 };
