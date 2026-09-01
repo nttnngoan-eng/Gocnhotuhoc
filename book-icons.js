@@ -112,7 +112,7 @@
     return ['theme-lotus'].includes(id)?'#d98298':(['theme-wisdom'].includes(id)?'#5f7f45':'#8a6338');
   };
   ns.render=function(id,style='brown'){
-    if(id==='image-bodhi-red') return '<img class="gntt-book-icon-image" src="app-icon-hinh-so-1.png?v=24.2.3" alt="Lá bồ đề non đỏ">';
+    if(id==='image-bodhi-red') return '<img class="gntt-book-icon-image" src="app-icon-hinh-so-1.png?v=24.2.5" alt="Lá bồ đề non đỏ">';
     const svg=ns.svg(id);
     const colors={brown:'#8a6338',pink:'#e76f91',green:'#5f7f45'};
     // Backward compatibility: old 'mono' = brown, old 'color' keeps its natural category color.

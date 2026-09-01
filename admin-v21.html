@@ -7,12 +7,12 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quản trị nội dung V24.1 - Góc nhỏ tu học</title>
-<link rel="stylesheet" href="admin-v17.css?v=24.2.4">
+<link rel="stylesheet" href="admin-v17.css?v=24.2.5">
 </head>
 <body>
 <header class="admin-header">
-  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V24.2.4</b></div>
-  <a id="openReaderLink" href="reader.html?v=24.2.4" target="_blank" rel="noopener">Mở bài đọc ↗</a>
+  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V24.2.5</b></div>
+  <a id="openReaderLink" href="reader.html?v=24.2.5" target="_blank" rel="noopener">Mở bài đọc ↗</a>
 </header>
 
 <main class="admin-wrap">
@@ -135,13 +135,14 @@
         </div>
       </div>
       <div class="wide preset-field"><span class="field-label">Ảnh cover Trang chủ</span><div id="siteCoverPresets" class="image-preset-grid cover-presets"></div><small class="field-help">Chọn trực tiếp một mẫu có sẵn. Không cần tải ảnh lên. Nếu muốn dùng ảnh riêng vẫn có thể chọn bên dưới.</small></div>
-      <label class="wide">Cách hiển thị ảnh cover
+      <div class="wide cover-fit-field"><span class="field-label">Cách hiển thị ảnh cover</span>
         <select id="siteCoverFit">
-          <option value="cover">Phủ kín khung (đẹp nhất, có thể cắt nhẹ mép ảnh)</option>
-          <option value="contain">Hiển thị toàn ảnh (không cắt, có thể có khoảng nâu hai bên)</option>
+          <option value="cover">Phủ kín khung — đẹp nhất cho cover ngang</option>
+          <option value="contain">Hiển thị toàn ảnh — không cắt ảnh</option>
+          <option value="auto">Tự động — website tự chọn theo tỷ lệ ảnh</option>
         </select>
-        <small class="field-help">Khuyên dùng “Phủ kín khung” với ảnh cover website ngang.</small>
-      </label>
+        <small class="field-help"><b>Khuyên dùng: Phủ kín khung.</b> Nếu ảnh quá vuông/dọc, chọn Hiển thị toàn ảnh.</small>
+      </div>
       <label class="wide optional-upload"><span>Ảnh riêng (tùy chọn)</span><input id="siteCoverFile" type="file" accept="image/*"></label>
       <div class="wide"><div id="siteCoverPreview" class="cover-preview"></div><button type="button" id="removeSiteCover">Bỏ ảnh cover</button></div>
       <div class="wide"><button type="button" id="publishAppearance" class="primary">Lưu & xuất bản giao diện</button> <span id="appearanceState" class="publish-state"></span></div>
@@ -154,7 +155,7 @@
     <div class="site-icon-title"><strong>📱 Tạo icon App</strong><span>Tạo đúng 2 file icon-192.png và icon-512.png để thay biểu tượng PWA trên iPhone/Android.</span></div>
     <div class="app-icon-maker-grid">
       <div class="app-icon-preview-wrap">
-        <div id="appIconPreview" class="app-icon-preview"><img src="icon-192.png?v=24.2.4" alt="Icon App hiện tại"></div>
+        <div id="appIconPreview" class="app-icon-preview"><img src="icon-192.png?v=24.2.5" alt="Icon App hiện tại"></div>
         <small>Ảnh xem trước theo kiểu icon trên màn hình iPhone.</small>
       </div>
       <div class="app-icon-maker-controls">
@@ -233,7 +234,7 @@
         <div id="bookIconPicker" class="book-icon-picker" aria-label="Chọn biểu tượng đầu sách"></div>
         <small class="field-help">Mỗi mẫu đều có 3 màu: 🤎 Nâu, 🌸 Hồng và 🌿 Xanh. Chọn màu trước rồi chọn 1 trong 48 biểu tượng. Có thể đổi lại cho sách cũ bất cứ lúc nào.</small>
       </div>
-      <div class="wide field-help" style="padding:8px 0 2px;color:#725f50">V24.2.4: Đầu sách hiển thị bằng <strong>icon + tên sách</strong>. Không dùng ảnh bìa sách.</div>
+      <div class="wide field-help" style="padding:8px 0 2px;color:#725f50">V24.2.5: Đầu sách hiển thị bằng <strong>icon + tên sách</strong>. Không dùng ảnh bìa sách.</div>
       <label>
         <span>Phẩm / Chương</span>
         <input id="chapterTitle" type="text" placeholder="Nhập tên phẩm/chương">
@@ -301,7 +302,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="data.js?v=23.6"></script>
-<script src="book-icons.js?v=24.2.4"></script>
-<script src="admin-v21.js?v=24.2.4"></script>
+<script src="book-icons.js?v=24.2.5"></script>
+<script src="admin-v21.js?v=24.2.5"></script>
 </body>
 </html>

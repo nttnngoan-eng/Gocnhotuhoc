@@ -1,0 +1,7 @@
+GÓC NHỎ TU HỌC — V24.2.5
+
+1. Upload toàn bộ file của gói này lên thư mục gốc GitHub và ghi đè file cũ.
+2. KHÔNG có data.js hoặc catalog.js trong ZIP nên không ghi đè dữ liệu sách/bài.
+3. Admin > Giao diện Trang chủ/App > Cách hiển thị ảnh cover > chọn Phủ kín khung, rồi Lưu & xuất bản giao diện.
+4. Logo tròn dưới cover đã được đưa lên lớp trên, không còn bị ảnh cover che/cắt.
+5. Trang chủ có cơ chế dự phòng: nếu catalog.js chưa tải được sách, sẽ dùng data.js hiện có để render các đầu sách.
