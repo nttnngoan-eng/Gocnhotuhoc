@@ -89,6 +89,19 @@ window.GNTT_CATALOG = {
               "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-loi-khai-thi-loi-khai-thi&v=23"
             }
           ]
+        },
+        {
+          "id": "le-phat",
+          "title": "LỄ PHẬT",
+          "lessons": [
+            {
+              "id": "kinh-tu-niem-xu-giang-nghia-le-phat-le-phat",
+              "title": "Lễ Phật",
+              "subtitle": "",
+              "tocLevel": 2,
+              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-le-phat-le-phat&v=23"
+            }
+          ]
         }
       ]
     }
