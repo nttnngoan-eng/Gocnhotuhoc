@@ -1,6 +1,6 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="23";
+DATA.version="23.4";
 const DRAFT_KEY='gntt_v21_draft';
 const API_KEY='gntt_v21_publish_api_url';
 const PASS_KEY='gntt_v21_publish_password';
@@ -8,7 +8,7 @@ const PASS_KEY='gntt_v21_publish_password';
 const $=id=>document.getElementById(id);
 const bookSelect=$('bookSelect'), chapterSelect=$('chapterSelect'), lessonSelect=$('lessonSelect');
 const bookTitle=$('bookTitle'), chapterTitle=$('chapterTitle'), lessonTitle=$('lessonTitle');
-const youtubeUrl=$('youtubeUrl'), lessonSubtitle=$('lessonSubtitle'), editor=$('editor');
+const youtubeUrl=$('youtubeUrl'), lessonSubtitle=$('lessonSubtitle'), lessonVisibility=$('lessonVisibility'), editor=$('editor');
 const statusEl=$('status'), preview=$('editorTitlePreview');
 
 let selected={bookId:null,chapterId:null,lessonId:null};
@@ -43,7 +43,7 @@ function refreshSelectors(){
   else selected.chapterId=b?.chapters?.[0]?.id||null;
 
   const c=currentChapter();
-  lessonSelect.innerHTML=(c?.lessons||[]).map(l=>`<option value="${l.id}">${escapeHtml(l.title)}</option>`).join('');
+  lessonSelect.innerHTML=(c?.lessons||[]).map(l=>`<option value="${l.id}">${l.visibility==='private'?'🔒':'🌐'} ${escapeHtml(l.title)}</option>`).join('');
   if(selected.lessonId && c?.lessons?.some(l=>l.id===selected.lessonId)) lessonSelect.value=selected.lessonId;
   else selected.lessonId=c?.lessons?.[0]?.id||null;
 }
@@ -58,9 +58,10 @@ function loadSelected(){
   lessonTitle.value=l?.title||'';
   youtubeUrl.value=l?.youtube||'';
   lessonSubtitle.value=l?.subtitle||'';
+  lessonVisibility.value=(l?.visibility==='private'?'private':'public');
   editor.innerHTML=l?.contentHtml||'';
   preview.textContent=l?.title||'Chọn hoặc tạo bài học';
-  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=23`:'reader.html?v=23';
+  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=23.4`:'reader.html?v=23.4';
   setStatus(l?'Đã tải bài':'Chưa có bài');
 }
 
@@ -76,7 +77,7 @@ lessonSelect.addEventListener('change',()=>{
 
 $('newBook').addEventListener('click',()=>{
   mode='new-book'; selected={bookId:null,chapterId:null,lessonId:null};
-  bookTitle.value=''; chapterTitle.value=''; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; editor.innerHTML='';
+  bookTitle.value=''; chapterTitle.value=''; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; lessonVisibility.value='private'; editor.innerHTML='';
   preview.textContent='Đầu sách mới · nhập bài đầu tiên'; setStatus('Đang tạo đầu sách mới');
   bookTitle.focus();
 });
@@ -106,13 +107,13 @@ $('pdfFile').addEventListener('change',()=>{
 $('newChapter').addEventListener('click',()=>{
   const b=currentBook(); if(!b){alert('Hãy chọn hoặc tạo đầu sách trước.');return;}
   mode='new-chapter'; selected.chapterId=null; selected.lessonId=null;
-  bookTitle.value=b.title; chapterTitle.value=''; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; editor.innerHTML='';
+  bookTitle.value=b.title; chapterTitle.value=''; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; lessonVisibility.value='private'; editor.innerHTML='';
   preview.textContent='Phẩm / Chương mới · nhập bài đầu tiên'; setStatus('Đang tạo chương mới'); chapterTitle.focus();
 });
 $('newLesson').addEventListener('click',()=>{
   const b=currentBook(), c=currentChapter(); if(!b||!c){alert('Hãy chọn đầu sách và phẩm/chương trước.');return;}
   mode='new-lesson'; selected.lessonId=null;
-  bookTitle.value=b.title; chapterTitle.value=c.title; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; editor.innerHTML='';
+  bookTitle.value=b.title; chapterTitle.value=c.title; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; lessonVisibility.value='private'; editor.innerHTML='';
   preview.textContent='Bài mới'; setStatus('Đang tạo bài mới'); lessonTitle.focus();
 });
 
@@ -160,6 +161,7 @@ function upsertFromForm(){
   l.title=lTitle;
   l.subtitle=lessonSubtitle.value.trim();
   l.youtube=youtubeUrl.value.trim();
+  l.visibility=(lessonVisibility.value==='private'?'private':'public');
   l.contentHtml=cleanEditorHTML();
   selected.lessonId=l.id;
 
@@ -174,21 +176,38 @@ function upsertFromForm(){
   refreshSelectors();
   lessonSelect.value=l.id;
   preview.textContent=l.title;
-  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=23`;
+  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=23.4`;
   return l;
 }
 
 function buildDataJs(){ return 'window.GNTT_DATA = '+JSON.stringify(DATA,null,2)+';\n'; }
 function buildCatalogJs(){
-  const cat={books:DATA.books.map(b=>({
-    id:b.id,title:b.title,description:b.description||'',type:b.type||'lesson',pdfUrl:b.pdfUrl||'',author:b.author||'',
-    chapters:(b.chapters||[]).map(c=>({
-      id:c.id,title:c.title,
-      lessons:(c.lessons||[]).map(l=>({
-        id:l.id,title:l.title,subtitle:l.subtitle||'',tocLevel:Number(l.tocLevel)||2,href:`reader.html?id=${l.id}&v=23`
-      }))
-    }))
-  }))};
+  const books=(DATA.books||[]).map(b=>{
+    const chapters=(b.chapters||[]).map(c=>{
+      const lessons=(c.lessons||[])
+        .filter(l=>l.visibility!=='private')
+        .map(l=>({
+          id:l.id,
+          title:l.title,
+          subtitle:l.subtitle||'',
+          tocLevel:Number(l.tocLevel)||2,
+          href:`reader.html?id=${l.id}&v=23.4`
+        }));
+      return {id:c.id,title:c.title,lessons};
+    }).filter(c=>c.lessons.length);
+
+    return {
+      id:b.id,
+      title:b.title,
+      description:b.description||'',
+      type:b.type||'lesson',
+      pdfUrl:b.pdfUrl||'',
+      author:b.author||'',
+      chapters
+    };
+  }).filter(b=>b.chapters.length);
+
+  const cat={books};
   return 'window.GNTT_CATALOG = '+JSON.stringify(cat,null,2)+';\n';
 }
 
@@ -238,13 +257,13 @@ $('publishNow').addEventListener('click',async()=>{
 
 $('reloadData').addEventListener('click',()=>location.reload());
 $('saveDraft').addEventListener('click',()=>{
-  const d={book:bookTitle.value,chapter:chapterTitle.value,title:lessonTitle.value,youtube:youtubeUrl.value,subtitle:lessonSubtitle.value,html:editor.innerHTML};
+  const d={book:bookTitle.value,chapter:chapterTitle.value,title:lessonTitle.value,youtube:youtubeUrl.value,subtitle:lessonSubtitle.value,visibility:lessonVisibility.value,html:editor.innerHTML};
   localStorage.setItem(DRAFT_KEY,JSON.stringify(d));setStatus('Đã lưu bản nháp');
 });
 $('restoreDraft').addEventListener('click',()=>{
   try{
     const d=JSON.parse(localStorage.getItem(DRAFT_KEY)||'null'); if(!d){alert('Chưa có bản nháp.');return;}
-    bookTitle.value=d.book||'';chapterTitle.value=d.chapter||'';lessonTitle.value=d.title||'';youtubeUrl.value=d.youtube||'';lessonSubtitle.value=d.subtitle||'';editor.innerHTML=d.html||'';
+    bookTitle.value=d.book||'';chapterTitle.value=d.chapter||'';lessonTitle.value=d.title||'';youtubeUrl.value=d.youtube||'';lessonSubtitle.value=d.subtitle||'';lessonVisibility.value=d.visibility==='public'?'public':'private';editor.innerHTML=d.html||'';
     mode='new-lesson';selected.lessonId=null;preview.textContent=lessonTitle.value||'Bản nháp';setStatus('Đã khôi phục bản nháp');
   }catch(e){alert('Không đọc được bản nháp.');}
 });
@@ -318,7 +337,7 @@ function convertMixedVniText(text){
 }
 
 function fixKnownPdfSpacing(text){
-  // V23: PDF này đôi khi tách riêng chữ "u" trong "Tiểu":
+  // V22.7: PDF này đôi khi tách riêng chữ "u" trong "Tiểu":
   // "Tiể u Sử" -> "Tiểu Sử".
   // Chỉ sửa mẫu đã xác nhận để tránh ghép nhầm các từ bình thường khác.
   return String(text||'')

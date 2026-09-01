@@ -5,7 +5,7 @@
 <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
 <meta content="no-cache" http-equiv="Pragma"/>
 <meta content="0" http-equiv="Expires"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
-<title>Đọc bài | Góc nhỏ tu học</title><link href="style.css?v=23.3.2" rel="stylesheet"/><link rel="manifest" href="manifest.webmanifest?v=23.3.2"><meta name="theme-color" content="#765b3a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Góc nhỏ tu học"><link rel="apple-touch-icon" href="icon-192.png"></head><body class="theme-paper">
+<title>Đọc bài | Góc nhỏ tu học</title><link href="style.css?v=23.4" rel="stylesheet"/><link rel="manifest" href="manifest.webmanifest?v=23.4"><meta name="theme-color" content="#765b3a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Góc nhỏ tu học"><link rel="apple-touch-icon" href="icon-192.png"></head><body class="theme-paper">
 <header class="site-header"><nav class="nav">
 <a class="brand" href="index.html">📖 Góc nhỏ tu học</a>
 <div class="nav-links">
@@ -81,7 +81,7 @@
 <div class="highlight-list" id="highlightList"></div>
 </aside>
 <footer class="footer">Góc nhỏ tu học • Bản website đọc trực tuyến</footer>
-<script src="data.js?v=23.3.2"></script><script>
+<script src="data.js?v=23.4"></script><script>
 (function(){
   const data = window.GNTT_DATA || {books:[]};
   const params = new URLSearchParams(location.search);
@@ -110,6 +110,23 @@
   }
 
   const {book, chapter, lesson} = found;
+
+  // V23.4: chặn Reader công khai đối với bài Private.
+  if(lesson.visibility === 'private'){
+    const category = document.querySelector('.reader-category');
+    const title = document.querySelector('.reader-paper > h1');
+    const subtitle = document.querySelector('.reader-paper > .subtitle');
+    const article = document.querySelector('.reader-content');
+    const footerTitle = document.querySelector('[data-reader-footer-title]');
+    if(category) category.textContent = '🔒 Bài riêng tư';
+    if(title) title.textContent = 'Bài này chưa được công khai';
+    if(subtitle) subtitle.textContent = 'Quản trị viên chưa chuyển bài sang Public.';
+    if(article) article.innerHTML = '<p>Nội dung bài đang ở chế độ Private và không hiển thị trên Reader công khai.</p>';
+    if(footerTitle) footerTitle.textContent = 'Bài riêng tư';
+    document.title = 'Bài riêng tư | Góc nhỏ tu học';
+    return;
+  }
+
   window.GNTT_CURRENT_LESSON_ID = lesson.id;
 
   const category = document.querySelector('.reader-category');
@@ -136,4 +153,4 @@
     article.innerHTML = body;
   }
 })();
-</script><script src="app.js?v=23.3.2"></script><script src="pwa.js?v=23.3.2"></script></body></html>
+</script><script src="app.js?v=23.4"></script><script src="pwa.js?v=23.4"></script></body></html>

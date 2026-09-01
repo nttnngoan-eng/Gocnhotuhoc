@@ -1,4 +1,4 @@
-const CACHE='gntt-v23-3-2-shell';
+const CACHE='gntt-v23-4-shell';
 const SHELL=['./','./index.html','./library.html','./reader.html','./style.css','./app.js','./pwa.js','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install',e=>{

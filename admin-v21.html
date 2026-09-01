@@ -6,19 +6,19 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Quản trị nội dung V22 - Góc nhỏ tu học</title>
-<link rel="stylesheet" href="admin-v17.css?v=23">
+<title>Quản trị nội dung V23.4 - Góc nhỏ tu học</title>
+<link rel="stylesheet" href="admin-v17.css?v=23.4">
 </head>
 <body>
 <header class="admin-header">
-  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V22</b></div>
-  <a id="openReaderLink" href="reader.html?v=21" target="_blank" rel="noopener">Mở bài đọc ↗</a>
+  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V23.4</b></div>
+  <a id="openReaderLink" href="reader.html?v=23.4" target="_blank" rel="noopener">Mở bài đọc ↗</a>
 </header>
 
 <main class="admin-wrap">
   <section class="notice">
-    <strong>V23 · Đọc đủ Mục lục + 3 cấp + sửa “Tiể u”</strong>
-    <span>Đọc đủ Mục lục ngay từ trang có tiêu đề MỤC LỤC, sửa VNI và phân 3 cấp: Chương → Mục → Mục con.</span>
+    <strong>V23.4 · Public / Private từng bài</strong>
+    <span>Chọn 🌐 Public để hiển thị ngoài website hoặc 🔒 Private để ẩn khỏi Thư viện và chặn Reader thông thường.</span>
   </section>
 
   <section class="library-manager">
@@ -134,6 +134,14 @@
         <span>Tên bài</span>
         <input id="lessonTitle" type="text" placeholder="Ví dụ: BÀI 41 - ...">
       </label>
+      <label>
+        <span>Trạng thái bài</span>
+        <select id="lessonVisibility" class="visibility-select">
+          <option value="private">🔒 Private · Chưa công khai</option>
+          <option value="public">🌐 Public · Hiển thị cho mọi người</option>
+        </select>
+        <small class="field-help">Bài mới mặc định Private.</small>
+      </label>
       <label class="wide">
         <span>Link YouTube</span>
         <input id="youtubeUrl" type="url" placeholder="https://www.youtube.com/watch?v=...">
@@ -184,7 +192,7 @@
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="data.js?v=23"></script>
-<script src="admin-v21.js?v=23"></script>
+<script src="data.js?v=23.4"></script>
+<script src="admin-v21.js?v=23.4"></script>
 </body>
 </html>

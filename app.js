@@ -835,7 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.innerHTML = books.map(book => {
       const chapterCount = (book.chapters || []).length;
       const lessonCount = countLessons(book);
-      const href = `library.html?v=23.3.2&book=${encodeURIComponent(book.id)}`;
+      const href = `library.html?v=23.4&book=${encodeURIComponent(book.id)}`;
       return `<a class="book-card" href="${href}">
         <div class="book-icon">📚</div>
         <div class="book-card-body">
@@ -930,7 +930,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 
-/* ===== V23.3.2 HARD FIX: luôn tạo và hiển thị nút bút trên web/PWA ===== */
+/* ===== V23.4 HARD FIX: luôn tạo và hiển thị nút bút trên web/PWA ===== */
 (()=>{
   function ensureHighlightPen(){
     if(!document.querySelector('.reader-content')) return;
