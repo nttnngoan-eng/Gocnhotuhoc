@@ -6,18 +6,18 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Quản trị nội dung V23.8 - Góc nhỏ tu học</title>
-<link rel="stylesheet" href="admin-v17.css?v=23.8">
+<title>Quản trị nội dung V23.9 - Góc nhỏ tu học</title>
+<link rel="stylesheet" href="admin-v17.css?v=23.9">
 </head>
 <body>
 <header class="admin-header">
-  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V23.8</b></div>
-  <a id="openReaderLink" href="reader.html?v=23.8" target="_blank" rel="noopener">Mở bài đọc ↗</a>
+  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V23.9</b></div>
+  <a id="openReaderLink" href="reader.html?v=23.9" target="_blank" rel="noopener">Mở bài đọc ↗</a>
 </header>
 
 <main class="admin-wrap">
   <section class="notice">
-    <strong>V23.8 · Cover, 3 màu, Public/Private và tạo icon App</strong>
+    <strong>V23.9 · Thư viện ảnh có sẵn cho Cover, bìa sách, logo và icon App</strong>
     <span>Chọn 🌐 Public để hiển thị ngoài website hoặc 🔒 Private để ẩn khỏi Thư viện và chặn Reader thông thường.</span>
   </section>
 
@@ -133,7 +133,8 @@
           <button type="button" data-accent-theme="green">🌿 Xanh</button>
         </div>
       </div>
-      <label class="wide"><span>Ảnh cover Trang chủ</span><input id="siteCoverFile" type="file" accept="image/*"><small class="field-help">Ảnh sẽ tự thu nhỏ để đăng cùng dữ liệu. Nên dùng ảnh ngang.</small></label>
+      <div class="wide preset-field"><span class="field-label">Ảnh cover Trang chủ</span><div id="siteCoverPresets" class="image-preset-grid cover-presets"></div><small class="field-help">Chọn trực tiếp một mẫu có sẵn. Không cần tải ảnh lên. Nếu muốn dùng ảnh riêng vẫn có thể chọn bên dưới.</small></div>
+      <label class="wide optional-upload"><span>Ảnh riêng (tùy chọn)</span><input id="siteCoverFile" type="file" accept="image/*"></label>
       <div class="wide"><div id="siteCoverPreview" class="cover-preview"></div><button type="button" id="removeSiteCover">Bỏ ảnh cover</button></div>
       <div class="wide"><button type="button" id="publishAppearance" class="primary">Lưu & xuất bản giao diện</button> <span id="appearanceState" class="publish-state"></span></div>
     </div>
@@ -145,17 +146,19 @@
     <div class="site-icon-title"><strong>📱 Tạo icon App</strong><span>Tạo đúng 2 file icon-192.png và icon-512.png để thay biểu tượng PWA trên iPhone/Android.</span></div>
     <div class="app-icon-maker-grid">
       <div class="app-icon-preview-wrap">
-        <div id="appIconPreview" class="app-icon-preview"><img src="icon-192.png?v=23.8" alt="Icon App hiện tại"></div>
+        <div id="appIconPreview" class="app-icon-preview"><img src="icon-192.png?v=23.9" alt="Icon App hiện tại"></div>
         <small>Ảnh xem trước theo kiểu icon trên màn hình iPhone.</small>
       </div>
       <div class="app-icon-maker-controls">
-        <label><span>Chọn ảnh làm icon</span><input id="appIconFile" type="file" accept="image/png,image/jpeg,image/webp,image/*"></label>
+        <div><span class="field-label">Chọn icon App có sẵn</span><div id="appIconPresets" class="image-preset-grid app-presets"></div></div>
+        <label class="optional-upload"><span>Ảnh riêng (tùy chọn)</span><input id="appIconFile" type="file" accept="image/png,image/jpeg,image/webp,image/*"></label>
         <div class="app-icon-actions">
+          <button type="button" id="usePresetAppIcon1" class="primary">✓ Hình số 1 – Lá bồ đề non</button>
           <button type="button" id="useSiteIconForApp">Dùng biểu tượng web đang chọn</button>
           <button type="button" id="resetAppIconPreview">Ảnh icon hiện tại</button>
         </div>
         <label class="app-icon-bg-row"><span>Nền khi dùng biểu tượng web</span><input id="appIconBg" type="color" value="#fff6f5"></label>
-        <small class="field-help">Ảnh riêng sẽ tự cắt vuông ở giữa. Nên dùng ảnh vuông, rõ nét. Với hình số 1, chỉ cần chọn ảnh icon đã chuẩn bị.</small>
+        <small class="field-help">Ảnh riêng sẽ tự cắt vuông ở giữa. Nên dùng ảnh vuông, rõ nét. Hình số 1 đã được tích hợp sẵn: lá bồ đề non hồng + búp non, không có hình Phật.</small>
         <div class="app-icon-downloads">
           <button type="button" id="downloadAppIcon192" class="secondary">Tải icon-192.png</button>
           <button type="button" id="downloadAppIcon512" class="secondary">Tải icon-512.png</button>
@@ -201,11 +204,12 @@
         <div id="bookIconPicker" class="book-icon-picker" aria-label="Chọn biểu tượng đầu sách"></div>
         <small class="field-help">Mỗi mẫu đều có 2 phiên bản: Có màu và Nâu đơn sắc. Ở chế độ Nâu đơn sắc, cả 48 biểu tượng đều dùng cùng màu nâu của giao diện. Có thể đổi lại cho sách cũ bất cứ lúc nào.</small>
       </div>
-      <label class="wide book-cover-field">
-        <span>Ảnh bìa đầu sách</span>
-        <input id="bookCoverFile" type="file" accept="image/*">
-        <small class="field-help">Có thể để trống để dùng biểu tượng đầu sách. Ảnh bìa sẽ hiện ở Trang chủ và Thư viện.</small>
-      </label>
+      <div class="wide book-cover-field preset-field">
+        <span class="field-label">Ảnh bìa đầu sách</span>
+        <div id="bookCoverPresets" class="image-preset-grid book-cover-presets"></div>
+        <small class="field-help">Chọn một bìa có sẵn; không cần tải ảnh lên. Có thể đổi lại bất cứ lúc nào.</small>
+      </div>
+      <label class="wide optional-upload"><span>Ảnh bìa riêng (tùy chọn)</span><input id="bookCoverFile" type="file" accept="image/*"></label>
       <div class="wide"><div id="bookCoverPreview" class="book-cover-preview"></div><button type="button" id="removeBookCover">Bỏ ảnh bìa</button></div>
       <label>
         <span>Phẩm / Chương</span>
@@ -274,7 +278,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="data.js?v=23.6"></script>
-<script src="book-icons.js?v=23.8"></script>
-<script src="admin-v21.js?v=23.8"></script>
+<script src="book-icons.js?v=23.9"></script>
+<script src="admin-v21.js?v=23.9"></script>
 </body>
 </html>
