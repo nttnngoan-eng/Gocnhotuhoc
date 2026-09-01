@@ -63,6 +63,19 @@ window.GNTT_CATALOG = {
               "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-loi-gioi-thieu-loi-gioi-thieu&v=23"
             }
           ]
+        },
+        {
+          "id": "dan-nhap",
+          "title": "DẪN NHẬP",
+          "lessons": [
+            {
+              "id": "kinh-tu-niem-xu-giang-nghia-dan-nhap-dan-nhap",
+              "title": "Dẫn nhập",
+              "subtitle": "",
+              "tocLevel": 2,
+              "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-dan-nhap-dan-nhap&v=23"
+            }
+          ]
         }
       ]
     }
