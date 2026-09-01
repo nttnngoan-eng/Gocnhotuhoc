@@ -1149,3 +1149,14 @@ body.v24-app .v24-cover.has-cover[data-cover-fit="auto"] .v242-cover-full{object
 @media (max-width:760px){
   body.v24-app .v24-cover{height:190px!important;}
 }
+
+/* ===== V24.2.11 - CAN DOI COVER DESKTOP ===== */
+/* Chi sua laptop/desktop. Mobile <=760px van giu nguyen V24.2.8. */
+@media (min-width:761px){
+  body.v24-app .v24-cover{
+    height:310px!important;
+    min-height:310px!important;
+    max-height:310px!important;
+    aspect-ratio:auto!important;
+  }
+}
