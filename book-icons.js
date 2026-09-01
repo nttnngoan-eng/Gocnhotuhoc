@@ -111,10 +111,13 @@
     if(id.startsWith('bodhi-')) return '#5f7f45';
     return ['theme-lotus'].includes(id)?'#d98298':(['theme-wisdom'].includes(id)?'#5f7f45':'#8a6338');
   };
-  ns.render=function(id,style='mono'){
+  ns.render=function(id,style='brown'){
     const svg=ns.svg(id);
-    if(style!=='color') return svg.replace('<svg ','<svg style=\"color:#8a6338;--icon-vein:#fff\" ');
-    const color=ns.colorFor(id);
+    const colors={brown:'#8a6338',pink:'#e76f91',green:'#5f7f45'};
+    // Backward compatibility: old 'mono' = brown, old 'color' keeps its natural category color.
+    if(style==='color') return svg.replace('<svg ','<svg style=\"color:'+ns.colorFor(id)+';--icon-vein:#fff\" ');
+    const key=style==='mono'?'brown':style;
+    const color=colors[key]||colors.brown;
     return svg.replace('<svg ','<svg style=\"color:'+color+';--icon-vein:#fff\" ');
   };
   window.GNTT_BOOK_ICONS=ns;

@@ -5,7 +5,7 @@ function applySiteBrandIcon(){
   const id=settings.homeIcon||'theme-openbook';
   document.querySelectorAll('.brand').forEach(el=>{
     const text='Góc nhỏ tu học';
-    el.innerHTML=`<span class="site-brand-icon" aria-hidden="true">${lib.svg(id)}</span><span>${text}</span>`;
+    el.innerHTML=`<span class="site-brand-icon" aria-hidden="true">${lib.render(id,settings.homeIconStyle||'brown')}</span><span>${text}</span>`;
   });
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applySiteBrandIcon); else applySiteBrandIcon();
@@ -882,7 +882,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const lessonCount = countLessons(book);
       const href = `library.html?v=23.7&book=${encodeURIComponent(book.id)}`;
       return `<a class="book-card ${book.coverImage?'has-book-cover':''}" href="${href}">
-        ${book.coverImage?`<div class="book-cover-thumb"><img src="${esc(book.coverImage)}" alt="Bìa ${esc(book.title)}"></div>`:`<div class="book-icon">${(window.GNTT_BOOK_ICONS?.render(book.icon||'theme-openbook',book.iconStyle||'color')) || '📚'}</div>`}
+        ${book.coverImage?`<div class="book-cover-thumb"><img src="${esc(book.coverImage)}" alt="Bìa ${esc(book.title)}"></div>`:`<div class="book-icon">${(window.GNTT_BOOK_ICONS?.render(book.icon||'theme-openbook',book.iconStyle||'brown')) || '📚'}</div>`}
         <div class="book-card-body">
           <h3>${esc(book.title)}</h3>
           <p>${esc(book.description || '')}</p>
@@ -933,7 +933,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if(!matchedChapters.trim()) return '';
       return `<article class="library-book" data-book-id="${esc(book.id)}">
         <div class="library-book-head">
-          ${book.coverImage?`<div class="library-book-cover"><img src="${esc(book.coverImage)}" alt="Bìa ${esc(book.title)}"></div>`:`<div class="book-icon">${(window.GNTT_BOOK_ICONS?.render(book.icon||'theme-openbook',book.iconStyle||'color')) || '📚'}</div>`}
+          ${book.coverImage?`<div class="library-book-cover"><img src="${esc(book.coverImage)}" alt="Bìa ${esc(book.title)}"></div>`:`<div class="book-icon">${(window.GNTT_BOOK_ICONS?.render(book.icon||'theme-openbook',book.iconStyle||'brown')) || '📚'}</div>`}
           <div>
             <div class="eyebrow">Đầu sách</div>
             <h2>${esc(book.title)}</h2>
@@ -1101,3 +1101,38 @@ document.addEventListener('DOMContentLoaded',()=>{
     text.value=''; localStorage.removeItem(noteKey); lastSaved=''; updateStatus(0,true); text.focus();
   });
 });
+
+
+/* ===== V24: Trang chủ dạng app + recent/favorite/note/search/settings ===== */
+(()=>{
+ const CAT=window.GNTT_CATALOG||{books:[]};
+ const REC='gntt_recent_v24', FAV='gntt_favorites_v24', UI='gntt_ui_v24';
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const norm=s=>String(s??'').toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ const get=(k,d=[])=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(_){return d}};
+ const set=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+ function allLessons(){const out=[];(CAT.books||[]).forEach(b=>(b.chapters||[]).forEach(ch=>(ch.lessons||[]).forEach(l=>{if(l.visibility!=='private')out.push({id:l.id,title:l.title||'',subtitle:l.subtitle||'',bookId:b.id,bookTitle:b.title||'',chapterTitle:ch.title||'',href:l.href||`reader.html?id=${encodeURIComponent(l.id)}`})})));return out}
+ function findLesson(id){return allLessons().find(x=>x.id===id)}
+ function fmt(ts){try{return new Intl.DateTimeFormat('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(ts))}catch(_){return''}}
+ function empty(txt){return `<div class="v24-empty">${esc(txt)}</div>`}
+ function item(x,extra=''){return `<a class="v24-item" href="${esc(x.href||`reader.html?id=${encodeURIComponent(x.id)}`)}"><div class="ico">${extra||'📖'}</div><div><h3>${esc(x.title)}</h3><p>${esc(x.bookTitle||x.chapterTitle||'')}</p></div><span class="meta">${esc(x.when||'Đọc →')}</span></a>`}
+ function renderBooks(filter=''){const grid=document.getElementById('bookGrid');if(!grid)return;const q=norm(filter);const books=(CAT.books||[]).filter(b=>!q||norm(`${b.title} ${b.description||''}`).includes(q)).slice(0,10);grid.innerHTML=books.map(b=>`<a class="v24-book-card" href="library.html?v=24.0&book=${encodeURIComponent(b.id)}"><div class="cover">${b.coverImage?`<img src="${esc(b.coverImage)}" alt="">`:`<div class="book-icon">${window.GNTT_BOOK_ICONS?.render(b.icon||'theme-openbook',b.iconStyle||'brown')||'📚'}</div>`}</div><h3>${esc(b.title)}</h3><p>${(b.chapters||[]).reduce((n,ch)=>n+(ch.lessons||[]).length,0)} bài học</p></a>`).join('');document.getElementById('bookEmpty')?.toggleAttribute('hidden',books.length>0)}
+ function renderRecent(){const root=document.getElementById('v24RecentList');if(!root)return;const rows=get(REC,[]).map(r=>({...findLesson(r.id),...r})).filter(x=>x.id);root.innerHTML=rows.length?rows.map(x=>item({...x,when:fmt(x.ts)},'◷')).join(''):empty('Chưa có bài đọc gần đây.')}
+ function renderFav(){const root=document.getElementById('v24FavoriteList');if(!root)return;const ids=get(FAV,[]);const rows=ids.map(findLesson).filter(Boolean);root.innerHTML=rows.length?rows.map(x=>item(x,'♡')).join(''):empty('Chưa có bài yêu thích. Khi đọc bài, bấm nút ♡ để lưu.')}
+ function renderNotes(){const root=document.getElementById('v24NotesList');if(!root)return;const rows=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i)||'';if(!k.startsWith('gocnho_lesson_note_v1_'))continue;try{const o=JSON.parse(localStorage.getItem(k)||'{}');if(!String(o.text||'').trim())continue;const id=k.replace('gocnho_lesson_note_v1_','');const l=findLesson(id);if(l)rows.push({...l,preview:String(o.text).trim().slice(0,90),ts:o.updatedAt||0})}catch(_){}}rows.sort((a,b)=>b.ts-a.ts);root.innerHTML=rows.length?rows.map(x=>`<a class="v24-item" href="${esc(x.href)}"><div class="ico">▣</div><div><h3>${esc(x.title)}</h3><p>${esc(x.preview)}</p></div><span class="meta">${fmt(x.ts)}</span></a>`).join(''):empty('Chưa có ghi chú nào.')}
+ function doSearch(q){const root=document.getElementById('v24SearchResults');if(!root)return;const n=norm(q);if(!n){root.innerHTML=empty('Nhập từ khóa để tìm sách hoặc bài học.');return}const lessons=allLessons().filter(x=>norm(`${x.title} ${x.subtitle} ${x.bookTitle} ${x.chapterTitle}`).includes(n));const books=(CAT.books||[]).filter(b=>norm(`${b.title} ${b.description||''}`).includes(n));root.innerHTML=(books.map(b=>`<a class="v24-item" href="library.html?v=24.0&book=${encodeURIComponent(b.id)}"><div class="ico">📚</div><div><h3>${esc(b.title)}</h3><p>Đầu sách</p></div><span class="meta">Mở →</span></a>`).join('')+lessons.map(x=>item(x,'📖')).join(''))||empty('Không tìm thấy kết quả phù hợp.')}
+ function switchView(name){document.querySelectorAll('.v24-view').forEach(v=>v.classList.remove('active'));const map={home:'v24ViewHome',recent:'v24ViewRecent',favorites:'v24ViewFavorites',notes:'v24ViewNotes',search:'v24ViewSearch',settings:'v24ViewSettings'};document.getElementById(map[name]||map.home)?.classList.add('active');document.querySelectorAll('.v24-bottom-nav [data-v24-view]').forEach(b=>b.classList.toggle('active',b.dataset.v24View===name));if(name==='recent')renderRecent();if(name==='favorites')renderFav();if(name==='notes')renderNotes();if(name==='search')document.getElementById('v24Search')?.focus()}
+ function applyUI(){const u=get(UI,{accent:'pink'});document.body.classList.remove('v24-accent-pink','v24-accent-brown','v24-accent-green');document.body.classList.add('v24-accent-'+(u.accent||'pink'));document.querySelectorAll('[data-v24-accent]').forEach(b=>b.classList.toggle('active',b.dataset.v24Accent===u.accent));const rs=loadSettings();document.querySelectorAll('[data-v24-font]').forEach(b=>b.classList.toggle('active',b.dataset.v24Font===rs.font));document.querySelectorAll('[data-v24-reader-theme]').forEach(b=>b.classList.toggle('active',b.dataset.v24ReaderTheme===rs.theme));const l=document.getElementById('v24SizeLabel');if(l)l.textContent=(rs.size||20)+'px'}
+ document.addEventListener('DOMContentLoaded',()=>{
+   const cover=document.getElementById('homeCover');if(cover){const st=(CAT.siteSettings||{});cover.style.backgroundImage=st.coverImage?`url(${JSON.stringify(st.coverImage)})`:`url('cover-bo-de-non-v24.svg')`;}
+   renderBooks('');renderRecent();renderFav();renderNotes();applyUI();
+   document.querySelectorAll('[data-v24-view]').forEach(b=>b.addEventListener('click',e=>{if(b.tagName==='A')return;e.preventDefault();switchView(b.dataset.v24View)}));
+   const inp=document.getElementById('v24Search'), btn=document.getElementById('v24SearchBtn');const search=()=>{switchView('search');doSearch(inp?.value||'')};btn?.addEventListener('click',search);inp?.addEventListener('keydown',e=>{if(e.key==='Enter')search()});inp?.addEventListener('input',()=>{if(document.getElementById('v24ViewSearch')?.classList.contains('active'))doSearch(inp.value)});
+   document.querySelectorAll('[data-v24-accent]').forEach(b=>b.addEventListener('click',()=>{const u=get(UI,{accent:'pink'});u.accent=b.dataset.v24Accent;set(UI,u);applyUI()}));
+   document.querySelectorAll('[data-v24-font]').forEach(b=>b.addEventListener('click',()=>{const rs=loadSettings();rs.font=b.dataset.v24Font;saveSettings(rs);applyUI()}));
+   document.querySelectorAll('[data-v24-reader-theme]').forEach(b=>b.addEventListener('click',()=>{const rs=loadSettings();rs.theme=b.dataset.v24ReaderTheme;saveSettings(rs);applyUI()}));
+   document.getElementById('v24Smaller')?.addEventListener('click',()=>{const rs=loadSettings();rs.size=Math.max(15,(+rs.size||20)-1);saveSettings(rs);applyUI()});document.getElementById('v24Larger')?.addEventListener('click',()=>{const rs=loadSettings();rs.size=Math.min(32,(+rs.size||20)+1);saveSettings(rs);applyUI()});
+ });
+ // Reader: recent + favorite floating button.
+ document.addEventListener('DOMContentLoaded',()=>{if(!document.querySelector('.reader-content')||!window.GNTT_CURRENT_LESSON_ID)return;const id=window.GNTT_CURRENT_LESSON_ID, info=window.GNTT_CURRENT_LESSON||findLesson(id)||{id,title:document.querySelector('.reader-paper>h1')?.textContent||'Bài học',href:location.href};let rec=get(REC,[]).filter(x=>x.id!==id);rec.unshift({id,ts:Date.now(),title:info.title||''});set(REC,rec.slice(0,30));let fav=get(FAV,[]);const b=document.createElement('button');b.className='v24-reader-fav'+(fav.includes(id)?' active':'');b.textContent=fav.includes(id)?'♥':'♡';b.title='Yêu thích';b.addEventListener('click',()=>{fav=get(FAV,[]);if(fav.includes(id))fav=fav.filter(x=>x!==id);else fav.unshift(id);set(FAV,fav);b.classList.toggle('active',fav.includes(id));b.textContent=fav.includes(id)?'♥':'♡'});document.body.appendChild(b)})
+})();

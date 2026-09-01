@@ -6,18 +6,18 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Quản trị nội dung V23.9 - Góc nhỏ tu học</title>
-<link rel="stylesheet" href="admin-v17.css?v=23.9">
+<title>Quản trị nội dung V24.0.1 - Góc nhỏ tu học</title>
+<link rel="stylesheet" href="admin-v17.css?v=24.0">
 </head>
 <body>
 <header class="admin-header">
-  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V23.9</b></div>
-  <a id="openReaderLink" href="reader.html?v=23.9" target="_blank" rel="noopener">Mở bài đọc ↗</a>
+  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V24.0.1</b></div>
+  <a id="openReaderLink" href="reader.html?v=24.0" target="_blank" rel="noopener">Mở bài đọc ↗</a>
 </header>
 
 <main class="admin-wrap">
   <section class="notice">
-    <strong>V23.9 · Thư viện ảnh có sẵn cho Cover, bìa sách, logo và icon App</strong>
+    <strong>V24.0.1 · Thư viện ảnh có sẵn cho Cover, bìa sách, logo và icon App</strong>
     <span>Chọn 🌐 Public để hiển thị ngoài website hoặc 🔒 Private để ẩn khỏi Thư viện và chặn Reader thông thường.</span>
   </section>
 
@@ -146,7 +146,7 @@
     <div class="site-icon-title"><strong>📱 Tạo icon App</strong><span>Tạo đúng 2 file icon-192.png và icon-512.png để thay biểu tượng PWA trên iPhone/Android.</span></div>
     <div class="app-icon-maker-grid">
       <div class="app-icon-preview-wrap">
-        <div id="appIconPreview" class="app-icon-preview"><img src="icon-192.png?v=23.9" alt="Icon App hiện tại"></div>
+        <div id="appIconPreview" class="app-icon-preview"><img src="icon-192.png?v=24.0" alt="Icon App hiện tại"></div>
         <small>Ảnh xem trước theo kiểu icon trên màn hình iPhone.</small>
       </div>
       <div class="app-icon-maker-controls">
@@ -171,13 +171,19 @@
   </section>
 
   <section class="meta-panel site-icon-panel">
-    <div class="site-icon-title"><strong>Biểu tượng Góc nhỏ tu học</strong><span>Chọn 1 trong 48 biểu tượng cho logo trên thanh đầu trang.</span></div>
+    <div class="site-icon-title"><strong>Biểu tượng Góc nhỏ tu học</strong><span>Chọn màu 🤎 Nâu / 🌸 Hồng / 🌿 Xanh rồi chọn 1 trong 48 biểu tượng cho logo trên thanh đầu trang.</span></div>
     <div class="book-icon-field wide">
       <div class="book-icon-field-head">
         <span>Biểu tượng trang chủ / thanh tiêu đề</span>
         <div id="siteIconPreview" class="book-icon-preview" aria-label="Biểu tượng trang web đang chọn"></div>
       </div>
       <input id="siteIcon" type="hidden" value="theme-openbook">
+      <input id="siteIconStyle" type="hidden" value="brown">
+      <div class="icon-style-switch" aria-label="Màu biểu tượng Góc nhỏ tu học">
+        <button type="button" data-site-icon-style="brown" class="selected">🤎 Nâu</button>
+        <button type="button" data-site-icon-style="pink">🌸 Hồng</button>
+        <button type="button" data-site-icon-style="green">🌿 Xanh</button>
+      </div>
       <div id="siteIconPicker" class="book-icon-picker" aria-label="Chọn biểu tượng Góc nhỏ tu học"></div>
       <small class="field-help">Biểu tượng này sẽ thay 📖 trước chữ “Góc nhỏ tu học” trên Trang chủ, Thư viện và Reader.</small>
       <div style="margin-top:10px"><button type="button" id="publishSiteIcon" class="primary">Lưu & xuất bản biểu tượng</button> <span id="siteIconState" class="publish-state"></span></div>
@@ -196,13 +202,14 @@
           <div id="bookIconPreview" class="book-icon-preview" aria-label="Biểu tượng đang chọn"></div>
         </div>
         <input id="bookIcon" type="hidden" value="theme-openbook">
-        <input id="bookIconStyle" type="hidden" value="color">
-        <div class="icon-style-switch" aria-label="Kiểu màu biểu tượng">
-          <button type="button" data-icon-style="color" class="selected">🌸 Có màu</button>
-          <button type="button" data-icon-style="mono">🤎 Nâu đơn sắc</button>
+        <input id="bookIconStyle" type="hidden" value="brown">
+        <div class="icon-style-switch" aria-label="Màu biểu tượng đầu sách">
+          <button type="button" data-icon-style="brown" class="selected">🤎 Nâu</button>
+          <button type="button" data-icon-style="pink">🌸 Hồng</button>
+          <button type="button" data-icon-style="green">🌿 Xanh</button>
         </div>
         <div id="bookIconPicker" class="book-icon-picker" aria-label="Chọn biểu tượng đầu sách"></div>
-        <small class="field-help">Mỗi mẫu đều có 2 phiên bản: Có màu và Nâu đơn sắc. Ở chế độ Nâu đơn sắc, cả 48 biểu tượng đều dùng cùng màu nâu của giao diện. Có thể đổi lại cho sách cũ bất cứ lúc nào.</small>
+        <small class="field-help">Mỗi mẫu đều có 3 màu: 🤎 Nâu, 🌸 Hồng và 🌿 Xanh. Chọn màu trước rồi chọn 1 trong 48 biểu tượng. Có thể đổi lại cho sách cũ bất cứ lúc nào.</small>
       </div>
       <div class="wide book-cover-field preset-field">
         <span class="field-label">Ảnh bìa đầu sách</span>
@@ -278,7 +285,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="data.js?v=23.6"></script>
-<script src="book-icons.js?v=23.9"></script>
-<script src="admin-v21.js?v=23.9"></script>
+<script src="book-icons.js?v=24.0"></script>
+<script src="admin-v21.js?v=24.0"></script>
 </body>
 </html>

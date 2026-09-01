@@ -1,7 +1,8 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
 DATA.version="23.9";
-DATA.siteSettings = DATA.siteSettings || {homeIcon:"theme-openbook"};
+DATA.siteSettings = DATA.siteSettings || {homeIcon:"theme-openbook",homeIconStyle:"brown"};
+DATA.siteSettings.homeIconStyle = DATA.siteSettings.homeIconStyle || 'brown';
 DATA.siteSettings.accentTheme=DATA.siteSettings.accentTheme||"brown";
 DATA.siteSettings.coverImage=DATA.siteSettings.coverImage||"";
 const DRAFT_KEY='gntt_v21_draft';
@@ -13,7 +14,7 @@ const bookSelect=$('bookSelect'), chapterSelect=$('chapterSelect'), lessonSelect
 const bookTitle=$('bookTitle'), chapterTitle=$('chapterTitle'), lessonTitle=$('lessonTitle');
 const youtubeUrl=$('youtubeUrl'), lessonSubtitle=$('lessonSubtitle'), lessonVisibility=$('lessonVisibility'), editor=$('editor');
 const bookIcon=$('bookIcon'), bookIconStyle=$('bookIconStyle'), bookIconPicker=$('bookIconPicker'), bookIconPreview=$('bookIconPreview');
-const siteIcon=$('siteIcon'), siteIconPicker=$('siteIconPicker'), siteIconPreview=$('siteIconPreview');
+const siteIcon=$('siteIcon'), siteIconStyle=$('siteIconStyle'), siteIconPicker=$('siteIconPicker'), siteIconPreview=$('siteIconPreview');
 const siteAccentTheme=$('siteAccentTheme'), siteCoverFile=$('siteCoverFile'), siteCoverPreview=$('siteCoverPreview');
 const bookCoverFile=$('bookCoverFile'), bookCoverPreview=$('bookCoverPreview');
 let pendingBookCover='';
@@ -61,7 +62,7 @@ function setBookIcon(id){
   const lib=window.GNTT_BOOK_ICONS;
   const valid=lib?.get(id)?.id || lib?.defaultId || 'theme-openbook';
   if(bookIcon) bookIcon.value=valid;
-  if(bookIconPreview) bookIconPreview.innerHTML=lib?.render(valid,bookIconStyle?.value||'color')||'';
+  if(bookIconPreview) bookIconPreview.innerHTML=lib?.render(valid,bookIconStyle?.value||'brown')||'';
   if(bookIconPicker){
     bookIconPicker.querySelectorAll('[data-book-icon]').forEach(btn=>btn.classList.toggle('selected',btn.dataset.bookIcon===valid));
   }
@@ -77,7 +78,7 @@ function renderBookIconPicker(){
       html+=`<div class="book-icon-group"><strong>${escapeHtml(item.group)}</strong><div class="book-icon-options">`;
       lastGroup=item.group;
     }
-    html+=`<button type="button" class="book-icon-choice" data-book-icon="${escapeHtml(item.id)}" title="${escapeHtml(item.label)}"><span>${lib.render(item.id,bookIconStyle?.value||'color')}</span><small>${escapeHtml(item.label)}</small></button>`;
+    html+=`<button type="button" class="book-icon-choice" data-book-icon="${escapeHtml(item.id)}" title="${escapeHtml(item.label)}"><span>${lib.render(item.id,bookIconStyle?.value||'brown')}</span><small>${escapeHtml(item.label)}</small></button>`;
   }
   if(lastGroup) html+='</div></div>';
   bookIconPicker.innerHTML=html;
@@ -88,7 +89,7 @@ function renderBookIconPicker(){
 }
 renderBookIconPicker();
 function setBookIconStyle(style){
-  style=style==='mono'?'mono':'color';
+  style=['brown','pink','green'].includes(style)?style:(style==='mono'?'brown':(style==='color'?'pink':'brown'));
   if(bookIconStyle) bookIconStyle.value=style;
   document.querySelectorAll('[data-icon-style]').forEach(b=>b.classList.toggle('selected',b.dataset.iconStyle===style));
   renderBookIconPicker(); setBookIcon(bookIcon?.value||'theme-openbook');
@@ -100,7 +101,7 @@ function setSiteIcon(id){
   DATA.siteSettings = DATA.siteSettings || {};
   DATA.siteSettings.homeIcon=valid;
   if(siteIcon) siteIcon.value=valid;
-  if(siteIconPreview) siteIconPreview.innerHTML=lib?.svg(valid)||'';
+  if(siteIconPreview) siteIconPreview.innerHTML=lib?.render(valid,siteIconStyle?.value||'brown')||'';
   if(siteIconPicker) siteIconPicker.querySelectorAll('[data-site-icon]').forEach(btn=>btn.classList.toggle('selected',btn.dataset.siteIcon===valid));
 }
 function renderSiteIconPicker(){
@@ -108,14 +109,22 @@ function renderSiteIconPicker(){
   let lastGroup='',html='';
   for(const item of lib.icons){
     if(item.group!==lastGroup){ if(lastGroup) html+='</div></div>'; html+=`<div class="book-icon-group"><strong>${escapeHtml(item.group)}</strong><div class="book-icon-options">`; lastGroup=item.group; }
-    html+=`<button type="button" class="book-icon-choice" data-site-icon="${escapeHtml(item.id)}" title="${escapeHtml(item.label)}"><span>${lib.svg(item.id)}</span><small>${escapeHtml(item.label)}</small></button>`;
+    html+=`<button type="button" class="book-icon-choice" data-site-icon="${escapeHtml(item.id)}" title="${escapeHtml(item.label)}"><span>${lib.render(item.id,siteIconStyle?.value||'brown')}</span><small>${escapeHtml(item.label)}</small></button>`;
   }
   if(lastGroup) html+='</div></div>'; siteIconPicker.innerHTML=html;
   siteIconPicker.addEventListener('click',e=>{const btn=e.target.closest('[data-site-icon]'); if(btn) setSiteIcon(btn.dataset.siteIcon);});
   setSiteIcon(DATA.siteSettings?.homeIcon||'theme-openbook');
 }
 renderSiteIconPicker();
-
+function setSiteIconStyle(style){
+  style=['brown','pink','green'].includes(style)?style:'brown';
+  if(siteIconStyle) siteIconStyle.value=style;
+  DATA.siteSettings=DATA.siteSettings||{}; DATA.siteSettings.homeIconStyle=style;
+  document.querySelectorAll('[data-site-icon-style]').forEach(b=>b.classList.toggle('selected',b.dataset.siteIconStyle===style));
+  renderSiteIconPicker(); setSiteIcon(siteIcon?.value||DATA.siteSettings?.homeIcon||'theme-openbook'); DATA.siteSettings.homeIconStyle=siteIconStyle?.value||'brown';
+}
+document.querySelectorAll('[data-site-icon-style]').forEach(b=>b.addEventListener('click',()=>setSiteIconStyle(b.dataset.siteIconStyle)));
+setSiteIconStyle(DATA.siteSettings?.homeIconStyle||'brown');
 
 async function imageFileToDataUrl(file,maxW=1400,maxH=700,quality=.82){
   if(!file) return '';
@@ -139,7 +148,7 @@ function loadSelected(){
   refreshSelectors();
   const b=currentBook(), c=currentChapter(), l=currentLesson();
   bookTitle.value=b?.title||'';
-  setBookIconStyle(b?.iconStyle||'color'); setBookIcon(b?.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
+  setBookIconStyle(b?.iconStyle||'brown'); setBookIcon(b?.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
   pendingBookCover=b?.coverImage||''; if(bookCoverFile) bookCoverFile.value=''; showCover(bookCoverPreview,pendingBookCover,'book');
   chapterTitle.value=c?.title||'';
   lessonTitle.value=l?.title||'';
@@ -196,14 +205,14 @@ $('newChapter').addEventListener('click',()=>{
   const b=currentBook(); if(!b){alert('Hãy chọn hoặc tạo đầu sách trước.');return;}
   mode='new-chapter'; selected.chapterId=null; selected.lessonId=null;
   bookTitle.value=b.title; chapterTitle.value=''; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; lessonVisibility.value='private'; editor.innerHTML='';
-  setBookIconStyle(b.iconStyle||'color'); setBookIcon(b.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
+  setBookIconStyle(b.iconStyle||'brown'); setBookIcon(b.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
   preview.textContent='Phẩm / Chương mới · nhập bài đầu tiên'; setStatus('Đang tạo chương mới'); chapterTitle.focus();
 });
 $('newLesson').addEventListener('click',()=>{
   const b=currentBook(), c=currentChapter(); if(!b||!c){alert('Hãy chọn đầu sách và phẩm/chương trước.');return;}
   mode='new-lesson'; selected.lessonId=null;
   bookTitle.value=b.title; chapterTitle.value=c.title; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; lessonVisibility.value='private'; editor.innerHTML='';
-  setBookIconStyle(b.iconStyle||'color'); setBookIcon(b.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
+  setBookIconStyle(b.iconStyle||'brown'); setBookIcon(b.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
   preview.textContent='Bài mới'; setStatus('Đang tạo bài mới'); lessonTitle.focus();
 });
 
@@ -221,9 +230,9 @@ function upsertFromForm(){
   let b=currentBook();
   if(mode==='new-book' || !b){
     const ids=DATA.books.map(x=>x.id);
-    b={id:uniqueId(slug(bTitle),ids),title:bTitle,icon:(bookIcon?.value||'theme-openbook'),iconStyle:(bookIconStyle?.value||'color'),coverImage:pendingBookCover||'',description:'Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.',chapters:[]};
+    b={id:uniqueId(slug(bTitle),ids),title:bTitle,icon:(bookIcon?.value||'theme-openbook'),iconStyle:(bookIconStyle?.value||'brown'),coverImage:pendingBookCover||'',description:'Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.',chapters:[]};
     DATA.books.push(b); selected.bookId=b.id;
-  } else { b.title=bTitle; b.icon=(bookIcon?.value||b.icon||'theme-openbook'); b.iconStyle=(bookIconStyle?.value||b.iconStyle||'color'); b.coverImage=pendingBookCover||''; }
+  } else { b.title=bTitle; b.icon=(bookIcon?.value||b.icon||'theme-openbook'); b.iconStyle=(bookIconStyle?.value||b.iconStyle||'brown'); b.coverImage=pendingBookCover||''; }
 
   let c=(b.chapters||[]).find(x=>x.id===selected.chapterId);
   if(mode==='new-book'||mode==='new-chapter'||!c){
@@ -290,7 +299,7 @@ function buildCatalogJs(){
       id:b.id,
       title:b.title,
       icon:b.icon||'theme-openbook',
-      iconStyle:b.iconStyle||'color',
+      iconStyle:b.iconStyle||'brown',
       coverImage:b.coverImage||'',
       description:b.description||'',
       type:b.type||'lesson',
@@ -300,7 +309,7 @@ function buildCatalogJs(){
     };
   }).filter(b=>b.chapters.length);
 
-  const cat={siteSettings:{homeIcon:DATA.siteSettings?.homeIcon||'theme-openbook',accentTheme:DATA.siteSettings?.accentTheme||'brown',coverImage:DATA.siteSettings?.coverImage||''},books};
+  const cat={siteSettings:{homeIcon:DATA.siteSettings?.homeIcon||'theme-openbook',homeIconStyle:DATA.siteSettings?.homeIconStyle||'brown',accentTheme:DATA.siteSettings?.accentTheme||'brown',coverImage:DATA.siteSettings?.coverImage||''},books};
   return 'window.GNTT_CATALOG = '+JSON.stringify(cat,null,2)+';\n';
 }
 
@@ -345,7 +354,7 @@ $('publishAppearance')?.addEventListener('click',async()=>{
 $('publishSiteIcon')?.addEventListener('click',async()=>{
   const state=$('siteIconState');
   try{
-    setSiteIcon(siteIcon?.value||DATA.siteSettings?.homeIcon||'theme-openbook');
+    setSiteIcon(siteIcon?.value||DATA.siteSettings?.homeIcon||'theme-openbook'); DATA.siteSettings.homeIconStyle=siteIconStyle?.value||'brown';
     if(state){state.textContent='Đang xuất bản…';state.className='publish-state';}
     await apiRequest('/publish-v21',{method:'POST',body:JSON.stringify({dataJs:buildDataJs(),catalogJs:buildCatalogJs(),message:'Cập nhật biểu tượng Góc nhỏ tu học'})});
     if(state){state.textContent='✓ Đã xuất bản';state.className='publish-state ok';}
@@ -370,7 +379,7 @@ $('publishNow').addEventListener('click',async()=>{
 
 $('reloadData').addEventListener('click',()=>location.reload());
 $('saveDraft').addEventListener('click',()=>{
-  const d={book:bookTitle.value,bookIcon:bookIcon?.value||'theme-openbook',bookIconStyle:bookIconStyle?.value||'color',chapter:chapterTitle.value,title:lessonTitle.value,youtube:youtubeUrl.value,subtitle:lessonSubtitle.value,visibility:lessonVisibility.value,html:editor.innerHTML};
+  const d={book:bookTitle.value,bookIcon:bookIcon?.value||'theme-openbook',bookIconStyle:bookIconStyle?.value||'brown',chapter:chapterTitle.value,title:lessonTitle.value,youtube:youtubeUrl.value,subtitle:lessonSubtitle.value,visibility:lessonVisibility.value,html:editor.innerHTML};
   localStorage.setItem(DRAFT_KEY,JSON.stringify(d));setStatus('Đã lưu bản nháp');
 });
 $('restoreDraft').addEventListener('click',()=>{

@@ -5,7 +5,7 @@
 <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
 <meta content="no-cache" http-equiv="Pragma"/>
 <meta content="0" http-equiv="Expires"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
-<title>Đọc bài | Góc nhỏ tu học</title><link href="style.css?v=23.9" rel="stylesheet"/><link rel="manifest" href="manifest.webmanifest?v=23.9"><meta name="theme-color" content="#765b3a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Góc nhỏ tu học"><link rel="apple-touch-icon" href="icon-192.png"></head><body class="theme-paper">
+<title>Đọc bài | Góc nhỏ tu học</title><link href="style.css?v=24.0" rel="stylesheet"/><link rel="manifest" href="manifest.webmanifest?v=24.0"><meta name="theme-color" content="#765b3a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Góc nhỏ tu học"><link rel="apple-touch-icon" href="icon-192.png"></head><body class="theme-paper">
 <header class="site-header"><nav class="nav">
 <a class="brand" href="index.html">📖 Góc nhỏ tu học</a>
 <div class="nav-links">
@@ -46,7 +46,7 @@
 </div>
 <nav id="lessonBottomNav" class="lesson-bottom-nav" aria-label="Điều hướng bài học">
   <button type="button" id="prevLessonBtn" class="lesson-nav-btn">← Bài trước</button>
-  <a class="lesson-home-btn" href="index.html?v=23.9" aria-label="Về Trang chủ" title="Trang chủ">⌂</a>
+  <a class="lesson-home-btn" href="index.html?v=24.0" aria-label="Về Trang chủ" title="Trang chủ">⌂</a>
   <button type="button" id="nextLessonBtn" class="lesson-nav-btn">Bài tiếp →</button>
 </nav>
 <div class="reader-end-footer">
@@ -104,7 +104,7 @@
 </div>
 </aside>
 <footer class="footer">Góc nhỏ tu học • Bản website đọc trực tuyến</footer>
-<script src="book-icons.js?v=23.9"></script><script src="data.js?v=23.9"></script><script>
+<script src="book-icons.js?v=24.0"></script><script src="data.js?v=24.0"></script><script>
 (function(){
   const data = window.GNTT_DATA || {books:[]};
   const params = new URLSearchParams(location.search);
@@ -134,7 +134,7 @@
 
   const {book, chapter, lesson} = found;
 
-  // V23.7: chặn Reader công khai đối với bài Private.
+  // V24.0: chặn Reader công khai đối với bài Private.
   if(lesson.visibility === 'private'){
     const category = document.querySelector('.reader-category');
     const title = document.querySelector('.reader-paper > h1');
@@ -150,9 +150,9 @@
     return;
   }
 
-  window.GNTT_CURRENT_LESSON_ID = lesson.id;
+  window.GNTT_CURRENT_LESSON_ID = lesson.id; window.GNTT_CURRENT_LESSON = {id:lesson.id,title:lesson.title||'',subtitle:lesson.subtitle||'',bookId:book.id||'',bookTitle:book.title||'',chapterTitle:chapter.title||'',href:'reader.html?id='+encodeURIComponent(lesson.id)};
 
-  // V23.7: xác định Bài trước/Bài tiếp theo thứ tự thư viện, tự bỏ qua bài Private.
+  // V24.0: xác định Bài trước/Bài tiếp theo thứ tự thư viện, tự bỏ qua bài Private.
   const publicLessons = [];
   for(const b of (data.books || [])){
     for(const ch of (b.chapters || [])){
@@ -191,4 +191,4 @@
     article.innerHTML = body;
   }
 })();
-</script><script src="app.js?v=23.9"></script><script src="pwa.js?v=23.9"></script></body></html>
+</script><script src="app.js?v=24.0"></script><script src="pwa.js?v=24.0"></script></body></html>
