@@ -1,7 +1,9 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="23.6";
+DATA.version="23.7.1";
 DATA.siteSettings = DATA.siteSettings || {homeIcon:"theme-openbook"};
+DATA.siteSettings.accentTheme=DATA.siteSettings.accentTheme||"brown";
+DATA.siteSettings.coverImage=DATA.siteSettings.coverImage||"";
 const DRAFT_KEY='gntt_v21_draft';
 const API_KEY='gntt_v21_publish_api_url';
 const PASS_KEY='gntt_v21_publish_password';
@@ -10,8 +12,11 @@ const $=id=>document.getElementById(id);
 const bookSelect=$('bookSelect'), chapterSelect=$('chapterSelect'), lessonSelect=$('lessonSelect');
 const bookTitle=$('bookTitle'), chapterTitle=$('chapterTitle'), lessonTitle=$('lessonTitle');
 const youtubeUrl=$('youtubeUrl'), lessonSubtitle=$('lessonSubtitle'), lessonVisibility=$('lessonVisibility'), editor=$('editor');
-const bookIcon=$('bookIcon'), bookIconPicker=$('bookIconPicker'), bookIconPreview=$('bookIconPreview');
+const bookIcon=$('bookIcon'), bookIconStyle=$('bookIconStyle'), bookIconPicker=$('bookIconPicker'), bookIconPreview=$('bookIconPreview');
 const siteIcon=$('siteIcon'), siteIconPicker=$('siteIconPicker'), siteIconPreview=$('siteIconPreview');
+const siteAccentTheme=$('siteAccentTheme'), siteCoverFile=$('siteCoverFile'), siteCoverPreview=$('siteCoverPreview');
+const bookCoverFile=$('bookCoverFile'), bookCoverPreview=$('bookCoverPreview');
+let pendingBookCover='';
 const statusEl=$('status'), preview=$('editorTitlePreview');
 
 let selected={bookId:null,chapterId:null,lessonId:null};
@@ -56,7 +61,7 @@ function setBookIcon(id){
   const lib=window.GNTT_BOOK_ICONS;
   const valid=lib?.get(id)?.id || lib?.defaultId || 'theme-openbook';
   if(bookIcon) bookIcon.value=valid;
-  if(bookIconPreview) bookIconPreview.innerHTML=lib?.svg(valid)||'';
+  if(bookIconPreview) bookIconPreview.innerHTML=lib?.render(valid,bookIconStyle?.value||'color')||'';
   if(bookIconPicker){
     bookIconPicker.querySelectorAll('[data-book-icon]').forEach(btn=>btn.classList.toggle('selected',btn.dataset.bookIcon===valid));
   }
@@ -72,7 +77,7 @@ function renderBookIconPicker(){
       html+=`<div class="book-icon-group"><strong>${escapeHtml(item.group)}</strong><div class="book-icon-options">`;
       lastGroup=item.group;
     }
-    html+=`<button type="button" class="book-icon-choice" data-book-icon="${escapeHtml(item.id)}" title="${escapeHtml(item.label)}"><span>${lib.svg(item.id)}</span><small>${escapeHtml(item.label)}</small></button>`;
+    html+=`<button type="button" class="book-icon-choice" data-book-icon="${escapeHtml(item.id)}" title="${escapeHtml(item.label)}"><span>${lib.render(item.id,bookIconStyle?.value||'color')}</span><small>${escapeHtml(item.label)}</small></button>`;
   }
   if(lastGroup) html+='</div></div>';
   bookIconPicker.innerHTML=html;
@@ -82,6 +87,13 @@ function renderBookIconPicker(){
   });
 }
 renderBookIconPicker();
+function setBookIconStyle(style){
+  style=style==='mono'?'mono':'color';
+  if(bookIconStyle) bookIconStyle.value=style;
+  document.querySelectorAll('[data-icon-style]').forEach(b=>b.classList.toggle('selected',b.dataset.iconStyle===style));
+  renderBookIconPicker(); setBookIcon(bookIcon?.value||'theme-openbook');
+}
+document.querySelectorAll('[data-icon-style]').forEach(b=>b.addEventListener('click',()=>setBookIconStyle(b.dataset.iconStyle)));
 function setSiteIcon(id){
   const lib=window.GNTT_BOOK_ICONS;
   const valid=lib?.get(id)?.id || lib?.defaultId || 'theme-openbook';
@@ -105,12 +117,30 @@ function renderSiteIconPicker(){
 renderSiteIconPicker();
 
 
+async function imageFileToDataUrl(file,maxW=1400,maxH=700,quality=.82){
+  if(!file) return '';
+  const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(file)});
+  const scale=Math.min(1,maxW/img.width,maxH/img.height), c=document.createElement('canvas');
+  c.width=Math.max(1,Math.round(img.width*scale)); c.height=Math.max(1,Math.round(img.height*scale));
+  c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+  return c.toDataURL('image/jpeg',quality);
+}
+function showCover(el,url,kind='site'){ if(!el)return; el.innerHTML=url?`<img src="${url}" alt="Xem trước ảnh">`:`<span>Chưa có ảnh ${kind==='site'?'cover':'bìa'}</span>`; }
+function setAccentTheme(v){v=['pink','green'].includes(v)?v:'brown'; DATA.siteSettings.accentTheme=v; if(siteAccentTheme)siteAccentTheme.value=v; document.querySelectorAll('[data-accent-theme]').forEach(b=>b.classList.toggle('selected',b.dataset.accentTheme===v));}
+setAccentTheme(DATA.siteSettings.accentTheme); showCover(siteCoverPreview,DATA.siteSettings.coverImage,'site');
+siteCoverFile?.addEventListener('change',async()=>{if(siteCoverFile.files[0]){DATA.siteSettings.coverImage=await imageFileToDataUrl(siteCoverFile.files[0]);showCover(siteCoverPreview,DATA.siteSettings.coverImage,'site')}});
+document.querySelectorAll('[data-accent-theme]').forEach(b=>b.addEventListener('click',()=>setAccentTheme(b.dataset.accentTheme)));
+$('removeSiteCover')?.addEventListener('click',()=>{DATA.siteSettings.coverImage='';siteCoverFile.value='';showCover(siteCoverPreview,'','site')});
+bookCoverFile?.addEventListener('change',async()=>{if(bookCoverFile.files[0]){pendingBookCover=await imageFileToDataUrl(bookCoverFile.files[0],700,1000,.82);showCover(bookCoverPreview,pendingBookCover,'book')}});
+$('removeBookCover')?.addEventListener('click',()=>{pendingBookCover='';bookCoverFile.value='';showCover(bookCoverPreview,'','book')});
+
 function loadSelected(){
   mode='edit';
   refreshSelectors();
   const b=currentBook(), c=currentChapter(), l=currentLesson();
   bookTitle.value=b?.title||'';
-  setBookIcon(b?.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
+  setBookIconStyle(b?.iconStyle||'color'); setBookIcon(b?.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
+  pendingBookCover=b?.coverImage||''; if(bookCoverFile) bookCoverFile.value=''; showCover(bookCoverPreview,pendingBookCover,'book');
   chapterTitle.value=c?.title||'';
   lessonTitle.value=l?.title||'';
   youtubeUrl.value=l?.youtube||'';
@@ -118,7 +148,7 @@ function loadSelected(){
   lessonVisibility.value=(l?.visibility==='private'?'private':'public');
   editor.innerHTML=l?.contentHtml||'';
   preview.textContent=l?.title||'Chọn hoặc tạo bài học';
-  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=23.6`:'reader.html?v=23.6';
+  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=23.7.1`:'reader.html?v=23.7.1';
   setStatus(l?'Đã tải bài':'Chưa có bài');
 }
 
@@ -135,7 +165,7 @@ lessonSelect.addEventListener('change',()=>{
 $('newBook').addEventListener('click',()=>{
   mode='new-book'; selected={bookId:null,chapterId:null,lessonId:null};
   bookTitle.value=''; chapterTitle.value=''; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; lessonVisibility.value='private'; editor.innerHTML='';
-  setBookIcon('lotus-01');
+  setBookIconStyle('color'); setBookIcon('lotus-01'); pendingBookCover=''; if(bookCoverFile)bookCoverFile.value=''; showCover(bookCoverPreview,'','book');
   preview.textContent='Đầu sách mới · nhập bài đầu tiên'; setStatus('Đang tạo đầu sách mới');
   bookTitle.focus();
 });
@@ -166,14 +196,14 @@ $('newChapter').addEventListener('click',()=>{
   const b=currentBook(); if(!b){alert('Hãy chọn hoặc tạo đầu sách trước.');return;}
   mode='new-chapter'; selected.chapterId=null; selected.lessonId=null;
   bookTitle.value=b.title; chapterTitle.value=''; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; lessonVisibility.value='private'; editor.innerHTML='';
-  setBookIcon(b.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
+  setBookIconStyle(b.iconStyle||'color'); setBookIcon(b.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
   preview.textContent='Phẩm / Chương mới · nhập bài đầu tiên'; setStatus('Đang tạo chương mới'); chapterTitle.focus();
 });
 $('newLesson').addEventListener('click',()=>{
   const b=currentBook(), c=currentChapter(); if(!b||!c){alert('Hãy chọn đầu sách và phẩm/chương trước.');return;}
   mode='new-lesson'; selected.lessonId=null;
   bookTitle.value=b.title; chapterTitle.value=c.title; lessonTitle.value=''; youtubeUrl.value=''; lessonSubtitle.value=''; lessonVisibility.value='private'; editor.innerHTML='';
-  setBookIcon(b.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
+  setBookIconStyle(b.iconStyle||'color'); setBookIcon(b.icon || window.GNTT_BOOK_ICONS?.defaultId || 'theme-openbook');
   preview.textContent='Bài mới'; setStatus('Đang tạo bài mới'); lessonTitle.focus();
 });
 
@@ -191,9 +221,9 @@ function upsertFromForm(){
   let b=currentBook();
   if(mode==='new-book' || !b){
     const ids=DATA.books.map(x=>x.id);
-    b={id:uniqueId(slug(bTitle),ids),title:bTitle,icon:(bookIcon?.value||'theme-openbook'),description:'Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.',chapters:[]};
+    b={id:uniqueId(slug(bTitle),ids),title:bTitle,icon:(bookIcon?.value||'theme-openbook'),iconStyle:(bookIconStyle?.value||'color'),coverImage:pendingBookCover||'',description:'Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.',chapters:[]};
     DATA.books.push(b); selected.bookId=b.id;
-  } else { b.title=bTitle; b.icon=(bookIcon?.value||b.icon||'theme-openbook'); }
+  } else { b.title=bTitle; b.icon=(bookIcon?.value||b.icon||'theme-openbook'); b.iconStyle=(bookIconStyle?.value||b.iconStyle||'color'); b.coverImage=pendingBookCover||''; }
 
   let c=(b.chapters||[]).find(x=>x.id===selected.chapterId);
   if(mode==='new-book'||mode==='new-chapter'||!c){
@@ -236,7 +266,7 @@ function upsertFromForm(){
   refreshSelectors();
   lessonSelect.value=l.id;
   preview.textContent=l.title;
-  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=23.6`;
+  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=23.7.1`;
   return l;
 }
 
@@ -251,7 +281,7 @@ function buildCatalogJs(){
           title:l.title,
           subtitle:l.subtitle||'',
           tocLevel:Number(l.tocLevel)||2,
-          href:`reader.html?id=${l.id}&v=23.6`
+          href:`reader.html?id=${l.id}&v=23.7.1`
         }));
       return {id:c.id,title:c.title,lessons};
     }).filter(c=>c.lessons.length);
@@ -260,6 +290,8 @@ function buildCatalogJs(){
       id:b.id,
       title:b.title,
       icon:b.icon||'theme-openbook',
+      iconStyle:b.iconStyle||'color',
+      coverImage:b.coverImage||'',
       description:b.description||'',
       type:b.type||'lesson',
       pdfUrl:b.pdfUrl||'',
@@ -268,7 +300,7 @@ function buildCatalogJs(){
     };
   }).filter(b=>b.chapters.length);
 
-  const cat={siteSettings:{homeIcon:DATA.siteSettings?.homeIcon||'theme-openbook'},books};
+  const cat={siteSettings:{homeIcon:DATA.siteSettings?.homeIcon||'theme-openbook',accentTheme:DATA.siteSettings?.accentTheme||'brown',coverImage:DATA.siteSettings?.coverImage||''},books};
   return 'window.GNTT_CATALOG = '+JSON.stringify(cat,null,2)+';\n';
 }
 
@@ -301,6 +333,15 @@ $('testPublishConnection').addEventListener('click',async()=>{
 });
 
 
+$('publishAppearance')?.addEventListener('click',async()=>{
+  const state=$('appearanceState');
+  try{
+    if(state){state.textContent='Đang xuất bản…';state.className='publish-state';}
+    await apiRequest('/publish-v21',{method:'POST',body:JSON.stringify({dataJs:buildDataJs(),catalogJs:buildCatalogJs(),message:'Cập nhật màu giao diện và ảnh cover'})});
+    if(state){state.textContent='✓ Đã xuất bản';state.className='publish-state ok';}
+  }catch(e){if(state){state.textContent='Lỗi: '+e.message;state.className='publish-state err';}}
+});
+
 $('publishSiteIcon')?.addEventListener('click',async()=>{
   const state=$('siteIconState');
   try{
@@ -329,13 +370,13 @@ $('publishNow').addEventListener('click',async()=>{
 
 $('reloadData').addEventListener('click',()=>location.reload());
 $('saveDraft').addEventListener('click',()=>{
-  const d={book:bookTitle.value,bookIcon:bookIcon?.value||'theme-openbook',chapter:chapterTitle.value,title:lessonTitle.value,youtube:youtubeUrl.value,subtitle:lessonSubtitle.value,visibility:lessonVisibility.value,html:editor.innerHTML};
+  const d={book:bookTitle.value,bookIcon:bookIcon?.value||'theme-openbook',bookIconStyle:bookIconStyle?.value||'color',chapter:chapterTitle.value,title:lessonTitle.value,youtube:youtubeUrl.value,subtitle:lessonSubtitle.value,visibility:lessonVisibility.value,html:editor.innerHTML};
   localStorage.setItem(DRAFT_KEY,JSON.stringify(d));setStatus('Đã lưu bản nháp');
 });
 $('restoreDraft').addEventListener('click',()=>{
   try{
     const d=JSON.parse(localStorage.getItem(DRAFT_KEY)||'null'); if(!d){alert('Chưa có bản nháp.');return;}
-    bookTitle.value=d.book||'';setBookIcon(d.bookIcon||'theme-openbook');chapterTitle.value=d.chapter||'';lessonTitle.value=d.title||'';youtubeUrl.value=d.youtube||'';lessonSubtitle.value=d.subtitle||'';lessonVisibility.value=d.visibility==='public'?'public':'private';editor.innerHTML=d.html||'';
+    bookTitle.value=d.book||'';setBookIconStyle(d.bookIconStyle||'color');setBookIcon(d.bookIcon||'theme-openbook');chapterTitle.value=d.chapter||'';lessonTitle.value=d.title||'';youtubeUrl.value=d.youtube||'';lessonSubtitle.value=d.subtitle||'';lessonVisibility.value=d.visibility==='public'?'public':'private';editor.innerHTML=d.html||'';
     mode='new-lesson';selected.lessonId=null;preview.textContent=lessonTitle.value||'Bản nháp';setStatus('Đã khôi phục bản nháp');
   }catch(e){alert('Không đọc được bản nháp.');}
 });
@@ -792,3 +833,55 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('publishPassword').value=sessionStorage.getItem(PASS_KEY)||'';
   refreshSelectors(); loadSelected();
 });
+
+
+/* ===== V23.7.1: TẠO ICON APP 192/512 TRONG ADMIN ===== */
+(function initAppIconMaker(){
+  const fileEl=$('appIconFile'), previewEl=$('appIconPreview'), bgEl=$('appIconBg'), stateEl=$('appIconMakerState');
+  if(!previewEl) return;
+  let source={type:'current', url:'icon-512.png?v=23.7.1'};
+  function state(t,k=''){ if(stateEl){stateEl.textContent=t;stateEl.className='publish-state'+(k?' '+k:'');} }
+  function loadImage(url){ return new Promise((resolve,reject)=>{ const im=new Image(); im.onload=()=>resolve(im); im.onerror=reject; im.src=url; }); }
+  function fileToUrl(file){ return new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); }); }
+  function preview(url){ previewEl.innerHTML=`<img src="${url}" alt="Xem trước icon App">`; }
+  async function svgSiteIconDataUrl(){
+    const lib=window.GNTT_BOOK_ICONS; if(!lib) throw new Error('Chưa tải thư viện biểu tượng');
+    const id=siteIcon?.value||DATA.siteSettings?.homeIcon||lib.defaultId;
+    const svg=lib.svg(id);
+    if(!svg) throw new Error('Không tạo được biểu tượng');
+    return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  }
+  async function renderPng(size){
+    const c=document.createElement('canvas'); c.width=c.height=size; const ctx=c.getContext('2d');
+    ctx.fillStyle=(source.type==='site'?(bgEl?.value||'#fff6f5'):'#ffffff'); ctx.fillRect(0,0,size,size);
+    const im=await loadImage(source.url);
+    if(source.type==='site'){
+      const pad=Math.round(size*.17); ctx.drawImage(im,pad,pad,size-pad*2,size-pad*2);
+    }else{
+      const sw=im.naturalWidth||im.width, sh=im.naturalHeight||im.height;
+      const side=Math.min(sw,sh), sx=(sw-side)/2, sy=(sh-side)/2;
+      ctx.drawImage(im,sx,sy,side,side,0,0,size,size);
+    }
+    return await new Promise(resolve=>c.toBlob(resolve,'image/png'));
+  }
+  async function blobPreview(){ const b=await renderPng(512); const u=URL.createObjectURL(b); preview(u); setTimeout(()=>URL.revokeObjectURL(u),5000); }
+  async function download(size){
+    try{
+      const b=await renderPng(size); const u=URL.createObjectURL(b);
+      const a=document.createElement('a'); a.href=u; a.download=`icon-${size}.png`; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(u),3000); state(`Đã tạo icon-${size}.png`,'ok');
+    }catch(e){ state('Lỗi tạo icon: '+e.message,'err'); }
+  }
+  fileEl?.addEventListener('change',async()=>{
+    const f=fileEl.files?.[0]; if(!f)return;
+    try{ const u=await fileToUrl(f); source={type:'file',url:u}; await blobPreview(); state('Đã chọn ảnh. Có thể tải icon 192/512.','ok'); }catch(e){state('Không đọc được ảnh.','err');}
+  });
+  $('useSiteIconForApp')?.addEventListener('click',async()=>{
+    try{ source={type:'site',url:await svgSiteIconDataUrl()}; await blobPreview(); state('Đang dùng biểu tượng web đã chọn.','ok'); }catch(e){state(e.message,'err');}
+  });
+  bgEl?.addEventListener('input',()=>{if(source.type==='site') blobPreview();});
+  $('resetAppIconPreview')?.addEventListener('click',()=>{ source={type:'current',url:'icon-512.png?v=23.7.1'}; if(fileEl)fileEl.value=''; preview(source.url); state('Đang xem icon App hiện tại.'); });
+  $('downloadAppIcon192')?.addEventListener('click',()=>download(192));
+  $('downloadAppIcon512')?.addEventListener('click',()=>download(512));
+  $('downloadBothAppIcons')?.addEventListener('click',async()=>{ await download(192); setTimeout(()=>download(512),450); });
+})();

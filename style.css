@@ -855,3 +855,36 @@ body.page-mode .reader-title-footer{
 .brand{display:inline-flex;align-items:center;gap:7px}
 .site-brand-icon{width:23px;height:23px;display:inline-flex;align-items:center;justify-content:center;color:#8a6338;flex:0 0 23px}
 .site-brand-icon svg{width:100%;height:100%;display:block}
+
+
+/* ===== V23.7 Cover + 3 accent themes + book covers ===== */
+body.accent-brown{--accent-ui:#8a6a3f;--accent-soft:#f3eadc;--accent-line:#dfcdb5}
+body.accent-pink{--accent-ui:#d96f91;--accent-soft:#fff0f4;--accent-line:#f1c4d2}
+body.accent-green{--accent-ui:#76a653;--accent-soft:#f0f7e8;--accent-line:#cfe0bc}
+body[class*="accent-"] .brand,body[class*="accent-"] .nav-links a.active,body[class*="accent-"] .section-title a{color:var(--accent-ui)}
+body[class*="accent-"] .pwa-install-btn,body[class*="accent-"] .searchbar button{background:var(--accent-ui)}
+body[class*="accent-"] .book-card{border-color:var(--accent-line)}
+.profile-home{margin:18px 0 0;border-radius:22px;background:#fff;box-shadow:0 8px 28px rgba(70,50,30,.06);overflow:hidden;border:1px solid var(--line)}
+.home-cover{height:270px;background-position:center;background-size:cover;background-repeat:no-repeat;background-color:var(--accent-soft,#f3eadc)}
+.home-cover.default-cover{background:linear-gradient(120deg,var(--accent-soft,#f3eadc),#fff8f2)}
+.profile-identity{display:flex;align-items:flex-end;gap:18px;padding:0 28px 24px;margin-top:-44px;position:relative}
+.profile-logo{width:96px;height:96px;border-radius:50%;background:#fff;border:5px solid #fff;box-shadow:0 5px 18px rgba(60,40,20,.13);display:grid;place-items:center;color:var(--accent-ui,#8a6a3f)}
+.profile-logo-icon{font-size:46px}.profile-identity h1{margin:0 0 5px;font-size:30px;color:#4d3a22}.profile-identity p{margin:0;color:var(--muted)}
+.home-v19 .home-tools{margin:12px auto 38px;padding:12px 0 0}.home-v19 .home-tools h1,.home-v19 .home-tools>p{display:none}
+.book-card.has-book-cover{grid-template-columns:82px 1fr auto}.book-cover-thumb{width:72px;height:100px;border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(60,40,20,.13);background:#eee}.book-cover-thumb img,.library-book-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.library-book-cover{width:82px;height:116px;border-radius:8px;overflow:hidden;flex:0 0 auto;box-shadow:0 4px 12px rgba(60,40,20,.13)}
+@media(max-width:640px){.home-cover{height:165px}.profile-identity{padding:0 16px 18px;margin-top:-34px;gap:12px}.profile-logo{width:72px;height:72px}.profile-logo-icon{font-size:34px}.profile-identity h1{font-size:22px}.profile-identity p{font-size:12px}.book-card.has-book-cover{grid-template-columns:62px 1fr auto}.book-cover-thumb{width:56px;height:78px}.library-book-cover{width:62px;height:88px}}
+
+
+/* ===== V23.8: Ghi chú riêng cho từng bài ===== */
+.lesson-notes-drawer{position:fixed;inset:0;z-index:100020;background:rgba(38,28,18,.28);display:flex;justify-content:flex-end;align-items:stretch;opacity:0;pointer-events:none;transition:opacity .18s ease}
+.lesson-notes-drawer.open{opacity:1;pointer-events:auto}
+.lesson-notes-drawer>.drawer-head,.lesson-notes-drawer>.lesson-notes-body{position:absolute;right:0;width:min(520px,100vw);background:var(--paper,#fffdf8)}
+.lesson-notes-drawer>.drawer-head{top:0;height:82px;padding:18px 18px 12px;border-bottom:1px solid var(--border,#ded3c4);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;transform:translateX(100%);transition:transform .22s ease}
+.lesson-notes-drawer>.drawer-head>div{min-width:0;display:grid;gap:4px}.lesson-notes-drawer>.drawer-head strong{font-size:18px}.lesson-notes-drawer>.drawer-head small{font-size:12px;color:var(--muted,#7a6c5c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:420px}.lesson-notes-drawer>.drawer-head button{border:0;background:transparent;font-size:22px;cursor:pointer;color:inherit;padding:2px 6px}
+.lesson-notes-drawer>.lesson-notes-body{top:82px;bottom:0;padding:16px 18px calc(18px + env(safe-area-inset-bottom));transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column;gap:10px}
+.lesson-notes-drawer.open>.drawer-head,.lesson-notes-drawer.open>.lesson-notes-body{transform:translateX(0)}
+#lessonNotesText{width:100%;min-height:300px;flex:1;resize:none;border:1px solid var(--border,#ded3c4);border-radius:14px;background:#fff;color:#3f3429;padding:14px 15px;font:17px/1.65 "Palatino Linotype",Palatino,Georgia,serif;outline:none;box-sizing:border-box}
+#lessonNotesText:focus{border-color:var(--accent-ui,#8a6a3f);box-shadow:0 0 0 3px rgba(138,106,63,.12)}
+.lesson-notes-status{min-height:20px;font-size:12px;color:var(--muted,#7a6c5c)}.lesson-notes-actions{display:flex;gap:8px;flex-wrap:wrap}.lesson-notes-actions button{min-height:42px;border:1px solid var(--border,#ded3c4);border-radius:11px;background:var(--paper,#fffdf8);color:inherit;padding:0 12px;font:inherit;font-weight:700;cursor:pointer}.lesson-notes-actions .primary{margin-left:auto;background:var(--accent-ui,#8a6a3f);border-color:var(--accent-ui,#8a6a3f);color:#fff;min-width:86px}.lesson-notes-help{font-size:12px;color:var(--muted,#7a6c5c);margin:2px 0 0}
+@media(max-width:640px){.lesson-notes-drawer>.drawer-head{height:76px;padding:15px 14px 10px}.lesson-notes-drawer>.lesson-notes-body{top:76px;padding:12px 14px calc(14px + env(safe-area-inset-bottom))}#lessonNotesText{font-size:16px;min-height:220px}.lesson-notes-actions{display:grid;grid-template-columns:1fr 1fr}.lesson-notes-actions .primary{grid-column:1/-1;margin-left:0}}

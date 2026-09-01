@@ -9,6 +9,14 @@ function applySiteBrandIcon(){
   });
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applySiteBrandIcon); else applySiteBrandIcon();
+function applySiteAppearance(){
+ const settings=(window.GNTT_CATALOG&&window.GNTT_CATALOG.siteSettings)||(window.GNTT_DATA&&window.GNTT_DATA.siteSettings)||{};
+ const theme=['pink','green'].includes(settings.accentTheme)?settings.accentTheme:'brown';
+ document.body.classList.add('accent-'+theme);
+ const cover=document.getElementById('homeCover');
+ if(cover){ if(settings.coverImage){cover.style.backgroundImage=`linear-gradient(90deg,rgba(255,255,255,.05),rgba(255,255,255,.16)),url(${JSON.stringify(settings.coverImage)})`; cover.classList.add('has-cover');} else cover.classList.add('default-cover'); }
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applySiteAppearance); else applySiteAppearance();
 
 
 const STORE='phap_hoc_reader_settings';
@@ -619,7 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const lessonNav = window.GNTT_READER_NAV || {prev:null,next:null};
   const edge = new URLSearchParams(location.search).get('edge') || '';
   function lessonHref(item, where='start'){
-    return item ? `reader.html?id=${encodeURIComponent(item.id)}&edge=${where}&v=23.6` : '';
+    return item ? `reader.html?id=${encodeURIComponent(item.id)}&edge=${where}&v=23.8` : '';
   }
   function goLesson(item, where='start'){
     if(item) location.href=lessonHref(item,where);
@@ -872,9 +880,9 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.innerHTML = books.map(book => {
       const chapterCount = (book.chapters || []).length;
       const lessonCount = countLessons(book);
-      const href = `library.html?v=23.6&book=${encodeURIComponent(book.id)}`;
-      return `<a class="book-card" href="${href}">
-        <div class="book-icon">${(window.GNTT_BOOK_ICONS?.svg(book.icon||'theme-openbook')) || '📚'}</div>
+      const href = `library.html?v=23.7&book=${encodeURIComponent(book.id)}`;
+      return `<a class="book-card ${book.coverImage?'has-book-cover':''}" href="${href}">
+        ${book.coverImage?`<div class="book-cover-thumb"><img src="${esc(book.coverImage)}" alt="Bìa ${esc(book.title)}"></div>`:`<div class="book-icon">${(window.GNTT_BOOK_ICONS?.render(book.icon||'theme-openbook',book.iconStyle||'color')) || '📚'}</div>`}
         <div class="book-card-body">
           <h3>${esc(book.title)}</h3>
           <p>${esc(book.description || '')}</p>
@@ -925,7 +933,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if(!matchedChapters.trim()) return '';
       return `<article class="library-book" data-book-id="${esc(book.id)}">
         <div class="library-book-head">
-          <div class="book-icon">${(window.GNTT_BOOK_ICONS?.svg(book.icon||'theme-openbook')) || '📚'}</div>
+          ${book.coverImage?`<div class="library-book-cover"><img src="${esc(book.coverImage)}" alt="Bìa ${esc(book.title)}"></div>`:`<div class="book-icon">${(window.GNTT_BOOK_ICONS?.render(book.icon||'theme-openbook',book.iconStyle||'color')) || '📚'}</div>`}
           <div>
             <div class="eyebrow">Đầu sách</div>
             <h2>${esc(book.title)}</h2>
@@ -1013,3 +1021,83 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('pageshow',ensureHighlightPen);
   setTimeout(ensureHighlightPen,500);
 })();
+
+
+// ===== V23.8: Ghi chú riêng cho từng bài =====
+document.addEventListener('DOMContentLoaded',()=>{
+  const article=document.querySelector('.reader-content');
+  if(!article) return;
+
+  const lessonId=window.GNTT_CURRENT_LESSON_ID || article.dataset.lessonId || 'reader-default';
+  const noteKey='gocnho_lesson_note_v1_'+lessonId;
+  const drawer=document.getElementById('lessonNotesDrawer');
+  const openBtn=document.getElementById('openLessonNotes');
+  const closeBtn=document.getElementById('closeLessonNotes');
+  const doneBtn=document.getElementById('doneLessonNotes');
+  const clearBtn=document.getElementById('clearLessonNotes');
+  const copyBtn=document.getElementById('copyLessonNotes');
+  const text=document.getElementById('lessonNotesText');
+  const status=document.getElementById('lessonNotesStatus');
+  const title=document.getElementById('lessonNotesTitle');
+  if(!drawer || !text) return;
+
+  let saveTimer=null;
+  let lastSaved='';
+  function currentLessonTitle(){ return document.querySelector('.reader-paper > h1')?.textContent?.trim() || 'Bài học hiện tại'; }
+  function fmt(ts){
+    if(!ts) return '';
+    try{return new Intl.DateTimeFormat('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(ts));}
+    catch(_){return '';}
+  }
+  function loadNote(){
+    try{
+      const raw=localStorage.getItem(noteKey);
+      if(!raw) return {text:'',updatedAt:0};
+      const parsed=JSON.parse(raw);
+      if(typeof parsed==='string') return {text:parsed,updatedAt:0};
+      return {text:String(parsed?.text||''),updatedAt:Number(parsed?.updatedAt||0)};
+    }catch(_){return {text:'',updatedAt:0};}
+  }
+  function updateStatus(updatedAt, justSaved=false){
+    if(!text.value.trim()){status.textContent='Chưa có ghi chú'; return;}
+    status.textContent=(justSaved?'✓ Đã lưu':'Đã lưu')+(updatedAt?' • '+fmt(updatedAt):'');
+  }
+  function saveNote(){
+    clearTimeout(saveTimer);
+    const value=text.value;
+    if(value===lastSaved) return;
+    if(!value.trim()){
+      localStorage.removeItem(noteKey); lastSaved=''; updateStatus(0,true); return;
+    }
+    const updatedAt=Date.now();
+    localStorage.setItem(noteKey,JSON.stringify({text:value,updatedAt}));
+    lastSaved=value; updateStatus(updatedAt,true);
+  }
+  function openDrawer(){
+    const note=loadNote(); text.value=note.text; lastSaved=note.text;
+    if(title) title.textContent=currentLessonTitle();
+    updateStatus(note.updatedAt,false);
+    drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
+    setTimeout(()=>text.focus({preventScroll:true}),120);
+  }
+  function closeDrawer(){ saveNote(); drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); }
+
+  openBtn?.addEventListener('click',openDrawer);
+  closeBtn?.addEventListener('click',closeDrawer);
+  doneBtn?.addEventListener('click',closeDrawer);
+  drawer.addEventListener('click',e=>{ if(e.target===drawer) closeDrawer(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && drawer.classList.contains('open')) closeDrawer(); });
+  text.addEventListener('input',()=>{ status.textContent='Đang ghi…'; clearTimeout(saveTimer); saveTimer=setTimeout(saveNote,650); });
+  text.addEventListener('blur',saveNote);
+  copyBtn?.addEventListener('click',async()=>{
+    const value=text.value.trim();
+    if(!value){status.textContent='Chưa có nội dung để sao chép'; return;}
+    try{await navigator.clipboard.writeText(value); status.textContent='✓ Đã sao chép ghi chú';}
+    catch(_){text.select(); document.execCommand('copy'); status.textContent='✓ Đã sao chép ghi chú';}
+  });
+  clearBtn?.addEventListener('click',()=>{
+    if(!text.value.trim()) return;
+    if(!confirm('Xóa toàn bộ ghi chú của bài này?')) return;
+    text.value=''; localStorage.removeItem(noteKey); lastSaved=''; updateStatus(0,true); text.focus();
+  });
+});

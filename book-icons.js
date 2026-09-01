@@ -106,5 +106,16 @@
     return themeSvg(id);
   };
   ns.get=function(id){return ns.icons.find(x=>x.id===id)||ns.icons.find(x=>x.id===ns.defaultId)};
+  ns.colorFor=function(id){
+    if(id.startsWith('lotus-')){ const n=parseInt(id.slice(-2),10); return [1,2,3,4,10,11,13,14,17,20].includes(n)?'#e76f91':'#b8863b'; }
+    if(id.startsWith('bodhi-')) return '#5f7f45';
+    return ['theme-lotus'].includes(id)?'#d98298':(['theme-wisdom'].includes(id)?'#5f7f45':'#8a6338');
+  };
+  ns.render=function(id,style='mono'){
+    const svg=ns.svg(id);
+    if(style!=='color') return svg.replace('<svg ','<svg style=\"color:#8a6338;--icon-vein:#fff\" ');
+    const color=ns.colorFor(id);
+    return svg.replace('<svg ','<svg style=\"color:'+color+';--icon-vein:#fff\" ');
+  };
   window.GNTT_BOOK_ICONS=ns;
 })();
