@@ -3,7 +3,7 @@ const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
 DATA.version="24.1";
 DATA.siteSettings = DATA.siteSettings || {homeIcon:"theme-openbook",homeIconStyle:"brown"};
 DATA.siteSettings.homeIconStyle = DATA.siteSettings.homeIconStyle || 'brown';
-DATA.siteSettings.accentTheme=DATA.siteSettings.accentTheme||"brown";
+DATA.siteSettings.accentTheme=DATA.siteSettings.accentTheme||"lightbrown";
 DATA.siteSettings.coverImage=DATA.siteSettings.coverImage||"";
 const DRAFT_KEY='gntt_v21_draft';
 const API_KEY='gntt_v21_publish_api_url';
@@ -135,7 +135,7 @@ async function imageFileToDataUrl(file,maxW=1400,maxH=700,quality=.82){
   return c.toDataURL('image/jpeg',quality);
 }
 function showCover(el,url,kind='site'){ if(!el)return; el.innerHTML=url?`<img src="${url}" alt="Xem trước ảnh">`:`<span>Chưa có ảnh ${kind==='site'?'cover':'bìa'}</span>`; }
-function setAccentTheme(v){v=['pink','green','brown','lightbrown'].includes(v)?v:'brown'; DATA.siteSettings.accentTheme=v; if(siteAccentTheme)siteAccentTheme.value=v; document.querySelectorAll('[data-accent-theme]').forEach(b=>b.classList.toggle('selected',b.dataset.accentTheme===v));}
+function setAccentTheme(v){v=['pink','green','brown','lightbrown'].includes(v)?v:'lightbrown'; DATA.siteSettings.accentTheme=v; if(siteAccentTheme)siteAccentTheme.value=v; document.querySelectorAll('[data-accent-theme]').forEach(b=>b.classList.toggle('selected',b.dataset.accentTheme===v));}
 setAccentTheme(DATA.siteSettings.accentTheme); showCover(siteCoverPreview,DATA.siteSettings.coverImage,'site');
 siteCoverFile?.addEventListener('change',async()=>{if(siteCoverFile.files[0]){DATA.siteSettings.coverImage=await imageFileToDataUrl(siteCoverFile.files[0]);showCover(siteCoverPreview,DATA.siteSettings.coverImage,'site')}});
 document.querySelectorAll('[data-accent-theme]').forEach(b=>b.addEventListener('click',()=>setAccentTheme(b.dataset.accentTheme)));
@@ -852,7 +852,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 (function initAppIconMaker(){
   const fileEl=$('appIconFile'), previewEl=$('appIconPreview'), bgEl=$('appIconBg'), stateEl=$('appIconMakerState');
   if(!previewEl) return;
-  let source={type:'current', url:'icon-512.png?v=23.9'};
+  let source={type:'current', url:'icon-512.png?v=24.1'};
   function state(t,k=''){ if(stateEl){stateEl.textContent=t;stateEl.className='publish-state'+(k?' '+k:'');} }
   function loadImage(url){ return new Promise((resolve,reject)=>{ const im=new Image(); im.onload=()=>resolve(im); im.onerror=reject; im.src=url; }); }
   function fileToUrl(file){ return new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); }); }
@@ -900,7 +900,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     try{ source={type:'site',url:await svgSiteIconDataUrl()}; await blobPreview(); state('Đang dùng biểu tượng web đã chọn.','ok'); }catch(e){state(e.message,'err');}
   });
   bgEl?.addEventListener('input',()=>{if(source.type==='site') blobPreview();});
-  $('resetAppIconPreview')?.addEventListener('click',()=>{ source={type:'current',url:'icon-512.png?v=23.9'}; if(fileEl)fileEl.value=''; preview(source.url); state('Đang xem icon App hiện tại.'); });
+  $('resetAppIconPreview')?.addEventListener('click',()=>{ source={type:'current',url:'icon-512.png?v=24.1'}; if(fileEl)fileEl.value=''; preview(source.url); state('Đang xem icon App hiện tại.'); });
   $('downloadAppIcon192')?.addEventListener('click',()=>download(192));
   $('downloadAppIcon512')?.addEventListener('click',()=>download(512));
   $('downloadBothAppIcons')?.addEventListener('click',async()=>{ await download(192); setTimeout(()=>download(512),450); });
@@ -932,7 +932,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     el.innerHTML=items.map((x,i)=>`<button type="button" class="image-preset-choice" data-preset="${i}" title="${esc(x.name)}"><img src="${x.url}" alt="${esc(x.name)}"><small>${esc(x.name)}</small></button>`).join('');
     el.addEventListener('click',e=>{const b=e.target.closest('[data-preset]'); if(!b)return; el.querySelectorAll('.selected').forEach(x=>x.classList.remove('selected')); b.classList.add('selected'); onPick(items[+b.dataset.preset],+b.dataset.preset);});
   }
-  const siteCovers=coverDefs.map((_,i)=>makeCover(i,false));
+  const siteCovers=[{name:'Bồ đề non · Nâu nhạt',url:'cover-bo-de-non-v24.png?v=24.1'},...coverDefs.map((_,i)=>makeCover(i,false))];
   const bookCovers=[
     {name:'Sen hồ',url:'book-covers-v241/sen-ho.svg'},
     {name:'Sách & sen',url:'book-covers-v241/sach-sen.svg'},
