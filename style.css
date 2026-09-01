@@ -1066,3 +1066,25 @@ body[class*="accent-"] .brand,body[class*="accent-"] .nav-links a.active,body[cl
 .cover-fit-field{padding:10px 12px;border:1px solid #dcc8b2;border-radius:12px;background:#fbf6ef}
 .cover-fit-field .field-label{display:block;font-weight:700;margin-bottom:7px;color:#5d4632}
 .cover-fit-field select{width:min(100%,560px);padding:9px 10px;border:1px solid #cdb69d;border-radius:8px;background:#fffdf9;color:#503c2b}
+
+/* V24.2.6 - fix avatar/logo bi cat boi profile card */
+.v24-profile-card{
+  overflow:visible !important;
+  position:relative;
+}
+.v24-cover{
+  border-radius:20px 20px 0 0;
+  overflow:hidden;
+  position:relative;
+  z-index:1;
+}
+.v24-profile-row{
+  position:relative;
+  z-index:3;
+  border-radius:0 0 20px 20px;
+}
+.v24-avatar{
+  position:relative;
+  z-index:10;
+  overflow:hidden;
+}
