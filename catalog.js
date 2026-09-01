@@ -57,7 +57,7 @@ window.GNTT_CATALOG = {
           "lessons": [
             {
               "id": "kinh-tu-niem-xu-giang-nghia-loi-gioi-thieu-loi-gioi-thieu",
-              "title": "LỜI GIỚI THIỆU",
+              "title": "Lời giới thiệu",
               "subtitle": "",
               "tocLevel": 2,
               "href": "reader.html?id=kinh-tu-niem-xu-giang-nghia-loi-gioi-thieu-loi-gioi-thieu&v=23"
