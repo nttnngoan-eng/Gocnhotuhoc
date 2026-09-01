@@ -11,7 +11,7 @@ window.GNTT_CATALOG = {
       "title": "A-TÌ-ĐẠT-MA PHÁP UẨN TÚC LUẬN",
       "icon": "lotus-01",
       "iconStyle": "brown",
-      "coverImage": "book-covers-v241/sach-sen.svg",
+      "coverImage": "book-covers-v241/sen-ho.svg",
       "description": "Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.",
       "type": "lesson",
       "pdfUrl": "",
