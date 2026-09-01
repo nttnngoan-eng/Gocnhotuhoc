@@ -32,7 +32,7 @@ window.GNTT_DATA = {
       "creditRole": "lecturer",
       "creditName": "TT. Thích Huyền Châu",
       "iconStyle": "brown",
-      "coverImage": "book-covers-v241/sach-sen.svg"
+      "coverImage": "book-covers-v241/sen-ho.svg"
     },
     {
       "id": "kinh-tu-niem-xu-giang-nghia",
