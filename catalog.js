@@ -14,7 +14,7 @@ window.GNTT_CATALOG = {
           "lessons": [
             {
               "id": "a-ti-dat-ma-phap-uan-tuc-luan-pham-12-vo-luong-bai-40",
-              "title": "BÀI 40 - TỪ VÔ LƯỢNG",
+              "title": "BÀI 40 - TỪ VÔ LƯỢNG (Phần 1)",
               "subtitle": "Giảng thọ sư: TT Thích Huyền Châu",
               "tocLevel": 2,
               "href": "reader.html?id=a-ti-dat-ma-phap-uan-tuc-luan-pham-12-vo-luong-bai-40&v=23"
