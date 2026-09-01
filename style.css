@@ -983,7 +983,7 @@ body[class*="accent-"] .brand,body[class*="accent-"] .nav-links a.active,body[cl
 @media(max-width:900px){.v24-book-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.v24-book-grid{grid-template-columns:1fr}.v24-book-card.v242-icon-book{min-height:92px;padding:12px 14px}.v242-book-icon{width:58px;height:58px;flex-basis:58px}.v242-book-icon svg{width:42px;height:42px}}
 
-/* ===== V24.2.1 - Uploaded homepage cover: show full image, never crop ===== */
+/* ===== V24.2.2 - Uploaded homepage cover: show full image, never crop ===== */
 .v24-cover.has-cover{
   background-size:contain !important;
   background-position:center center !important;
@@ -995,3 +995,33 @@ body[class*="accent-"] .brand,body[class*="accent-"] .nav-links a.active,body[cl
   background-position:center center;
   background-repeat:no-repeat;
 }
+
+
+/* ===== V24.2.2 - Cover upload đẹp, không cắt ảnh chính + không có hai mảng trống ===== */
+.v24-cover.has-cover{
+  position:relative;
+  overflow:hidden;
+  background:#e8dccd !important;
+}
+.v242-cover-blur{
+  position:absolute;
+  inset:-18px;
+  background-position:center;
+  background-size:cover;
+  background-repeat:no-repeat;
+  filter:blur(14px);
+  transform:scale(1.06);
+  opacity:.48;
+}
+.v242-cover-full{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center;
+  display:block;
+}
+/* Danh sách sách: icon + tên sách */
+#featuredBooks.v24-book-grid{display:grid !important;}
