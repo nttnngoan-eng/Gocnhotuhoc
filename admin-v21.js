@@ -155,8 +155,7 @@ function loadSelected(){
   chapterTitle.value=c?.title||'';
   lessonTitle.value=l?.title||'';
   youtubeUrl.value=l?.youtube||'';
-  lessonSubtitle.value=l?.subtitle||'';
-  if(lessonSummary) lessonSummary.value=l?.summary||'';
+  lessonSubtitle.value=l?.subtitle||''; if(lessonSummary) lessonSummary.value=l?.summary||'';
   lessonVisibility.value=(l?.visibility==='private'?'private':'public');
   editor.innerHTML=l?.contentHtml||'';
   preview.textContent=l?.title||'Chọn hoặc tạo bài học';
@@ -262,7 +261,7 @@ function upsertFromForm(){
 
   l.title=lTitle;
   l.subtitle=lessonSubtitle.value.trim();
-  l.summary=lessonSummary?lessonSummary.value.trim():'';
+  l.summary=lessonSummary?.value.trim()||'';
   l.youtube=youtubeUrl.value.trim();
   l.visibility=(lessonVisibility.value==='private'?'private':'public');
   l.contentHtml=cleanEditorHTML();
@@ -385,13 +384,13 @@ $('publishNow').addEventListener('click',async()=>{
 
 $('reloadData').addEventListener('click',()=>location.reload());
 $('saveDraft').addEventListener('click',()=>{
-  const d={book:bookTitle.value,bookIcon:bookIcon?.value||'theme-openbook',bookIconStyle:bookIconStyle?.value||'brown',chapter:chapterTitle.value,title:lessonTitle.value,youtube:youtubeUrl.value,subtitle:lessonSubtitle.value,visibility:lessonVisibility.value,html:editor.innerHTML};
+  const d={book:bookTitle.value,bookIcon:bookIcon?.value||'theme-openbook',bookIconStyle:bookIconStyle?.value||'brown',chapter:chapterTitle.value,title:lessonTitle.value,youtube:youtubeUrl.value,subtitle:lessonSubtitle.value,summary:lessonSummary?.value||'',visibility:lessonVisibility.value,html:editor.innerHTML};
   localStorage.setItem(DRAFT_KEY,JSON.stringify(d));setStatus('Đã lưu bản nháp');
 });
 $('restoreDraft').addEventListener('click',()=>{
   try{
     const d=JSON.parse(localStorage.getItem(DRAFT_KEY)||'null'); if(!d){alert('Chưa có bản nháp.');return;}
-    bookTitle.value=d.book||'';setBookIconStyle(d.bookIconStyle||'color');setBookIcon(d.bookIcon||'theme-openbook');chapterTitle.value=d.chapter||'';lessonTitle.value=d.title||'';youtubeUrl.value=d.youtube||'';lessonSubtitle.value=d.subtitle||'';lessonVisibility.value=d.visibility==='public'?'public':'private';editor.innerHTML=d.html||'';
+    bookTitle.value=d.book||'';setBookIconStyle(d.bookIconStyle||'color');setBookIcon(d.bookIcon||'theme-openbook');chapterTitle.value=d.chapter||'';lessonTitle.value=d.title||'';youtubeUrl.value=d.youtube||'';lessonSubtitle.value=d.subtitle||'';if(lessonSummary)lessonSummary.value=d.summary||'';lessonVisibility.value=d.visibility==='public'?'public':'private';editor.innerHTML=d.html||'';
     mode='new-lesson';selected.lessonId=null;preview.textContent=lessonTitle.value||'Bản nháp';setStatus('Đã khôi phục bản nháp');
   }catch(e){alert('Không đọc được bản nháp.');}
 });
@@ -936,6 +935,13 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   const siteCovers=[{name:'Bồ đề non · Nâu nhạt',url:'cover-bo-de-non-v24.png?v=24.2.15'},...coverDefs.map((_,i)=>makeCover(i,false))];
   renderGrid('siteCoverPresets',siteCovers,x=>{DATA.siteSettings.coverImage=x.url; showCover(siteCoverPreview,x.url,'site'); if(siteCoverFile)siteCoverFile.value='';});
+  const coverModal=$('coverLibraryModal'), openCover=$('openCoverLibrary'), closeCover=$('closeCoverLibrary'), currentCover=$('siteCoverCurrent');
+  function refreshCoverCurrent(){ if(currentCover) currentCover.textContent=DATA.siteSettings.coverImage?'✓ Đã chọn ảnh cover':'Chưa chọn ảnh cover'; }
+  refreshCoverCurrent();
+  openCover?.addEventListener('click',()=>{if(coverModal)coverModal.hidden=false;});
+  closeCover?.addEventListener('click',()=>{if(coverModal)coverModal.hidden=true;});
+  coverModal?.addEventListener('click',e=>{if(e.target===coverModal)coverModal.hidden=true;});
+  $('siteCoverPresets')?.addEventListener('click',()=>{setTimeout(()=>{refreshCoverCurrent();if(coverModal)coverModal.hidden=true;},0);});
 
   // App: Hình số 1 đứng đầu, sau đó các biểu tượng Phật học có sẵn.
   const app=[];
@@ -953,38 +959,3 @@ document.addEventListener('DOMContentLoaded',()=>{
 })();
 
 
-
-/* ===== V24.2.15: THƯ VIỆN ICON CHUNG ===== */
-(function initSharedIconLibrary(){
-  const modal=document.getElementById('iconLibraryModal'), grid=document.getElementById('iconLibraryGrid');
-  const search=document.getElementById('iconLibrarySearch'), group=document.getElementById('iconLibraryGroup');
-  const status=document.getElementById('iconLibraryStatus'), useBtn=document.getElementById('iconLibraryUse');
-  if(!modal||!grid||!window.GNTT_BOOK_ICONS) return;
-  const lib=window.GNTT_BOOK_ICONS;
-  let target='site', selected='';
-  const styleFor=()=>target==='book'?(bookIconStyle?.value||'brown'):(siteIconStyle?.value||'brown');
-  const groups=[...new Set(lib.icons.map(x=>x.group).filter(Boolean))];
-  group.innerHTML='<option value="">Tất cả nhóm</option>'+groups.map(g=>`<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');
-  function current(){return target==='book'?(bookIcon?.value||lib.defaultId):(siteIcon?.value||DATA.siteSettings?.homeIcon||lib.defaultId)}
-  function render(){
-    const q=(search.value||'').trim().toLowerCase(), g=group.value||'', style=styleFor();
-    const items=lib.icons.filter(x=>(!g||x.group===g)&&(!q||(x.label+' '+x.group).toLowerCase().includes(q)));
-    grid.innerHTML=items.length?items.map(x=>`<button type="button" class="icon-library-item${x.id===selected?' selected':''}" data-shared-icon="${escapeHtml(x.id)}" title="${escapeHtml(x.label)}"><span>${lib.render(x.id,style)}</span><small>${escapeHtml(x.label)}</small></button>`).join(''):'<div class="icon-library-empty">Không tìm thấy icon phù hợp.</div>';
-  }
-  function open(t){target=t; selected=current(); search.value='';group.value='';status.textContent=target==='site'?'Chọn icon cho logo Góc nhỏ tu học':target==='book'?'Chọn icon cho đầu sách':'Chọn icon cho App';render();modal.classList.add('open');modal.setAttribute('aria-hidden','false');setTimeout(()=>search.focus(),50)}
-  function close(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true')}
-  document.querySelectorAll('[data-icon-target]').forEach(b=>b.addEventListener('click',()=>open(b.dataset.iconTarget)));
-  document.querySelectorAll('[data-icon-close]').forEach(b=>b.addEventListener('click',close));
-  search.addEventListener('input',render);group.addEventListener('change',render);
-  grid.addEventListener('click',e=>{const b=e.target.closest('[data-shared-icon]');if(!b)return;selected=b.dataset.sharedIcon;status.textContent='Đã chọn: '+(lib.icons.find(x=>x.id===selected)?.label||selected);render()});
-  useBtn.addEventListener('click',()=>{
-    if(!selected)return;
-    if(target==='book') setBookIcon(selected);
-    else if(target==='site') setSiteIcon(selected);
-    else {
-      const svg=lib.svg(selected); if(svg){ const url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); window.dispatchEvent(new CustomEvent('gntt-app-preset',{detail:{type:'site',url,name:lib.icons.find(x=>x.id===selected)?.label||'icon thư viện'}})); }
-    }
-    close();
-  });
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open'))close()});
-})();

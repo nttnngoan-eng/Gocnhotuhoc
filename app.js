@@ -1,10 +1,32 @@
 
+function applySiteBrandIcon(){
+  const lib=window.GNTT_BOOK_ICONS; if(!lib) return;
+  const settings=(window.GNTT_CATALOG&&window.GNTT_CATALOG.siteSettings)||(window.GNTT_DATA&&window.GNTT_DATA.siteSettings)||{};
+  const id=settings.homeIcon||'theme-openbook';
+  document.querySelectorAll('.brand').forEach(el=>{
+    const text='Góc nhỏ tu học';
+    el.innerHTML=`<span class="site-brand-icon" aria-hidden="true">${lib.render(id,settings.homeIconStyle||'brown')}</span><span>${text}</span>`;
+  });
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applySiteBrandIcon); else applySiteBrandIcon();
+function applySiteAppearance(){
+ const settings=(window.GNTT_CATALOG&&window.GNTT_CATALOG.siteSettings)||(window.GNTT_DATA&&window.GNTT_DATA.siteSettings)||{};
+ const theme=['pink','green','brown','lightbrown'].includes(settings.accentTheme)?settings.accentTheme:'lightbrown';
+ document.body.classList.add('accent-'+theme);
+ const cover=document.getElementById('homeCover');
+ if(cover){ if(settings.coverImage){cover.style.backgroundImage=`url(${JSON.stringify(settings.coverImage)})`; cover.classList.add('has-cover'); cover.classList.remove('default-cover');} else {cover.classList.remove('has-cover'); cover.classList.add('default-cover');} }
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applySiteAppearance); else applySiteAppearance();
+
+
 const STORE='phap_hoc_reader_settings';
+
 function loadSettings(){
   try{return JSON.parse(localStorage.getItem(STORE))||{font:'palatino',size:20,theme:'paper'};}
   catch(e){return {font:'palatino',size:20,theme:'paper'};}
 }
 function saveSettings(s){localStorage.setItem(STORE,JSON.stringify(s));}
+
 const fontMap={
   palatino:'"Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif',
   merriweather:'Merriweather, Georgia, serif',
@@ -12,373 +34,567 @@ const fontMap={
   calibri:'Calibri, Carlito, Arial, sans-serif',
   arial:'Arial, Helvetica, sans-serif'
 };
+
+function normalizeImportedReaderTypography(){
+  const content=document.querySelector('.reader-content');
+  if(!content) return;
+  content.querySelectorAll('*').forEach(el=>{
+    if(el.style){
+      el.style.removeProperty('font-family');
+      el.style.removeProperty('font-size');
+      el.style.removeProperty('font');
+      if(!el.getAttribute('style')?.trim()) el.removeAttribute('style');
+    }
+    if(el.tagName==='FONT'){
+      el.removeAttribute('face');
+      el.removeAttribute('size');
+    }
+  });
+}
+
 function applyReaderSettings(){
-  const s=loadSettings(), root=document.body, content=document.querySelector('.reader-content');
+  const st=loadSettings(), root=document.body, content=document.querySelector('.reader-content');
   if(!content)return;
   root.classList.remove('theme-paper','theme-white','theme-sepia','theme-dark');
-  root.classList.add('theme-'+s.theme);
-  content.style.fontFamily=fontMap[s.font]||fontMap.palatino;
-  content.style.fontSize=s.size+'px';
-  document.querySelectorAll('[data-font]').forEach(b=>b.classList.toggle('active',b.dataset.font===s.font));
-  document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===s.theme));
+  root.classList.add('theme-'+st.theme);
+
+  const chosenFont=fontMap[st.font]||fontMap.palatino;
+  const chosenSize=Math.max(15,Math.min(32,Number(st.size)||20));
+
+  content.style.setProperty('--reader-user-font',chosenFont);
+  content.style.setProperty('--reader-user-size',chosenSize+'px');
+  content.style.setProperty('font-family',chosenFont,'important');
+  content.style.setProperty('font-size',chosenSize+'px','important');
+
+  document.querySelectorAll('[data-font]').forEach(b=>b.classList.toggle('active',b.dataset.font===st.font));
+  document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===st.theme));
 }
+
 document.addEventListener('DOMContentLoaded',()=>{
+  normalizeImportedReaderTypography();
   applyReaderSettings();
+
   const panel=document.getElementById('settingsPanel');
   const open=document.getElementById('openSettings');
-  if(open&&panel)open.addEventListener('click',()=>panel.classList.toggle('open'));
-  document.querySelectorAll('[data-font]').forEach(b=>b.addEventListener('click',()=>{const s=loadSettings();s.font=b.dataset.font;saveSettings(s);applyReaderSettings();}));
-  document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{const s=loadSettings();s.theme=b.dataset.theme;saveSettings(s);applyReaderSettings();}));
-  document.getElementById('smaller')?.addEventListener('click',()=>{const s=loadSettings();s.size=Math.max(15,s.size-1);saveSettings(s);applyReaderSettings();});
-  document.getElementById('larger')?.addEventListener('click',()=>{const s=loadSettings();s.size=Math.min(32,s.size+1);saveSettings(s);applyReaderSettings();});
+  if(open&&panel) open.addEventListener('click',()=>panel.classList.toggle('open'));
+
+  document.querySelectorAll('[data-font]').forEach(b=>b.addEventListener('click',()=>{
+    const s=loadSettings(); s.font=b.dataset.font; saveSettings(s); applyReaderSettings();
+  }));
+  document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{
+    const s=loadSettings(); s.theme=b.dataset.theme; saveSettings(s); applyReaderSettings();
+  }));
+  document.getElementById('smaller')?.addEventListener('click',()=>{
+    const s=loadSettings(); s.size=Math.max(15,(Number(s.size)||20)-1); saveSettings(s); applyReaderSettings();
+  });
+  document.getElementById('larger')?.addEventListener('click',()=>{
+    const s=loadSettings(); s.size=Math.min(32,(Number(s.size)||20)+1); saveSettings(s); applyReaderSettings();
+  });
 
   const search=document.getElementById('lessonSearch');
   if(search){
     search.addEventListener('input',()=>{
       const q=search.value.toLowerCase();
-      document.querySelectorAll('.lesson').forEach(x=>x.style.display=x.innerText.toLowerCase().includes(q)?'flex':'none');
+      document.querySelectorAll('.lesson').forEach(x=>{
+        x.style.display=x.innerText.toLowerCase().includes(q)?'flex':'none';
+      });
     });
   }
 });
 
+document.addEventListener('DOMContentLoaded',()=>{
+  const article=document.querySelector('.reader-content');
+  if(!article) return;
 
-// ===== V2: Progress + Resume + Highlight =====
-document.addEventListener('DOMContentLoaded', function () {
-  const article = document.querySelector('.reader-content');
-  if (!article) return;
+  const ARTICLE_ID=window.GNTT_CURRENT_LESSON_ID || document.querySelector('.reader-content')?.dataset.lessonId || 'reader-default';
+  const progressKey='phap_hoc_progress_'+ARTICLE_ID;
+  const highlightKey='gocnho_highlights_v3_'+ARTICLE_ID;
 
-  const articleId = 'bai40-bon-vo-luong-tam-p1';
-  const progressKey = 'phap_hoc_progress_' + articleId;
-  const highlightKey = 'phap_hoc_highlights_' + articleId;
+  // Remove old demo toolbar if it still exists in reader.html?v=18.
+  document.querySelectorAll('#highlightToolbar').forEach(el=>el.remove());
 
-  const bar = document.getElementById('readingProgressBar');
-  const percentText = document.getElementById('readingPercent');
-  const modal = document.getElementById('resumeModal');
-  const toolbar = document.getElementById('highlightToolbar');
+  // ===== Reading progress =====
+  const bar=document.getElementById('readingProgressBar');
+  const percentText=document.getElementById('readingPercent');
+  const modal=document.getElementById('resumeModal');
 
-  function progressData() {
-    const articleTop = article.getBoundingClientRect().top + window.scrollY;
-    const articleHeight = article.offsetHeight;
-    const viewportBottom = window.scrollY + window.innerHeight;
-    const raw = ((viewportBottom - articleTop) / articleHeight) * 100;
-    return Math.max(0, Math.min(100, Math.round(raw)));
+  function progressPercent(){
+    const articleTop=article.getBoundingClientRect().top+window.scrollY;
+    const articleHeight=article.offsetHeight;
+    const viewportBottom=window.scrollY+window.innerHeight;
+    const raw=((viewportBottom-articleTop)/articleHeight)*100;
+    return Math.max(0,Math.min(100,Math.round(raw)));
   }
 
-  function updateProgress() {
-    const pct = progressData();
-    if (bar) bar.style.width = pct + '%';
-    if (percentText) percentText.textContent = pct + '%';
+  function updateProgress(){
+    const pct=progressPercent();
+    if(bar) bar.style.width=pct+'%';
+    if(percentText) percentText.textContent=pct+'%';
     return pct;
   }
 
-  function saveProgress() {
-    localStorage.setItem(progressKey, JSON.stringify({
-      y: window.scrollY,
-      percent: updateProgress(),
-      savedAt: Date.now()
+  function saveProgress(){
+    localStorage.setItem(progressKey,JSON.stringify({
+      y:window.scrollY,
+      percent:updateProgress(),
+      savedAt:Date.now()
     }));
   }
 
-  // Restore prompt
-  setTimeout(function () {
-    let saved = null;
-    try { saved = JSON.parse(localStorage.getItem(progressKey)); } catch (e) {}
-    if (saved && saved.y > 120 && saved.percent > 1) {
-      const text = document.getElementById('resumeText');
-      if (text) text.textContent = 'Lần trước bạn đã đọc khoảng ' + saved.percent + '% bài này.';
-      modal.classList.add('show');
-      document.getElementById('resumeYes').onclick = function () {
-        modal.classList.remove('show');
-        window.scrollTo({ top: saved.y, behavior: 'smooth' });
-      };
-      document.getElementById('resumeNo').onclick = function () {
-        modal.classList.remove('show');
-        localStorage.removeItem(progressKey);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      };
-    }
-  }, 700);
-
-  let timer = null;
-  window.addEventListener('scroll', function () {
+  let progressTimer=null;
+  window.addEventListener('scroll',()=>{
     updateProgress();
-    clearTimeout(timer);
-    timer = setTimeout(saveProgress, 300);
-  }, { passive: true });
-  window.addEventListener('beforeunload', saveProgress);
+    clearTimeout(progressTimer);
+    progressTimer=setTimeout(saveProgress,250);
+  },{passive:true});
+  window.addEventListener('beforeunload',saveProgress);
   updateProgress();
 
-  // Highlight helpers
-  function saveHighlights() {
-    const data = [];
-    article.querySelectorAll('mark.user-highlight').forEach(function (mark) {
-      const color = ['yellow', 'green', 'pink'].find(c => mark.classList.contains(c)) || 'yellow';
-      data.push({ text: mark.textContent, color: color });
-    });
-    localStorage.setItem(highlightKey, JSON.stringify(data));
-  }
+  setTimeout(()=>{
+    let saved=null;
+    try{saved=JSON.parse(localStorage.getItem(progressKey));}catch(e){}
+    if(saved&&saved.y>120&&saved.percent>1&&modal){
+      const text=document.getElementById('resumeText');
+      if(text) text.textContent='Lần trước bạn đã đọc khoảng '+saved.percent+'% bài này.';
+      modal.classList.add('show');
 
-  function markFirstOccurrence(text, color, shouldSave) {
-    if (!text) return false;
-    const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT);
-    let node;
-    while ((node = walker.nextNode())) {
-      if (node.parentElement && node.parentElement.closest('mark.user-highlight')) continue;
-      const value = node.nodeValue;
-      const idx = value.indexOf(text);
-      if (idx !== -1) {
-        const before = document.createTextNode(value.slice(0, idx));
-        const mark = document.createElement('mark');
-        mark.className = 'user-highlight ' + color;
-        mark.textContent = text;
-        const after = document.createTextNode(value.slice(idx + text.length));
-        const parent = node.parentNode;
-        parent.replaceChild(after, node);
-        parent.insertBefore(mark, after);
-        parent.insertBefore(before, mark);
-        if (shouldSave) saveHighlights();
-        return true;
-      }
+      const yes=document.getElementById('resumeYes');
+      const no=document.getElementById('resumeNo');
+
+      if(yes) yes.onclick=()=>{
+        modal.classList.remove('show');
+        window.scrollTo({top:saved.y,behavior:'smooth'});
+      };
+      if(no) no.onclick=()=>{
+        modal.classList.remove('show');
+        localStorage.removeItem(progressKey);
+        window.scrollTo({top:0,behavior:'smooth'});
+      };
     }
-    return false;
-  }
+  },600);
 
-  function restoreHighlights() {
-    let saved = [];
-    try { saved = JSON.parse(localStorage.getItem(highlightKey)) || []; } catch (e) {}
-    saved.forEach(item => markFirstOccurrence(item.text, item.color, false));
-  }
-
-  restoreHighlights();
-
-  // Show toolbar only after user has selected text
-  document.getElementById('highlightBtn').addEventListener('click', function () {
-    const selection = window.getSelection();
-    const text = selection ? selection.toString().trim() : '';
-    if (!text) {
-      alert('Hãy bôi chọn đoạn văn bạn tâm đắc trước, sau đó bấm nút 🖍 Highlight.');
-      return;
-    }
-    toolbar.classList.add('show');
+  document.getElementById('clearProgress')?.addEventListener('click',()=>{
+    localStorage.removeItem(progressKey);
+    window.scrollTo({top:0,behavior:'smooth'});
   });
 
-  document.querySelectorAll('[data-highlight]').forEach(function (button) {
-    button.addEventListener('click', function () {
-      const selection = window.getSelection();
-      const color = button.dataset.highlight;
-      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
-
-      const selectedText = selection.toString().trim();
-      const range = selection.getRangeAt(0);
-
-      try {
-        const mark = document.createElement('mark');
-        mark.className = 'user-highlight ' + color;
-        range.surroundContents(mark);
-        saveHighlights();
-      } catch (e) {
-        markFirstOccurrence(selectedText, color, true);
-      }
-
-      selection.removeAllRanges();
-      toolbar.classList.remove('show');
-    });
-  });
-
-  // Remove highlight: tap/click existing highlighted text first
-  article.addEventListener('click', function (event) {
-    if (event.target.matches('mark.user-highlight')) {
-      const range = document.createRange();
-      range.selectNodeContents(event.target);
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
-      toolbar.classList.add('show');
+  // ===== Plain web links =====
+  const urlRe=/(https?:\/\/[^\s<]+)/g;
+  const walker=document.createTreeWalker(article,NodeFilter.SHOW_TEXT);
+  const urlNodes=[];
+  let wn;
+  while((wn=walker.nextNode())){
+    if(wn.parentElement && !wn.parentElement.closest('a,script,style,mark,.goc-user-highlight')){
+      urlRe.lastIndex=0;
+      if(urlRe.test(wn.nodeValue)) urlNodes.push(wn);
     }
-  });
-
-  document.getElementById('removeHighlight').addEventListener('click', function () {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-    let node = selection.getRangeAt(0).commonAncestorContainer;
-    if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-    const mark = node.closest ? node.closest('mark.user-highlight') : null;
-    if (mark) {
-      const parent = mark.parentNode;
-      while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
-      mark.remove();
-      parent.normalize();
-      saveHighlights();
-    }
-    selection.removeAllRanges();
-    toolbar.classList.remove('show');
-  });
-});
-
-// ===== V3: automatic floating highlight toolbar + live URLs =====
-document.addEventListener('DOMContentLoaded', function(){
-  const article = document.querySelector('.reader-content');
-  const toolbar = document.getElementById('highlightToolbar');
-  if(!article || !toolbar) return;
-
-  // Existing top button is intentionally removed in V3.
-  const oldBtn = document.getElementById('highlightBtn');
-  if(oldBtn) oldBtn.style.display='none';
-
-  function positionToolbar(){
-    const sel = window.getSelection();
-    if(!sel || sel.rangeCount===0 || sel.isCollapsed || !sel.toString().trim()){
-      toolbar.classList.remove('show'); return;
-    }
-    const range = sel.getRangeAt(0);
-    if(!article.contains(range.commonAncestorContainer)){
-      toolbar.classList.remove('show'); return;
-    }
-    const rect = range.getBoundingClientRect();
-    toolbar.classList.add('show');
-    requestAnimationFrame(function(){
-      const tw=toolbar.offsetWidth, th=toolbar.offsetHeight;
-      let left = rect.left + rect.width/2 - tw/2;
-      left = Math.max(8, Math.min(window.innerWidth-tw-8,left));
-      let top = rect.top - th - 9;
-      if(top < 8) top = rect.bottom + 9;
-      toolbar.style.left = left+'px';
-      toolbar.style.top = top+'px';
-    });
   }
 
-  document.addEventListener('mouseup', ()=>setTimeout(positionToolbar,20));
-  document.addEventListener('touchend', ()=>setTimeout(positionToolbar,120));
-  article.addEventListener('keyup', ()=>setTimeout(positionToolbar,20));
-
-  // Make plain-text URLs clickable without changing already-linked content.
-  const urlRe = /(https?:\/\/[^\s<]+)/g;
-  const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT);
-  const nodes=[]; let n;
-  while(n=walker.nextNode()){
-    if(n.parentElement && !n.parentElement.closest('a,script,style,mark') && urlRe.test(n.nodeValue)){
-      nodes.push(n);
-    }
-    urlRe.lastIndex=0;
-  }
-  nodes.forEach(function(node){
+  urlNodes.forEach(node=>{
+    const text=node.nodeValue;
     const frag=document.createDocumentFragment();
     let last=0;
-    node.nodeValue.replace(urlRe,function(url,_,offset){
-      frag.appendChild(document.createTextNode(node.nodeValue.slice(last,offset)));
-      const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener noreferrer'; a.textContent=url;
-      frag.appendChild(a); last=offset+url.length;
+    text.replace(urlRe,(url,_,offset)=>{
+      frag.appendChild(document.createTextNode(text.slice(last,offset)));
+      const a=document.createElement('a');
+      a.href=url;
+      a.target='_blank';
+      a.rel='noopener noreferrer';
+      a.textContent=url;
+      frag.appendChild(a);
+      last=offset+url.length;
       return url;
     });
-    frag.appendChild(document.createTextNode(node.nodeValue.slice(last)));
+    frag.appendChild(document.createTextNode(text.slice(last)));
     node.parentNode.replaceChild(frag,node);
   });
-});
 
-document.addEventListener('DOMContentLoaded', function(){
-  const article = document.querySelector('.reader-content');
-  if(!article) return;
-
+  // ===== YouTube auto embed =====
   function parseYouTube(url){
     try{
-      const u = new URL(url, window.location.href);
-      let id = '';
+      const u=new URL(url,window.location.href);
+      let id='';
       if(u.hostname.includes('youtu.be')){
-        id = u.pathname.split('/').filter(Boolean)[0] || '';
-      } else if(u.hostname.includes('youtube.com')){
-        if(u.pathname === '/watch') id = u.searchParams.get('v') || '';
-        else if(u.pathname.startsWith('/shorts/')) id = u.pathname.split('/')[2] || '';
-        else if(u.pathname.startsWith('/embed/')) id = u.pathname.split('/')[2] || '';
+        id=u.pathname.split('/').filter(Boolean)[0]||'';
+      }else if(u.hostname.includes('youtube.com')){
+        if(u.pathname==='/watch') id=u.searchParams.get('v')||'';
+        else if(u.pathname.startsWith('/shorts/')) id=u.pathname.split('/')[2]||'';
+        else if(u.pathname.startsWith('/embed/')) id=u.pathname.split('/')[2]||'';
       }
       if(!id) return null;
 
-      let start = 0;
-      const t = u.searchParams.get('t') || u.searchParams.get('start') || '';
+      let start=0;
+      const t=u.searchParams.get('t')||u.searchParams.get('start')||'';
       if(t){
-        if(/^\d+$/.test(t)) start = parseInt(t,10);
-        else {
-          const h = (t.match(/(\d+)h/)||[])[1];
-          const m = (t.match(/(\d+)m/)||[])[1];
-          const s = (t.match(/(\d+)s/)||[])[1];
-          start = (parseInt(h||0)*3600)+(parseInt(m||0)*60)+parseInt(s||0);
+        if(/^\d+$/.test(t)) start=parseInt(t,10);
+        else{
+          const h=(t.match(/(\d+)h/)||[])[1];
+          const m=(t.match(/(\d+)m/)||[])[1];
+          const s=(t.match(/(\d+)s/)||[])[1];
+          start=(parseInt(h||0)*3600)+(parseInt(m||0)*60)+parseInt(s||0);
         }
       }
-      return {id, start};
-    }catch(e){ return null; }
+      return {id,start};
+    }catch(e){return null;}
   }
 
-  const links = [...article.querySelectorAll('a[href]')];
-  links.forEach(function(a){
-    const info = parseYouTube(a.href);
-    if(!info) return;
-    if(a.dataset.youtubeEmbedded === '1') return;
-    a.dataset.youtubeEmbedded = '1';
+  [...article.querySelectorAll('a[href]')].forEach(a=>{
+    const info=parseYouTube(a.href);
+    if(!info||a.dataset.youtubeEmbedded==='1') return;
+    a.dataset.youtubeEmbedded='1';
 
-    const card = document.createElement('div');
-    card.className = 'youtube-inline-card';
+    const card=document.createElement('div');
+    card.className='youtube-inline-card';
 
-    const wrap = document.createElement('div');
-    wrap.className = 'youtube-embed-wrap';
+    const wrap=document.createElement('div');
+    wrap.className='youtube-embed-wrap';
 
-    const iframe = document.createElement('iframe');
-    iframe.src = 'https://www.youtube.com/embed/' + info.id + (info.start ? '?start=' + info.start : '');
-    iframe.title = 'Video YouTube';
-    iframe.loading = 'lazy';
-    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-    iframe.allowFullscreen = true;
+    const iframe=document.createElement('iframe');
+    iframe.src='https://www.youtube.com/embed/'+info.id+(info.start?'?start='+info.start:'');
+    iframe.title='Video YouTube';
+    iframe.loading='lazy';
+    iframe.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    iframe.allowFullscreen=true;
 
-    const ext = document.createElement('a');
-    ext.className = 'youtube-external';
-    ext.href = a.href;
-    ext.target = '_blank';
-    ext.rel = 'noopener noreferrer';
-    ext.textContent = 'Xem trên YouTube ↗';
+    const ext=document.createElement('a');
+    ext.className='youtube-external';
+    ext.href=a.href;
+    ext.target='_blank';
+    ext.rel='noopener noreferrer';
+    ext.textContent='Xem trên YouTube ↗';
 
     wrap.appendChild(iframe);
     card.appendChild(wrap);
     card.appendChild(ext);
 
-    const p = a.closest('p');
-    if(p) p.insertAdjacentElement('afterend', card);
-    else a.insertAdjacentElement('afterend', card);
+    const p=a.closest('p');
+    if(p) p.insertAdjacentElement('afterend',card);
+    else a.insertAdjacentElement('afterend',card);
   });
-});
 
-// ===== Official V1 extras =====
-document.addEventListener('DOMContentLoaded', function(){
-  const article=document.querySelector('.reader-content');
-  if(!article) return;
+  // ===== Highlight V3: no layout shift =====
+  // It highlights only text-node fragments, never moves paragraphs/block elements.
+  const menu=document.createElement('div');
+  menu.className='goc-highlight-menu-v3';
+  menu.innerHTML=`
+    <button type="button" class="hl-square yellow" data-color="yellow" aria-label="Highlight vàng"></button>
+    <button type="button" class="hl-square green" data-color="green" aria-label="Highlight xanh"></button>
+    <button type="button" class="hl-square pink" data-color="pink" aria-label="Highlight hồng"></button>
+    <button type="button" class="hl-square remove" data-remove="1" aria-label="Bỏ highlight"></button>
+  `;
 
-  const articleId='bai40-bon-vo-luong-tam-p1';
-  const progressKey='phap_hoc_progress_'+articleId;
-  const highlightKey='phap_hoc_highlights_'+articleId;
+  Object.assign(menu.style,{
+    position:'fixed',
+    zIndex:'99999',
+    display:'none',
+    alignItems:'center',
+    gap:'7px',
+    padding:'7px 8px',
+    background:'#fffdf8',
+    border:'1px solid rgba(90,70,40,.18)',
+    borderRadius:'11px',
+    boxShadow:'0 8px 28px rgba(0,0,0,.18)'
+  });
 
+  menu.querySelectorAll('.hl-square').forEach(btn=>{
+    Object.assign(btn.style,{
+      width:'25px',height:'25px',padding:'0',
+      borderRadius:'5px',cursor:'pointer',
+      boxSizing:'border-box'
+    });
+  });
+  Object.assign(menu.querySelector('.yellow').style,{background:'#ffe99a',border:'1px solid #e1ca69'});
+  Object.assign(menu.querySelector('.green').style,{background:'#ccefcf',border:'1px solid #8bc994'});
+  Object.assign(menu.querySelector('.pink').style,{background:'#ffd2df',border:'1px solid #dc91aa'});
+  Object.assign(menu.querySelector('.remove').style,{background:'#fff',border:'2px solid #aaa'});
+
+  document.body.appendChild(menu);
+
+  let savedRange=null;
+  let activeHighlightId=null;
+
+  function getSaved(){
+    try{return JSON.parse(localStorage.getItem(highlightKey)||'[]');}
+    catch(e){return [];}
+  }
+  function setSaved(items){
+    localStorage.setItem(highlightKey,JSON.stringify(items));
+  }
+
+  function allTextNodes(){
+    const out=[];
+    const w=document.createTreeWalker(article,NodeFilter.SHOW_TEXT,{
+      acceptNode(node){
+        const p=node.parentElement;
+        if(!p) return NodeFilter.FILTER_REJECT;
+        if(p.closest('script,style')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    let n;
+    while((n=w.nextNode())) out.push(n);
+    return out;
+  }
+
+  function boundaryToOffset(container,offset){
+    const nodes=allTextNodes();
+    let total=0;
+
+    for(const node of nodes){
+      if(node===container) return total+Math.min(offset,node.nodeValue.length);
+      if(container.nodeType===Node.ELEMENT_NODE && container.contains(node)){
+        // For unusual element-boundary selections, use a Range fallback.
+        try{
+          const r=document.createRange();
+          r.setStart(article,0);
+          r.setEnd(container,offset);
+          return r.toString().length;
+        }catch(e){}
+      }
+      total+=node.nodeValue.length;
+    }
+
+    try{
+      const r=document.createRange();
+      r.setStart(article,0);
+      r.setEnd(container,offset);
+      return r.toString().length;
+    }catch(e){return total;}
+  }
+
+  function rangeOffsets(range){
+    let start=boundaryToOffset(range.startContainer,range.startOffset);
+    let end=boundaryToOffset(range.endContainer,range.endOffset);
+    if(end<start){const t=start;start=end;end=t;}
+    return {start,end};
+  }
+
+  function colorValue(color){
+    if(color==='green') return '#ccefcf';
+    if(color==='pink') return '#ffd2df';
+    return '#ffe99a';
+  }
+
+  function applyHighlight(item){
+    const nodes=allTextNodes();
+    let cursor=0;
+    const targets=[];
+
+    nodes.forEach(node=>{
+      if(node.parentElement?.closest('.goc-user-highlight')) {
+        cursor+=node.nodeValue.length;
+        return;
+      }
+      const len=node.nodeValue.length;
+      const nodeStart=cursor;
+      const nodeEnd=cursor+len;
+      const s=Math.max(item.start,nodeStart);
+      const e=Math.min(item.end,nodeEnd);
+
+      if(e>s){
+        targets.push({
+          node,
+          start:s-nodeStart,
+          end:e-nodeStart
+        });
+      }
+      cursor=nodeEnd;
+    });
+
+    // Work backwards so splitting one text node never invalidates later offsets.
+    targets.reverse().forEach(t=>{
+      const node=t.node;
+      if(!node.parentNode) return;
+
+      const full=node.nodeValue;
+      const before=full.slice(0,t.start);
+      const middle=full.slice(t.start,t.end);
+      const after=full.slice(t.end);
+
+      const frag=document.createDocumentFragment();
+      if(before) frag.appendChild(document.createTextNode(before));
+
+      const span=document.createElement('span');
+      span.className='goc-user-highlight';
+      span.dataset.hid=item.id;
+      span.dataset.color=item.color;
+      span.textContent=middle;
+      span.style.backgroundColor=colorValue(item.color);
+      span.style.borderRadius='2px';
+      span.style.padding='0';
+      span.style.margin='0';
+      span.style.boxDecorationBreak='clone';
+      span.style.webkitBoxDecorationBreak='clone';
+      frag.appendChild(span);
+
+      if(after) frag.appendChild(document.createTextNode(after));
+      node.parentNode.replaceChild(frag,node);
+    });
+  }
+
+  function unwrapHighlightElements(id){
+    article.querySelectorAll('.goc-user-highlight[data-hid="'+CSS.escape(id)+'"]').forEach(span=>{
+      const parent=span.parentNode;
+      if(!parent) return;
+      while(span.firstChild) parent.insertBefore(span.firstChild,span);
+      span.remove();
+      parent.normalize();
+    });
+  }
+
+  function restoreHighlights(){
+    const items=getSaved().slice().sort((a,b)=>a.start-b.start);
+    items.forEach(applyHighlight);
+  }
+
+  function hideMenu(){
+    menu.style.display='none';
+    menu.style.transform='';
+    menu.style.bottom='';
+    savedRange=null;
+    activeHighlightId=null;
+  }
+
+  function placeMenu(rect){
+    menu.style.display='flex';
+    requestAnimationFrame(()=>{
+      const mw=menu.offsetWidth, mh=menu.offsetHeight;
+      let left=rect.left+rect.width/2-mw/2;
+      left=Math.max(8,Math.min(window.innerWidth-mw-8,left));
+      let top=rect.top-mh-9;
+      if(top<8) top=rect.bottom+9;
+      menu.style.left=left+'px';
+      menu.style.top=top+'px';
+    });
+  }
+
+  function saveSelectionOnly(){
+    const sel=window.getSelection();
+    if(!sel||!sel.rangeCount||sel.isCollapsed||!sel.toString().trim()) return;
+    const range=sel.getRangeAt(0);
+    if(!article.contains(range.commonAncestorContainer)) return;
+    savedRange=range.cloneRange();
+    activeHighlightId=null;
+  }
+
+  // V23.3: chỉ lưu vùng bôi đen, KHÔNG tự bật bảng màu cạnh chữ.
+  // Như vậy menu iPhone (Sao chép / Hỏi ChatGPT...) không che bảng màu của website.
+  document.addEventListener('mouseup',()=>setTimeout(saveSelectionOnly,15));
+  document.addEventListener('touchend',()=>setTimeout(saveSelectionOnly,180));
+  document.addEventListener('selectionchange',()=>setTimeout(saveSelectionOnly,30));
+
+  function placeMenuBottom(){
+    menu.style.display='flex';
+    menu.style.left='50%';
+    menu.style.top='auto';
+    menu.style.bottom='max(18px, env(safe-area-inset-bottom))';
+    menu.style.transform='translateX(-50%)';
+  }
+
+  const highlightPenBtn=document.getElementById('highlightPenBtn');
+  highlightPenBtn?.addEventListener('click',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    saveSelectionOnly();
+    if(!savedRange){
+      alert('Hãy bôi đen đoạn chữ cần đánh dấu trước.');
+      return;
+    }
+    placeMenuBottom();
+  });
+
+  menu.addEventListener('mousedown',e=>e.preventDefault());
+
+  menu.querySelectorAll('[data-color]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(!savedRange) return;
+
+      const offsets=rangeOffsets(savedRange);
+      if(offsets.end<=offsets.start) return;
+
+      const item={
+        id:'h'+Date.now()+Math.random().toString(36).slice(2,6),
+        start:offsets.start,
+        end:offsets.end,
+        color:btn.dataset.color
+      };
+
+      const items=getSaved();
+      items.push(item);
+      setSaved(items);
+      applyHighlight(item);
+
+      window.getSelection()?.removeAllRanges();
+      hideMenu();
+    });
+  });
+
+  function removeById(id){
+    if(!id) return;
+    unwrapHighlightElements(id);
+    setSaved(getSaved().filter(x=>x.id!==id));
+  }
+
+  menu.querySelector('[data-remove]').addEventListener('click',()=>{
+    if(activeHighlightId){
+      removeById(activeHighlightId);
+      hideMenu();
+      return;
+    }
+
+    if(savedRange){
+      const offsets=rangeOffsets(savedRange);
+      const items=getSaved();
+      const overlapping=items.filter(x=>x.start<offsets.end && x.end>offsets.start);
+      overlapping.forEach(x=>unwrapHighlightElements(x.id));
+      setSaved(items.filter(x=>!(x.start<offsets.end && x.end>offsets.start)));
+      window.getSelection()?.removeAllRanges();
+    }
+    hideMenu();
+  });
+
+  article.addEventListener('click',e=>{
+    const span=e.target.closest('.goc-user-highlight');
+    if(!span) return;
+    activeHighlightId=span.dataset.hid;
+    savedRange=null;
+    placeMenuBottom();
+  });
+
+  document.addEventListener('mousedown',e=>{
+    if(menu.contains(e.target)) return;
+    if(e.target.closest?.('#highlightPenBtn')) return;
+    if(e.target.closest?.('.goc-user-highlight')) return;
+    if(!article.contains(e.target)) hideMenu();
+  });
+
+  restoreHighlights();
+
+  // ===== Saved highlight drawer =====
   const drawer=document.getElementById('highlightsDrawer');
   const list=document.getElementById('highlightList');
 
-  function readSavedHighlights(){
-    try{return JSON.parse(localStorage.getItem(highlightKey))||[]}catch(e){return[]}
-  }
-
   function renderHighlightList(){
-    const items=readSavedHighlights();
+    if(!list) return;
+    const items=getSaved();
     list.innerHTML='';
     if(!items.length){
-      list.innerHTML='<p style="opacity:.65;font-family:var(--ui-font);font-size:13px">Chưa có đoạn nào được đánh dấu.</p>';
+      list.innerHTML='<p style="opacity:.65;font-family:Arial,sans-serif;font-size:13px">Chưa có đoạn nào được đánh dấu.</p>';
       return;
     }
-    items.forEach((item,i)=>{
+
+    items.forEach(item=>{
+      const spans=[...article.querySelectorAll('.goc-user-highlight[data-hid="'+CSS.escape(item.id)+'"]')];
+      const text=spans.map(s=>s.textContent).join('');
       const el=document.createElement('div');
-      el.className='saved-highlight '+(item.color||'yellow');
+      el.className='saved-highlight '+item.color;
       el.innerHTML='<div></div><small>Nhấn để tìm đoạn này trong bài</small>';
-      el.querySelector('div').textContent=item.text;
+      el.querySelector('div').textContent=text;
       el.onclick=()=>{
-        const marks=[...article.querySelectorAll('mark.user-highlight')];
-        const target=marks.find(m=>m.textContent===item.text);
+        const target=article.querySelector('.goc-user-highlight[data-hid="'+CSS.escape(item.id)+'"]');
         if(target){
-          drawer.classList.remove('open');
+          drawer?.classList.remove('open');
           target.scrollIntoView({behavior:'smooth',block:'center'});
-          target.animate([{outline:'0 solid transparent'},{outline:'4px solid rgba(138,106,63,.25)'},{outline:'0 solid transparent'}],{duration:1100});
         }
       };
       list.appendChild(el);
@@ -386,169 +602,657 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   document.getElementById('showHighlights')?.addEventListener('click',()=>{
-    renderHighlightList(); drawer.classList.add('open');
+    renderHighlightList();
+    drawer?.classList.add('open');
   });
-  document.getElementById('closeHighlights')?.addEventListener('click',()=>drawer.classList.remove('open'));
-  document.getElementById('clearProgress')?.addEventListener('click',()=>{
-    localStorage.removeItem(progressKey);
-    window.scrollTo({top:0,behavior:'smooth'});
+  document.getElementById('closeHighlights')?.addEventListener('click',()=>{
+    drawer?.classList.remove('open');
+  });
+});
+
+/* ===== V13: Lật trang - một engine duy nhất ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  const article = document.querySelector('.reader-content');
+  const paper = document.querySelector('.reader-paper');
+  const toggle = document.getElementById('togglePageMode');
+  const controls = document.getElementById('pageTurnControls');
+  const prev = document.getElementById('prevPage');
+  const next = document.getElementById('nextPage');
+  const label = document.getElementById('pageNumber');
+
+  if (!article || !paper || !toggle || !controls || !prev || !next || !label) return;
+
+  const MODE_KEY = 'gocnho_reader_view_mode';
+  const PAGE_KEY = 'gocnho_page_position_' + (window.GNTT_CURRENT_LESSON_ID || document.querySelector('.reader-content')?.dataset.lessonId || 'reader-default');
+  const lessonNav = window.GNTT_READER_NAV || {prev:null,next:null};
+  const edge = new URLSearchParams(location.search).get('edge') || '';
+  function lessonHref(item, where='start'){
+    return item ? `reader.html?id=${encodeURIComponent(item.id)}&edge=${where}&v=23.8` : '';
+  }
+  function goLesson(item, where='start'){
+    if(item) location.href=lessonHref(item,where);
+  }
+
+  const category = paper.querySelector(':scope > .reader-category');
+  const title = paper.querySelector(':scope > h1');
+  const subtitle = paper.querySelector(':scope > .subtitle');
+
+  let pageMode = false;
+  let currentPage = 0;
+  let totalPages = 1;
+  let resizeTimer = 0;
+  let touchX = 0;
+  let touchY = 0;
+  let isAnimating = false;
+
+  function moveTitleIntoBook(){
+    if (category && category.parentNode === paper) article.insertBefore(category, article.firstChild);
+    if (title && title.parentNode === paper) article.insertBefore(title, category ? category.nextSibling : article.firstChild);
+    if (subtitle && subtitle.parentNode === paper) article.insertBefore(subtitle, title ? title.nextSibling : article.firstChild);
+  }
+
+  function moveTitleOutOfBook(){
+    if (category && category.parentNode === article) paper.insertBefore(category, article);
+    if (title && title.parentNode === article) paper.insertBefore(title, article);
+    if (subtitle && subtitle.parentNode === article) paper.insertBefore(subtitle, article);
+  }
+
+  function pageGap(){
+    return parseFloat(getComputedStyle(article).columnGap) || 0;
+  }
+
+  function pageWidth(){
+    return article.clientWidth;
+  }
+
+  function pageStep(){
+    return pageWidth() + pageGap();
+  }
+
+  function setExactColumnWidth(){
+    const w = Math.max(1, Math.floor(article.clientWidth));
+    article.style.setProperty('--book-page-width', w + 'px');
+  }
+
+  function countPages(){
+    setExactColumnWidth();
+    // Force layout after updating the column width.
+    void article.offsetWidth;
+
+    const step = pageStep();
+    const sw = article.scrollWidth;
+    totalPages = Math.max(1, Math.round((sw + pageGap()) / step));
+    currentPage = Math.max(0, Math.min(totalPages - 1, currentPage));
+    updateUI();
+  }
+
+  function updateUI(){
+    label.textContent = `Trang ${currentPage + 1} / ${totalPages}`;
+    prev.disabled = currentPage <= 0 && !lessonNav.prev;
+    next.disabled = currentPage >= totalPages - 1 && !lessonNav.next;
+
+    const pct = Math.round(((currentPage + 1) / totalPages) * 100);
+    const bar = document.getElementById('readingProgressBar');
+    const percent = document.getElementById('readingPercent');
+    if (bar) bar.style.width = pct + '%';
+    if (percent) percent.textContent = pct + '%';
+
+    try{
+      localStorage.setItem(PAGE_KEY, JSON.stringify({page:currentPage, savedAt:Date.now()}));
+    }catch(e){}
+  }
+
+  function goToPage(index, smooth = true){
+    if (!pageMode || isAnimating) return;
+    if(index >= totalPages && lessonNav.next){ goLesson(lessonNav.next,'start'); return; }
+    if(index < 0 && lessonNav.prev){ goLesson(lessonNav.prev,'end'); return; }
+    currentPage = Math.max(0, Math.min(totalPages - 1, index));
+    const left = Math.round(currentPage * pageStep());
+
+    isAnimating = smooth;
+    article.scrollTo({
+      left,
+      top:0,
+      behavior:smooth ? 'smooth' : 'auto'
+    });
+
+    if (smooth){
+      setTimeout(() => {
+        // iOS/Safari can stop on a fractional offset; force the exact page.
+        article.scrollLeft = left;
+        isAnimating = false;
+      }, 340);
+    }
+    updateUI();
+  }
+
+  function restorePage(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(PAGE_KEY) || 'null');
+      if (saved && Number.isFinite(saved.page)) currentPage = Math.max(0, saved.page);
+    }catch(e){}
+  }
+
+  function enablePageMode(restore = true){
+    pageMode = true;
+    document.body.classList.add('page-mode');
+    toggle.setAttribute('aria-pressed','true');
+    toggle.textContent = '↕ Cuộn dọc';
+    controls.hidden = false;
+    moveTitleIntoBook();
+    try{localStorage.setItem(MODE_KEY,'page')}catch(e){}
+    if (restore) restorePage();
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        countPages();
+        if(edge==='end') currentPage=Math.max(0,totalPages-1);
+        else if(edge==='start') currentPage=0;
+        goToPage(currentPage, false);
+      });
+    });
+  }
+
+  function disablePageMode(){
+    pageMode = false;
+    article.scrollLeft = 0;
+    document.body.classList.remove('page-mode');
+    toggle.setAttribute('aria-pressed','false');
+    toggle.textContent = '📖 Lật trang';
+    controls.hidden = true;
+    moveTitleOutOfBook();
+    try{localStorage.setItem(MODE_KEY,'scroll')}catch(e){}
+    window.dispatchEvent(new Event('scroll'));
+  }
+
+  toggle.addEventListener('click', () => {
+    if (pageMode) disablePageMode();
+    else enablePageMode(true);
   });
 
-  // Refresh drawer after highlight actions.
-  document.querySelectorAll('[data-highlight]').forEach(btn=>{
-    btn.addEventListener('click',()=>setTimeout(renderHighlightList,100));
+  prev.addEventListener('click', () => goToPage(currentPage - 1));
+  next.addEventListener('click', () => goToPage(currentPage + 1));
+
+  // Keyboard support on laptop
+  article.tabIndex = 0;
+  article.addEventListener('keydown', e => {
+    if (!pageMode) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown'){
+      e.preventDefault();
+      goToPage(currentPage + 1);
+    }else if (e.key === 'ArrowLeft' || e.key === 'PageUp'){
+      e.preventDefault();
+      goToPage(currentPage - 1);
+    }
   });
-  document.getElementById('removeHighlight')?.addEventListener('click',()=>setTimeout(renderHighlightList,100));
+
+  // Reliable swipe on phones; does not depend on browser horizontal scrolling.
+  article.addEventListener('touchstart', e => {
+    if (!pageMode || e.touches.length !== 1) return;
+    touchX = e.touches[0].clientX;
+    touchY = e.touches[0].clientY;
+  }, {passive:true});
+
+  article.addEventListener('touchend', e => {
+    if (!pageMode || !e.changedTouches.length) return;
+
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed && sel.toString().trim()) return;
+
+    const dx = e.changedTouches[0].clientX - touchX;
+    const dy = e.changedTouches[0].clientY - touchY;
+
+    if (Math.abs(dx) >= 38 && Math.abs(dx) > Math.abs(dy) * 1.15){
+      if (dx < 0) goToPage(currentPage + 1);
+      else goToPage(currentPage - 1);
+    }
+  }, {passive:true});
+
+  // Recalculate after font/size changes
+  function repaginate(){
+    if (!pageMode) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      countPages();
+      goToPage(currentPage, false);
+    }, 140);
+  }
+
+  window.addEventListener('resize', repaginate);
+  document.getElementById('smaller')?.addEventListener('click', repaginate);
+  document.getElementById('larger')?.addEventListener('click', repaginate);
+  document.querySelectorAll('[data-font]').forEach(b => b.addEventListener('click', repaginate));
+
+  document.getElementById('clearProgress')?.addEventListener('click', () => {
+    try{localStorage.removeItem(PAGE_KEY)}catch(e){}
+    if (pageMode) goToPage(0, false);
+  });
+
+  // Start Bài 40 smaller on mobile if the old 20px default is still saved.
+  if (window.matchMedia('(max-width:700px)').matches){
+    try{
+      const s = loadSettings();
+      if (!s.size || s.size === 20){
+        s.size = 17;
+        saveSettings(s);
+        applyReaderSettings();
+      }
+    }catch(e){}
+  }
+
+  const prevLessonBtn=document.getElementById('prevLessonBtn');
+  const nextLessonBtn=document.getElementById('nextLessonBtn');
+  if(prevLessonBtn){
+    prevLessonBtn.disabled=!lessonNav.prev;
+    prevLessonBtn.title=lessonNav.prev?.title||'';
+    prevLessonBtn.addEventListener('click',()=>goLesson(lessonNav.prev,'end'));
+  }
+  if(nextLessonBtn){
+    nextLessonBtn.disabled=!lessonNav.next;
+    nextLessonBtn.title=lessonNav.next?.title||'';
+    nextLessonBtn.addEventListener('click',()=>goLesson(lessonNav.next,'start'));
+  }
+
+  let savedMode = 'scroll';
+  try{savedMode = localStorage.getItem(MODE_KEY) || 'scroll'}catch(e){}
+  if (savedMode === 'page') enablePageMode(true);
 });
 
 
-/* ===== Robust Highlight V2 ===== */
+
+/* ===== V19: Đầu sách / Thư viện ===== */
+(function(){
+  const catalog = (window.GNTT_CATALOG&&Array.isArray(window.GNTT_CATALOG.books)&&window.GNTT_CATALOG.books.length)?window.GNTT_CATALOG:((window.GNTT_DATA&&Array.isArray(window.GNTT_DATA.books))?window.GNTT_DATA:{books:[]});
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  ));
+  const norm = (s) => String(s ?? '').toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+
+  function countLessons(book){
+    return (book.chapters || []).reduce((n,ch) => n + (ch.lessons || []).length, 0);
+  }
+
+  function renderHome(filter=''){
+    const grid = document.getElementById('bookGrid');
+    if(!grid) return;
+    const q = norm(filter);
+    const books = catalog.books.filter(book => norm(book.title + ' ' + (book.description||'')).includes(q));
+    grid.innerHTML = books.map(book => {
+      const chapterCount = (book.chapters || []).length;
+      const lessonCount = countLessons(book);
+      const href = `library.html?v=23.7&book=${encodeURIComponent(book.id)}`;
+      return `<a class="book-card" href="${href}">
+        <div class="book-icon">${(window.GNTT_BOOK_ICONS?.render(book.icon||'theme-openbook',book.iconStyle||'brown')) || '📚'}</div>
+        <div class="book-card-body">
+          <h3>${esc(book.title)}</h3>
+          <p>${esc(book.description || '')}</p>
+          <div class="book-stats">${chapterCount} phẩm/chương · ${lessonCount} bài</div>
+        </div>
+        <span class="book-arrow">→</span>
+      </a>`;
+    }).join('');
+    const empty = document.getElementById('bookEmpty');
+    if(empty) empty.hidden = books.length !== 0;
+  }
+
+  function renderLibrary(filter=''){
+    const root = document.getElementById('libraryBooks');
+    if(!root) return;
+    const params = new URLSearchParams(location.search);
+    const selectedBook = params.get('book');
+    const q = norm(filter);
+    let visibleCount = 0;
+
+    root.innerHTML = catalog.books.map(book => {
+      if(selectedBook && selectedBook !== book.id) return '';
+      const matchedChapters = (book.chapters || []).map(ch => {
+        const lessons = (ch.lessons || []).filter(lesson => {
+          const hay = norm(book.title + ' ' + ch.title + ' ' + lesson.title + ' ' + (lesson.subtitle||''));
+          return !q || hay.includes(q);
+        });
+        if(!lessons.length && q) return '';
+        visibleCount += lessons.length || 1;
+        return `<section class="chapter-block">
+          <h3 class="chapter-title">${esc(ch.title)}</h3>
+          <div class="chapter-lessons">
+            ${lessons.map((lesson,idx) => `
+              <a class="lesson lesson-v19 toc-level-${Number(lesson.tocLevel)||2}" href="${esc(lesson.href)}">
+                <div class="meta">
+                  <span class="badge">${idx+1}</span>
+                  <div>
+                    <h4>${esc(lesson.title)}</h4>
+                    <p>${esc(lesson.subtitle || '')}</p>
+                  </div>
+                </div>
+                <span>Đọc →</span>
+              </a>`).join('')}
+          </div>
+        </section>`;
+      }).join('');
+
+      if(!matchedChapters.trim()) return '';
+      return `<article class="library-book" data-book-id="${esc(book.id)}">
+        <div class="library-book-head">
+          <div class="book-icon">${(window.GNTT_BOOK_ICONS?.render(book.icon||'theme-openbook',book.iconStyle||'brown')) || '📚'}</div>
+          <div>
+            <div class="eyebrow">Đầu sách</div>
+            <h2>${esc(book.title)}</h2>
+            <p>${esc(book.description || '')}</p>
+          </div>
+        </div>
+        ${matchedChapters}
+      </article>`;
+    }).join('');
+
+    const empty = document.getElementById('libraryEmpty');
+    if(empty) empty.hidden = !!root.innerHTML.trim();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const homeInput = document.getElementById('homeBookSearch');
+    const homeBtn = document.getElementById('homeBookSearchBtn');
+    if(homeInput){
+      renderHome('');
+      homeInput.addEventListener('input', () => renderHome(homeInput.value));
+      homeInput.addEventListener('keydown', e => { if(e.key === 'Enter') renderHome(homeInput.value); });
+      homeBtn?.addEventListener('click', () => renderHome(homeInput.value));
+    }
+
+    const libInput = document.getElementById('librarySearch');
+    if(document.getElementById('libraryBooks')){
+      renderLibrary('');
+      libInput?.addEventListener('input', () => renderLibrary(libInput.value));
+    }
+  
+  const settingsPanel=document.getElementById('settingsPanel');
+  const settingsOk=document.getElementById('settingsOk');
+  settingsOk?.addEventListener('click',()=>{
+    settingsPanel?.classList.remove('open');
+    settingsPanel?.setAttribute('aria-hidden','true');
+  });
+
+});
+})();
+
+
+/* ===== V23.6 HARD FIX: luôn tạo và hiển thị nút bút trên web/PWA ===== */
+(()=>{
+  function ensureHighlightPen(){
+    if(!document.querySelector('.reader-content')) return;
+    let btn=document.getElementById('highlightPenBtn');
+    if(!btn){
+      btn=document.createElement('button');
+      btn.type='button';
+      btn.id='highlightPenBtn';
+      btn.className='highlight-pen-btn';
+      btn.textContent='✏️';
+      btn.title='Đánh dấu';
+      btn.setAttribute('aria-label','Đánh dấu đoạn đã chọn');
+      document.body.appendChild(btn);
+    }
+    // Inline style để không phụ thuộc cache CSS.
+    Object.assign(btn.style,{
+      position:'fixed',
+      right:'16px',
+      bottom:'88px',
+      zIndex:'2147483646',
+      width:'50px',
+      height:'50px',
+      display:'flex',
+      alignItems:'center',
+      justifyContent:'center',
+      borderRadius:'50%',
+      border:'1px solid rgba(90,70,45,.28)',
+      background:'#fffaf0',
+      color:'#4a3c2d',
+      fontSize:'24px',
+      lineHeight:'1',
+      boxShadow:'0 6px 20px rgba(0,0,0,.18)',
+      cursor:'pointer',
+      visibility:'visible',
+      opacity:'1'
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',ensureHighlightPen,{once:true});
+  }else{
+    ensureHighlightPen();
+  }
+  window.addEventListener('pageshow',ensureHighlightPen);
+  setTimeout(ensureHighlightPen,500);
+})();
+
+
+// ===== V23.8: Ghi chú riêng cho từng bài =====
+document.addEventListener('DOMContentLoaded',()=>{
+  const article=document.querySelector('.reader-content');
+  if(!article) return;
+
+  const lessonId=window.GNTT_CURRENT_LESSON_ID || article.dataset.lessonId || 'reader-default';
+  const noteKey='gocnho_lesson_note_v1_'+lessonId;
+  const drawer=document.getElementById('lessonNotesDrawer');
+  const openBtn=document.getElementById('openLessonNotes');
+  const closeBtn=document.getElementById('closeLessonNotes');
+  const doneBtn=document.getElementById('doneLessonNotes');
+  const clearBtn=document.getElementById('clearLessonNotes');
+  const copyBtn=document.getElementById('copyLessonNotes');
+  const text=document.getElementById('lessonNotesText');
+  const status=document.getElementById('lessonNotesStatus');
+  const title=document.getElementById('lessonNotesTitle');
+  if(!drawer || !text) return;
+
+  let saveTimer=null;
+  let lastSaved='';
+  function currentLessonTitle(){ return document.querySelector('.reader-paper > h1')?.textContent?.trim() || 'Bài học hiện tại'; }
+  function fmt(ts){
+    if(!ts) return '';
+    try{return new Intl.DateTimeFormat('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(ts));}
+    catch(_){return '';}
+  }
+  function loadNote(){
+    try{
+      const raw=localStorage.getItem(noteKey);
+      if(!raw) return {text:'',updatedAt:0};
+      const parsed=JSON.parse(raw);
+      if(typeof parsed==='string') return {text:parsed,updatedAt:0};
+      return {text:String(parsed?.text||''),updatedAt:Number(parsed?.updatedAt||0)};
+    }catch(_){return {text:'',updatedAt:0};}
+  }
+  function updateStatus(updatedAt, justSaved=false){
+    if(!text.value.trim()){status.textContent='Chưa có ghi chú'; return;}
+    status.textContent=(justSaved?'✓ Đã lưu':'Đã lưu')+(updatedAt?' • '+fmt(updatedAt):'');
+  }
+  function saveNote(){
+    clearTimeout(saveTimer);
+    const value=text.value;
+    if(value===lastSaved) return;
+    if(!value.trim()){
+      localStorage.removeItem(noteKey); lastSaved=''; updateStatus(0,true); return;
+    }
+    const updatedAt=Date.now();
+    localStorage.setItem(noteKey,JSON.stringify({text:value,updatedAt}));
+    lastSaved=value; updateStatus(updatedAt,true);
+  }
+  function openDrawer(){
+    const note=loadNote(); text.value=note.text; lastSaved=note.text;
+    if(title) title.textContent=currentLessonTitle();
+    updateStatus(note.updatedAt,false);
+    drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
+    setTimeout(()=>text.focus({preventScroll:true}),120);
+  }
+  function closeDrawer(){ saveNote(); drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); }
+
+  openBtn?.addEventListener('click',openDrawer);
+  closeBtn?.addEventListener('click',closeDrawer);
+  doneBtn?.addEventListener('click',closeDrawer);
+  drawer.addEventListener('click',e=>{ if(e.target===drawer) closeDrawer(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && drawer.classList.contains('open')) closeDrawer(); });
+  text.addEventListener('input',()=>{ status.textContent='Đang ghi…'; clearTimeout(saveTimer); saveTimer=setTimeout(saveNote,650); });
+  text.addEventListener('blur',saveNote);
+  copyBtn?.addEventListener('click',async()=>{
+    const value=text.value.trim();
+    if(!value){status.textContent='Chưa có nội dung để sao chép'; return;}
+    try{await navigator.clipboard.writeText(value); status.textContent='✓ Đã sao chép ghi chú';}
+    catch(_){text.select(); document.execCommand('copy'); status.textContent='✓ Đã sao chép ghi chú';}
+  });
+  clearBtn?.addEventListener('click',()=>{
+    if(!text.value.trim()) return;
+    if(!confirm('Xóa toàn bộ ghi chú của bài này?')) return;
+    text.value=''; localStorage.removeItem(noteKey); lastSaved=''; updateStatus(0,true); text.focus();
+  });
+});
+
+
+/* ===== V24: Trang chủ dạng app + recent/favorite/note/search/settings ===== */
+(()=>{
+ const CAT=(window.GNTT_CATALOG&&Array.isArray(window.GNTT_CATALOG.books)&&window.GNTT_CATALOG.books.length)?window.GNTT_CATALOG:((window.GNTT_DATA&&Array.isArray(window.GNTT_DATA.books))?window.GNTT_DATA:{books:[]});
+ const REC='gntt_recent_v24', FAV='gntt_favorites_v24', UI='gntt_ui_v24';
+ let settingsSnapshot=null;
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const norm=s=>String(s??'').toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ const get=(k,d=[])=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(_){return d}};
+ const set=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+ function allLessons(){const out=[];(CAT.books||[]).forEach(b=>(b.chapters||[]).forEach(ch=>(ch.lessons||[]).forEach(l=>{if(l.visibility!=='private')out.push({id:l.id,title:l.title||'',subtitle:l.subtitle||'',bookId:b.id,bookTitle:b.title||'',chapterTitle:ch.title||'',href:l.href||`reader.html?id=${encodeURIComponent(l.id)}`})})));return out}
+ function findLesson(id){return allLessons().find(x=>x.id===id)}
+ function fmt(ts){try{return new Intl.DateTimeFormat('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(ts))}catch(_){return''}}
+ function empty(txt){return `<div class="v24-empty">${esc(txt)}</div>`}
+ function item(x,extra=''){return `<a class="v24-item" href="${esc(x.href||`reader.html?id=${encodeURIComponent(x.id)}`)}"><div class="ico">${extra||'📖'}</div><div><h3>${esc(x.title)}</h3><p>${esc(x.bookTitle||x.chapterTitle||'')}</p></div><span class="meta">${esc(x.when||'Đọc →')}</span></a>`}
+ function creditLabel(role){return ({author:'Tác giả',lecturer:'Giảng sư',translator:'Dịch giả',compiler:'Biên soạn'})[role]||''}
+ function renderBooks(filter=''){
+   const grid=document.getElementById('featuredBooks');if(!grid)return;
+   const q=norm(filter);const books=(CAT.books||[]).filter(b=>!q||norm(`${b.title} ${b.creditName||b.author||''}`).includes(q));
+   grid.innerHTML=books.map(b=>{
+     const count=(b.chapters||[]).reduce((n,ch)=>n+(ch.lessons||[]).length,0);
+     const role=b.creditRole||((b.author||'')?'author':'none');
+     const name=b.creditName||b.author||'';
+     const credit=(role!=='none'&&name)?`<div class="v24-book-credit">${esc(creditLabel(role))}: ${esc(name)}</div>`:'';
+     const icon=(window.GNTT_BOOK_ICONS?.render(b.icon||'theme-openbook',b.iconStyle||'brown')) || '📚';
+     return `<a class="v24-book-card v242-icon-book" href="library.html?v=24.2.15&book=${encodeURIComponent(b.id)}"><div class="v242-book-icon">${icon}</div><div class="v242-book-info"><div class="v24-book-name">${esc(b.title)}</div>${credit}<div class="v24-book-lessons">${count} bài học</div></div></a>`
+   }).join('');
+   const be=document.getElementById('bookEmpty');if(be){be.textContent=books.length?'':'Chưa tải được danh sách sách. Hãy tải lại trang.';be.toggleAttribute('hidden',books.length>0)}
+ }
+ function renderRecent(){const root=document.getElementById('v24RecentList');if(!root)return;const rows=get(REC,[]).map(r=>({...findLesson(r.id),...r})).filter(x=>x.id);root.innerHTML=rows.length?rows.map(x=>item({...x,when:fmt(x.ts)},'◷')).join(''):empty('Chưa có bài đọc gần đây.')}
+ function renderFav(){const root=document.getElementById('v24FavoriteList');if(!root)return;const ids=get(FAV,[]);const rows=ids.map(findLesson).filter(Boolean);root.innerHTML=rows.length?rows.map(x=>item(x,'♡')).join(''):empty('Chưa có bài yêu thích. Khi đọc bài, bấm nút ♡ để lưu.')}
+ function renderNotes(){const root=document.getElementById('v24NotesList');if(!root)return;const rows=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i)||'';if(!k.startsWith('gocnho_lesson_note_v1_'))continue;try{const o=JSON.parse(localStorage.getItem(k)||'{}');if(!String(o.text||'').trim())continue;const id=k.replace('gocnho_lesson_note_v1_','');const l=findLesson(id);if(l)rows.push({...l,preview:String(o.text).trim().slice(0,90),ts:o.updatedAt||0})}catch(_){}}rows.sort((a,b)=>b.ts-a.ts);root.innerHTML=rows.length?rows.map(x=>`<a class="v24-item" href="${esc(x.href)}"><div class="ico">▣</div><div><h3>${esc(x.title)}</h3><p>${esc(x.preview)}</p></div><span class="meta">${fmt(x.ts)}</span></a>`).join(''):empty('Chưa có ghi chú nào.')}
+ function doSearch(q){const root=document.getElementById('v24SearchResults');if(!root)return;const n=norm(q);if(!n){root.innerHTML=empty('Nhập từ khóa để tìm sách hoặc bài học.');return}const lessons=allLessons().filter(x=>norm(`${x.title} ${x.subtitle} ${x.bookTitle} ${x.chapterTitle}`).includes(n));const books=(CAT.books||[]).filter(b=>norm(`${b.title} ${b.description||''} ${b.creditName||b.author||''}`).includes(n));root.innerHTML=(books.map(b=>`<a class="v24-item" href="library.html?v=24.2.15&book=${encodeURIComponent(b.id)}"><div class="ico">📚</div><div><h3>${esc(b.title)}</h3><p>Đầu sách</p></div><span class="meta">Mở →</span></a>`).join('')+lessons.map(x=>item(x,'📖')).join(''))||empty('Không tìm thấy kết quả phù hợp.')}
+ function switchView(name){document.querySelectorAll('.v24-view').forEach(v=>v.classList.remove('active'));const map={home:'v24ViewHome',recent:'v24ViewRecent',favorites:'v24ViewFavorites',notes:'v24ViewNotes',search:'v24ViewSearch',settings:'v24ViewSettings'};document.getElementById(map[name]||map.home)?.classList.add('active');document.querySelectorAll('.v24-bottom-nav [data-v24-view]').forEach(b=>b.classList.toggle('active',b.dataset.v24View===name));if(name==='recent')renderRecent();if(name==='favorites')renderFav();if(name==='notes')renderNotes();if(name==='search')document.getElementById('v24Search')?.focus();if(name==='settings'&&!settingsSnapshot)settingsSnapshot={ui:get(UI,{accent:'lightbrown'}),reader:loadSettings()}}
+ function applyUI(){const u=get(UI,{accent:'lightbrown'});document.body.classList.remove('v24-accent-pink','v24-accent-lightbrown','v24-accent-brown','v24-accent-green');document.body.classList.add('v24-accent-'+(u.accent||'lightbrown'));document.querySelectorAll('[data-v24-accent]').forEach(b=>b.classList.toggle('active',b.dataset.v24Accent===u.accent));const rs=loadSettings();document.querySelectorAll('[data-v24-font]').forEach(b=>b.classList.toggle('active',b.dataset.v24Font===rs.font));document.querySelectorAll('[data-v24-reader-theme]').forEach(b=>b.classList.toggle('active',b.dataset.v24ReaderTheme===rs.theme));const l=document.getElementById('v24SizeLabel');if(l)l.textContent=(rs.size||20)+'px'}
+ document.addEventListener('DOMContentLoaded',()=>{
+   const cover=document.getElementById('homeCover');if(cover){const st=(CAT.siteSettings||{});cover.querySelectorAll('.v242-cover-blur,.v242-cover-full').forEach(x=>x.remove());if(st.coverImage){cover.style.backgroundImage='none';cover.classList.add('has-cover');cover.classList.remove('default-cover');cover.dataset.coverFit=st.coverFit||'cover';const img=document.createElement('img');img.className='v242-cover-full';img.src=st.coverImage;img.alt='Ảnh bìa trang chủ';cover.append(img);}else{cover.style.backgroundImage=`url('cover-bo-de-non-v24.png?v=24.2.15')`;cover.classList.remove('has-cover');cover.classList.add('default-cover');cover.removeAttribute('data-cover-fit');}}
+   renderBooks('');renderRecent();renderFav();renderNotes();applyUI();
+   document.querySelectorAll('[data-v24-view]').forEach(b=>b.addEventListener('click',e=>{if(b.tagName==='A')return;e.preventDefault();switchView(b.dataset.v24View)}));
+   const inp=document.getElementById('v24Search'), btn=document.getElementById('v24SearchBtn');const search=()=>{switchView('search');doSearch(inp?.value||'')};btn?.addEventListener('click',search);inp?.addEventListener('keydown',e=>{if(e.key==='Enter')search()});inp?.addEventListener('input',()=>{if(document.getElementById('v24ViewSearch')?.classList.contains('active'))doSearch(inp.value)});
+   document.querySelectorAll('[data-v24-accent]').forEach(b=>b.addEventListener('click',()=>{const u=get(UI,{accent:'lightbrown'});u.accent=b.dataset.v24Accent;set(UI,u);applyUI()}));
+   document.querySelectorAll('[data-v24-font]').forEach(b=>b.addEventListener('click',()=>{const rs=loadSettings();rs.font=b.dataset.v24Font;saveSettings(rs);applyUI()}));
+   document.querySelectorAll('[data-v24-reader-theme]').forEach(b=>b.addEventListener('click',()=>{const rs=loadSettings();rs.theme=b.dataset.v24ReaderTheme;saveSettings(rs);applyUI()}));
+   document.getElementById('v24Smaller')?.addEventListener('click',()=>{const rs=loadSettings();rs.size=Math.max(15,(+rs.size||20)-1);saveSettings(rs);applyUI()});document.getElementById('v24Larger')?.addEventListener('click',()=>{const rs=loadSettings();rs.size=Math.min(32,(+rs.size||20)+1);saveSettings(rs);applyUI()});
+   document.getElementById('v24SettingsOk')?.addEventListener('click',()=>{settingsSnapshot=null;switchView('home')});
+   document.getElementById('v24SettingsCancel')?.addEventListener('click',()=>{if(settingsSnapshot){set(UI,settingsSnapshot.ui);saveSettings(settingsSnapshot.reader);settingsSnapshot=null;applyUI()}switchView('home')});
+ });
+ // Reader: recent + favorite floating button.
+ document.addEventListener('DOMContentLoaded',()=>{if(!document.querySelector('.reader-content')||!window.GNTT_CURRENT_LESSON_ID)return;const id=window.GNTT_CURRENT_LESSON_ID, info=window.GNTT_CURRENT_LESSON||findLesson(id)||{id,title:document.querySelector('.reader-paper>h1')?.textContent||'Bài học',href:location.href};let rec=get(REC,[]).filter(x=>x.id!==id);rec.unshift({id,ts:Date.now(),title:info.title||''});set(REC,rec.slice(0,30));let fav=get(FAV,[]);const b=document.createElement('button');b.className='v24-reader-fav'+(fav.includes(id)?' active':'');b.textContent=fav.includes(id)?'♥':'♡';b.title='Yêu thích';b.addEventListener('click',()=>{fav=get(FAV,[]);if(fav.includes(id))fav=fav.filter(x=>x!==id);else fav.unshift(id);set(FAV,fav);b.classList.toggle('active',fav.includes(id));b.textContent=fav.includes(id)?'♥':'♡'});document.body.appendChild(b)})
+})();
+
+
+/* ===== V24.2.15 - TIM TRONG TUNG BAI HOC ===== */
 document.addEventListener('DOMContentLoaded', () => {
   const article = document.querySelector('.reader-content');
-  if (!article) return;
+  const input = document.getElementById('lessonSearchInput');
+  const count = document.getElementById('lessonSearchCount');
+  const prev = document.getElementById('lessonSearchPrev');
+  const next = document.getElementById('lessonSearchNext');
+  const clear = document.getElementById('lessonSearchClear');
+  if (!article || !input || !count || !prev || !next || !clear) return;
 
-  const ARTICLE_ID = 'bai40-bon-vo-luong-tam-p1';
-  const KEY = 'gocnho_highlights_' + ARTICLE_ID;
-  let savedRange = null;
+  let hits = [];
+  let current = -1;
 
-  // Remove older toolbar if present and create a fresh one.
-  document.querySelectorAll('#highlightToolbar, .goc-highlight-menu').forEach(el => el.remove());
-
-  const menu = document.createElement('div');
-  menu.className = 'goc-highlight-menu';
-  menu.innerHTML = `
-    <button type="button" data-c="yellow" title="Vàng">🟨</button>
-    <button type="button" data-c="green" title="Xanh">🟩</button>
-    <button type="button" data-c="pink" title="Hồng">🩷</button>
-    <button type="button" data-remove title="Bỏ đánh dấu">✕</button>`;
-  Object.assign(menu.style, {
-    position:'fixed', display:'none', zIndex:'99999', padding:'6px',
-    border:'1px solid rgba(80,60,35,.18)', borderRadius:'10px',
-    background:'#fffdf8', boxShadow:'0 8px 28px rgba(0,0,0,.18)',
-    gap:'4px', alignItems:'center'
-  });
-  menu.querySelectorAll('button').forEach(b => Object.assign(b.style,{
-    border:'0', background:'transparent', cursor:'pointer', fontSize:'19px',
-    padding:'5px 7px', borderRadius:'7px'
-  }));
-  document.body.appendChild(menu);
-
-  function getData(){
-    try { return JSON.parse(localStorage.getItem(KEY) || '[]'); }
-    catch(e){ return []; }
-  }
-  function setData(v){ localStorage.setItem(KEY, JSON.stringify(v)); }
-
-  function pathOf(node){
-    const path=[];
-    while(node && node !== article){
-      const p=node.parentNode;
-      if(!p) break;
-      path.unshift(Array.prototype.indexOf.call(p.childNodes,node));
-      node=p;
-    }
-    return path;
-  }
-  function nodeAt(path){
-    let n=article;
-    for(const i of path){ if(!n || !n.childNodes[i]) return null; n=n.childNodes[i]; }
-    return n;
-  }
-  function serializeRange(r, color){
-    return {
-      sp:pathOf(r.startContainer), so:r.startOffset,
-      ep:pathOf(r.endContainer), eo:r.endOffset,
-      text:r.toString(), color, id:'h'+Date.now()+Math.random().toString(36).slice(2,7)
-    };
-  }
-  function wrapRange(r, color, id){
-    if(r.collapsed) return false;
-    const mark=document.createElement('mark');
-    mark.className='goc-user-highlight';
-    mark.dataset.hid=id;
-    mark.dataset.color=color;
-    mark.style.background = color==='green' ? '#ccefcf' : color==='pink' ? '#ffd2df' : '#ffe99a';
-    mark.style.padding='0 .04em';
-    mark.style.borderRadius='2px';
-    try { r.surroundContents(mark); return true; }
-    catch(e){
-      try {
-        const frag=r.extractContents();
-        mark.appendChild(frag);
-        r.insertNode(mark);
-        return true;
-      } catch(err){ return false; }
-    }
-  }
-
-  function restore(){
-    const items=getData();
-    // Restore backwards so DOM paths remain valid as long as possible.
-    [...items].reverse().forEach(item=>{
-      const s=nodeAt(item.sp), e=nodeAt(item.ep);
-      if(!s || !e) return;
-      try{
-        const r=document.createRange();
-        r.setStart(s, Math.min(item.so, s.length ?? item.so));
-        r.setEnd(e, Math.min(item.eo, e.length ?? item.eo));
-        wrapRange(r,item.color,item.id);
-      }catch(err){}
+  function clearMarks(){
+    article.querySelectorAll('mark.lesson-search-hit').forEach(mark => {
+      const parent = mark.parentNode;
+      if(!parent) return;
+      parent.replaceChild(document.createTextNode(mark.textContent || ''), mark);
+      parent.normalize();
     });
+    hits = [];
+    current = -1;
+    count.textContent = '';
   }
 
-  function hide(){ menu.style.display='none'; savedRange=null; }
-
-  function showForSelection(){
-    const sel=window.getSelection();
-    if(!sel || !sel.rangeCount || sel.isCollapsed || !sel.toString().trim()){ return; }
-    const r=sel.getRangeAt(0);
-    if(!article.contains(r.commonAncestorContainer)) return;
-    savedRange=r.cloneRange();
-    const rect=r.getBoundingClientRect();
-    menu.style.display='flex';
-    requestAnimationFrame(()=>{
-      let left=rect.left + rect.width/2 - menu.offsetWidth/2;
-      left=Math.max(8,Math.min(innerWidth-menu.offsetWidth-8,left));
-      let top=rect.top-menu.offsetHeight-8;
-      if(top<8) top=rect.bottom+8;
-      menu.style.left=left+'px'; menu.style.top=top+'px';
-    });
-  }
-
-  document.addEventListener('mouseup', ()=>setTimeout(showForSelection, 10));
-  document.addEventListener('touchend', ()=>setTimeout(showForSelection, 180));
-
-  menu.addEventListener('mousedown', e=>e.preventDefault());
-  menu.addEventListener('touchstart', e=>e.stopPropagation(), {passive:true});
-
-  menu.querySelectorAll('[data-c]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      if(!savedRange) return;
-      const item=serializeRange(savedRange,btn.dataset.c);
-      if(wrapRange(savedRange,btn.dataset.c,item.id)){
-        const items=getData(); items.push(item); setData(items);
+  function textNodes(){
+    const nodes = [];
+    const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        const el = node.parentElement;
+        if(!el) return NodeFilter.FILTER_REJECT;
+        if(el.closest('script,style,mark.lesson-search-hit,.page-turn-controls,.lesson-bottom-nav')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
       }
-      window.getSelection()?.removeAllRanges();
-      hide();
     });
+    let n; while((n = walker.nextNode())) nodes.push(n);
+    return nodes;
+  }
+
+  function highlightAll(term){
+    clearMarks();
+    term = (term || '').trim();
+    if(!term){ return; }
+    const q = term.toLocaleLowerCase('vi');
+    const nodes = textNodes();
+    for(const node of nodes){
+      const original = node.nodeValue || '';
+      const lower = original.toLocaleLowerCase('vi');
+      let start = 0, idx;
+      const frag = document.createDocumentFragment();
+      let foundInNode = false;
+      while((idx = lower.indexOf(q, start)) !== -1){
+        foundInNode = true;
+        if(idx > start) frag.appendChild(document.createTextNode(original.slice(start, idx)));
+        const mark = document.createElement('mark');
+        mark.className = 'lesson-search-hit';
+        mark.textContent = original.slice(idx, idx + term.length);
+        frag.appendChild(mark);
+        start = idx + term.length;
+      }
+      if(foundInNode){
+        if(start < original.length) frag.appendChild(document.createTextNode(original.slice(start)));
+        node.parentNode.replaceChild(frag, node);
+      }
+    }
+    hits = [...article.querySelectorAll('mark.lesson-search-hit')];
+    current = hits.length ? 0 : -1;
+    updateCurrent(false);
+  }
+
+  function updateCurrent(scroll = true){
+    hits.forEach((m,i)=>m.classList.toggle('is-current', i === current));
+    if(!hits.length){
+      count.textContent = input.value.trim() ? '0 kết quả' : '';
+      return;
+    }
+    count.textContent = `${current + 1}/${hits.length}`;
+    if(scroll && hits[current]){
+      hits[current].scrollIntoView({behavior:'smooth', block:'center', inline:'center'});
+    }
+  }
+
+  function step(dir){
+    if(!hits.length){ highlightAll(input.value); if(!hits.length) return; }
+    current = (current + dir + hits.length) % hits.length;
+    updateCurrent(true);
+  }
+
+  let timer = 0;
+  input.addEventListener('input', ()=>{
+    clearTimeout(timer);
+    timer = setTimeout(()=>highlightAll(input.value), 180);
   });
-
-  menu.querySelector('[data-remove]').addEventListener('click', hide);
-
-  // Click an existing highlight to remove it.
-  article.addEventListener('click', e=>{
-    const mark=e.target.closest('mark.goc-user-highlight');
-    if(!mark) return;
-    const id=mark.dataset.hid;
-    const parent=mark.parentNode;
-    while(mark.firstChild) parent.insertBefore(mark.firstChild,mark);
-    mark.remove(); parent.normalize();
-    setData(getData().filter(x=>x.id!==id));
+  input.addEventListener('keydown', e=>{
+    if(e.key === 'Enter'){ e.preventDefault(); step(e.shiftKey ? -1 : 1); }
+    if(e.key === 'Escape'){ e.preventDefault(); input.value=''; clearMarks(); input.blur(); }
   });
-
-  document.addEventListener('mousedown', e=>{
-    if(!menu.contains(e.target) && !article.contains(e.target)) hide();
-  });
-
-  restore();
+  prev.addEventListener('click', ()=>step(-1));
+  next.addEventListener('click', ()=>step(1));
+  clear.addEventListener('click', ()=>{ input.value=''; clearMarks(); input.focus(); });
 });

@@ -1,0 +1,5 @@
+V24.2.11
+- Lay V24.2.8 lam nen.
+- Mobile/app <=760px: giu nguyen cover V24.2.8 (190px), khong thay doi.
+- Desktop/laptop >760px: tang chieu cao cover linh hoat 360-460px de anh bi cat it hon.
+- Khong kem data.js va catalog.js, khong ghi de du lieu sach/bai.
