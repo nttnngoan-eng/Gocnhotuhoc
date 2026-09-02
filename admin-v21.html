@@ -7,12 +7,12 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quản trị nội dung V24.1 - Góc nhỏ tu học</title>
-<link rel="stylesheet" href="admin-v17.css?v=24.2.15r2">
-</head>
+<link rel="stylesheet" href="admin-v17.css?v=24.2.15r4">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=24.2.15r4"></head>
 <body>
 <header class="admin-header">
-  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V24.2.15r2</b></div>
-  <a id="openReaderLink" href="reader.html?v=24.2.15r2" target="_blank" rel="noopener">Mở bài đọc ↗</a>
+  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V24.2.15r4</b></div>
+  <a id="openReaderLink" href="reader.html?v=24.2.15r4" target="_blank" rel="noopener">Mở bài đọc ↗</a>
 </header>
 
 <main class="admin-wrap">
@@ -152,10 +152,10 @@
 
 
   <section class="meta-panel app-icon-maker-panel">
-    <div class="site-icon-title"><strong>📱 Tạo icon App</strong><span>Tạo đúng 2 file icon-192.png và icon-512.png để thay biểu tượng PWA trên iPhone/Android.</span></div>
+    <div class="site-icon-title"><strong>📱 Tạo icon App</strong><span>Tạo đủ 3 file icon-180.png, icon-192.png và icon-512.png để dùng đúng trên iPhone/iPad/Android/máy tính bảng.</span></div>
     <div class="app-icon-maker-grid">
       <div class="app-icon-preview-wrap">
-        <div id="appIconPreview" class="app-icon-preview"><img src="icon-192.png?v=24.2.15r2" alt="Icon App hiện tại"></div>
+        <div id="appIconPreview" class="app-icon-preview"><img src="icon-192.png?v=24.2.15r4" alt="Icon App hiện tại"></div>
         <small>Ảnh xem trước theo kiểu icon trên màn hình iPhone.</small>
       </div>
       <div class="app-icon-maker-controls">
@@ -169,18 +169,19 @@
         <label class="app-icon-bg-row"><span>Nền khi dùng biểu tượng web</span><input id="appIconBg" type="color" value="#fff6f5"></label>
         <small class="field-help">Ảnh riêng sẽ tự cắt vuông ở giữa. Nên dùng ảnh vuông, rõ nét. Hình số 1 đã được tích hợp sẵn: lá bồ đề non hồng + búp non, không có hình Phật.</small>
         <div class="app-icon-downloads">
+          <button type="button" id="downloadAppIcon180" class="secondary">Tải icon-180.png</button>
           <button type="button" id="downloadAppIcon192" class="secondary">Tải icon-192.png</button>
           <button type="button" id="downloadAppIcon512" class="secondary">Tải icon-512.png</button>
-          <button type="button" id="downloadBothAppIcons" class="primary">⬇ Tải cả 2 icon</button>
+          <button type="button" id="downloadBothAppIcons" class="primary">⬇ Tải cả 3 icon</button>
         </div>
         <div id="appIconMakerState" class="publish-state"></div>
-        <div class="app-icon-note">Sau khi tải, upload 2 file <b>icon-192.png</b> và <b>icon-512.png</b> lên GitHub để thay file cũ. iPhone cần xóa app khỏi Màn hình chính rồi “Thêm vào Màn hình chính” lại để thấy icon mới.</div>
+        <div class="app-icon-note">Sau khi tải, upload 3 file <b>icon-180.png</b>, <b>icon-192.png</b> và <b>icon-512.png</b> lên GitHub để thay file cũ. iPhone/iPad cần xóa app khỏi Màn hình chính rồi “Thêm vào Màn hình chính” lại để thấy icon mới.</div>
       </div>
     </div>
   </section>
 
   <section class="meta-panel site-icon-panel">
-    <div class="site-icon-title"><strong>Biểu tượng Góc nhỏ tu học</strong><span>Chọn màu 🤎 Nâu / 🌸 Hồng / 🌿 Xanh rồi chọn 1 trong 48 biểu tượng cho logo trên thanh đầu trang.</span></div>
+    <div class="site-icon-title"><strong>Biểu tượng Góc nhỏ tu học</strong><span>Chọn màu 🤎 Nâu / 🌸 Hồng / 🌿 Xanh rồi chọn biểu tượng từ Thư viện icon chung cho logo trên thanh đầu trang.</span></div>
     <div class="book-icon-field wide">
       <div class="book-icon-field-head">
         <span>Biểu tượng trang chủ / thanh tiêu đề</span>
@@ -234,7 +235,7 @@
         <div class="unified-picker-row"><button type="button" id="openUnifiedLibraryBook" class="secondary">▦ Chọn từ thư viện icon chung</button></div><div id="bookIconPicker" class="book-icon-picker legacy-icon-grid" aria-label="Chọn biểu tượng đầu sách"></div>
         <small class="field-help">Mỗi mẫu đều có 3 màu: 🤎 Nâu, 🌸 Hồng và 🌿 Xanh. Chọn màu trước rồi chọn 1 trong 48 biểu tượng. Có thể đổi lại cho sách cũ bất cứ lúc nào.</small>
       </div>
-      <div class="wide field-help" style="padding:8px 0 2px;color:#725f50">V24.2.15r2: Đầu sách hiển thị bằng <strong>icon + tên sách</strong>. Không dùng ảnh bìa sách.</div>
+      <div class="wide field-help" style="padding:8px 0 2px;color:#725f50">V24.2.15r4: Đầu sách hiển thị bằng <strong>icon + tên sách</strong>. Không dùng ảnh bìa sách.</div>
       <label>
         <span>Phẩm / Chương</span>
         <input id="chapterTitle" type="text" placeholder="Nhập tên phẩm/chương">
@@ -318,7 +319,7 @@
     <div id="unifiedLibraryGrid" class="unified-library-grid"></div>
   </div>
 </div>
-<script src="book-icons.js?v=24.2.15r2"></script>
-<script src="admin-v21.js?v=24.2.15r2"></script>
+<script src="book-icons.js?v=24.2.15r4"></script>
+<script src="admin-v21.js?v=24.2.15r4"></script>
 </body>
 </html>

@@ -13,7 +13,9 @@
     ['theme-openbook','Chủ đề','Tài liệu · Học tập']
   ].map(([id,group,label])=>({id,group,label}));
   const buddhas = Array.from({length:8},(_,i)=>({id:`buddha-${String(i+1).padStart(2,'0')}`,group:'Phật vàng cam',label:`Phật tối giản ${i+1}`}));
-  ns.icons=[{id:'image-bodhi-red',group:'Ảnh icon',label:'Lá bồ đề non đỏ'},...buddhas,...lotus,...bodhi,...themes];
+  const goldSet = Array.from({length:15},(_,i)=>({id:`gold-${String(i+1).padStart(2,'0')}`,group:'Bộ Phật · Vàng cam',label:`Vàng cam ${i+1}`}));
+  const pinkSet = Array.from({length:15},(_,i)=>({id:`pink-${String(i+1).padStart(2,'0')}`,group:'Bộ Phật · Hồng nhạt',label:`Hồng nhạt ${i+1}`}));
+  ns.icons=[{id:'image-bodhi-red',group:'Ảnh icon',label:'Lá bồ đề non đỏ'},...goldSet,...pinkSet,...buddhas,...lotus,...bodhi,...themes];
   ns.defaultId='theme-openbook';
 
   const wrap = inner => `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false" class="gntt-book-icon-svg" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
@@ -117,8 +119,27 @@
     return wrap(c(32,32,20));
   }
 
+  function specialSetSvg(n){
+    if(n===1) return buddhaSvg(1);
+    if(n===2) return wrap(p('M32 58 C17 48 12 35 16 22 C19 12 26 7 32 3 C38 7 45 12 48 22 C52 35 47 48 32 58 Z')+`<g transform="translate(8 10) scale(.75)">${buddhaSvg(2).replace(/^<svg[^>]*>|<\/svg>$/g,'')}</g>`);
+    if(n===3) return lotusSvg(6);
+    if(n===4) return wrap(c(32,17,8)+p('M22 18 C24 8 40 8 42 18')+p('M24 25 C27 30 37 30 40 25')+p('M20 35 C26 40 38 40 44 35')+p('M18 48 C25 42 39 42 46 48')+`<circle cx="27" cy="16" r="1" fill="currentColor"/><circle cx="37" cy="16" r="1" fill="currentColor"/>`);
+    if(n===5) return themeSvg('theme-wheel');
+    if(n===6) return wrap(p('M19 49 C22 40 23 29 24 17 C25 12 28 12 29 17 L30 31')+p('M30 31 L32 13 C33 9 36 10 36 14 L36 31')+p('M36 31 L40 18 C41 14 44 16 43 20 L40 36')+p('M40 36 C46 30 49 31 48 35 C45 42 41 48 36 53')+lotusSvg(6).replace(/^<svg[^>]*>|<\/svg>$/g,''));
+    if(n===7) return wrap(p('M32 54 V31')+p('M32 35 C24 29 18 25 12 24 M32 35 C40 29 46 25 52 24')+p('M32 27 C26 20 23 14 23 9 M32 27 C38 20 41 14 41 9')+`<circle cx="32" cy="31" r="5" fill="currentColor"/>`+p('M25 43 C28 38 36 38 39 43 M21 48 C28 52 36 52 43 48'));
+    if(n===8) return wrap(lotusSvg(6).replace(/^<svg[^>]*>|<\/svg>$/g,'')+p('M32 14 C26 21 27 26 32 31 C37 26 38 21 32 14 Z'));
+    if(n===9) return wrap(p('M18 51 H46')+p('M21 51 V43 H43 V51')+p('M24 43 C24 34 27 29 32 25 C37 29 40 34 40 43')+p('M27 25 H37 M28 21 H36 M29 17 H35 M30 13 H34 M32 8 V13'));
+    if(n===10) return wrap(c(32,32,25)+buddhaSvg(8).replace(/^<svg[^>]*>|<\/svg>$/g,''));
+    if(n===11) return wrap(p('M32 54 V28')+p('M32 29 C24 25 21 18 24 10 C30 12 33 18 32 29')+p('M32 29 C40 25 43 18 40 10 C34 12 31 18 32 29')+p('M32 43 C24 40 19 42 15 47 C21 51 27 51 32 47 M32 43 C40 40 45 42 49 47 C43 51 37 51 32 47'));
+    if(n===12) return wrap(p('M40 10 C31 10 24 17 24 27 C24 37 30 43 40 46')+p('M39 14 C35 18 34 22 35 26')+p('M35 31 C37 33 40 33 42 31')+p('M26 48 C31 44 38 44 44 49'));
+    if(n===13) return themeSvg('theme-prayer');
+    if(n===14) return wrap(`<circle cx="32" cy="29" r="25" fill="currentColor" opacity=".12"/>`+buddhaSvg(1).replace(/^<svg[^>]*>|<\/svg>$/g,''));
+    return wrap(p('M32 8 C27 14 28 19 32 23 C36 19 37 14 32 8')+p('M32 23 C22 30 19 38 22 47')+p('M32 23 C42 30 45 38 42 47')+p('M14 51 C22 45 27 46 32 52 C37 46 42 45 50 51'));
+  }
+
   ns.svg=function(id){
     id = ns.icons.some(x=>x.id===id) ? id : ns.defaultId;
+    if(id.startsWith('gold-')||id.startsWith('pink-')) return specialSetSvg(parseInt(id.slice(-2),10));
     if(id.startsWith('buddha-')) return buddhaSvg(parseInt(id.slice(-2),10));
     if(id.startsWith('lotus-')) return lotusSvg(parseInt(id.slice(-2),10));
     if(id.startsWith('bodhi-')) return bodhiSvg(parseInt(id.slice(-2),10));
@@ -126,6 +147,8 @@
   };
   ns.get=function(id){return ns.icons.find(x=>x.id===id)||ns.icons.find(x=>x.id===ns.defaultId)};
   ns.colorFor=function(id){
+    if(id.startsWith('gold-')) return '#d68a16';
+    if(id.startsWith('pink-')) return '#ef8fa3';
     if(id.startsWith('buddha-')) return '#c97818';
     if(id.startsWith('lotus-')){ const n=parseInt(id.slice(-2),10); return [1,2,3,4,10,11,13,14,17,20].includes(n)?'#e76f91':'#b8863b'; }
     if(id.startsWith('bodhi-')) return '#5f7f45';
@@ -135,6 +158,8 @@
     if(id==='image-bodhi-red') return '<img class="gntt-book-icon-image" src="app-icon-hinh-so-1.png?v=24.2.5" alt="Lá bồ đề non đỏ">';
     const svg=ns.svg(id);
     const colors={brown:'#8a6338',pink:'#e76f91',green:'#5f7f45',orange:'#c97818'};
+    if(id.startsWith('gold-')) return svg.replace('<svg ','<svg style=\"color:#d68a16;--icon-vein:#fff6e8\" ');
+    if(id.startsWith('pink-')) return svg.replace('<svg ','<svg style=\"color:#ef8fa3;--icon-vein:#fff7f9\" ');
     if(id.startsWith('buddha-')) return svg.replace('<svg ','<svg style=\"color:#c97818;--icon-vein:#fff4df\" ');
     // Backward compatibility: old 'mono' = brown, old 'color' keeps its natural category color.
     if(style==='color') return svg.replace('<svg ','<svg style=\"color:'+ns.colorFor(id)+';--icon-vein:#fff\" ');

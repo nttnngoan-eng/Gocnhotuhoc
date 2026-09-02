@@ -1,6 +1,6 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="24.2.15r2";
+DATA.version="24.2.15r4";
 DATA.siteSettings = DATA.siteSettings || {homeIcon:"theme-openbook",homeIconStyle:"brown"};
 DATA.siteSettings.homeIconStyle = DATA.siteSettings.homeIconStyle || 'brown';
 DATA.siteSettings.accentTheme=DATA.siteSettings.accentTheme||"lightbrown";
@@ -159,7 +159,7 @@ function loadSelected(){
   lessonVisibility.value=(l?.visibility==='private'?'private':'public');
   editor.innerHTML=l?.contentHtml||'';
   preview.textContent=l?.title||'Chọn hoặc tạo bài học';
-  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=24.2.15r2`:'reader.html?v=24.2.15r2';
+  $('openReaderLink').href=l?`reader.html?id=${encodeURIComponent(l.id)}&v=24.2.15r4`:'reader.html?v=24.2.15r4';
   setStatus(l?'Đã tải bài':'Chưa có bài');
 }
 
@@ -278,7 +278,7 @@ function upsertFromForm(){
   refreshSelectors();
   lessonSelect.value=l.id;
   preview.textContent=l.title;
-  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=24.2.15r2`;
+  $('openReaderLink').href=`reader.html?id=${encodeURIComponent(l.id)}&v=24.2.15r4`;
   return l;
 }
 
@@ -293,7 +293,7 @@ function buildCatalogJs(){
           title:l.title,
           subtitle:l.subtitle||'',
           tocLevel:Number(l.tocLevel)||2,
-          href:`reader.html?id=${l.id}&v=24.2.15r2`
+          href:`reader.html?id=${l.id}&v=24.2.15r4`
         }));
       return {id:c.id,title:c.title,lessons};
     }).filter(c=>c.lessons.length);
@@ -351,7 +351,7 @@ $('publishAppearance')?.addEventListener('click',async()=>{
   const state=$('appearanceState');
   try{
     if(state){state.textContent='Đang xuất bản…';state.className='publish-state';}
-    await apiRequest('/publish-v21',{method:'POST',body:JSON.stringify({dataJs:buildDataJs(),catalogJs:buildCatalogJs(),message:'Cập nhật V24.2.15r2: icon + tên sách, bỏ bìa sách, thêm icon lá bồ đề non đỏ'})});
+    await apiRequest('/publish-v21',{method:'POST',body:JSON.stringify({dataJs:buildDataJs(),catalogJs:buildCatalogJs(),message:'Cập nhật V24.2.15r4: icon + tên sách, bỏ bìa sách, thêm icon lá bồ đề non đỏ'})});
     if(state){state.textContent='✓ Đã xuất bản';state.className='publish-state ok';}
   }catch(e){if(state){state.textContent='Lỗi: '+e.message;state.className='publish-state err';}}
 });
@@ -853,7 +853,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 (function initAppIconMaker(){
   const fileEl=$('appIconFile'), previewEl=$('appIconPreview'), bgEl=$('appIconBg'), stateEl=$('appIconMakerState');
   if(!previewEl) return;
-  let source={type:'current', url:'icon-512.png?v=24.2.15r2'};
+  let source={type:'current', url:'icon-512.png?v=24.2.15r4'};
   function state(t,k=''){ if(stateEl){stateEl.textContent=t;stateEl.className='publish-state'+(k?' '+k:'');} }
   function loadImage(url){ return new Promise((resolve,reject)=>{ const im=new Image(); im.onload=()=>resolve(im); im.onerror=reject; im.src=url; }); }
   function fileToUrl(file){ return new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); }); }
@@ -892,19 +892,20 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   fileEl?.addEventListener('change',async()=>{
     const f=fileEl.files?.[0]; if(!f)return;
-    try{ const u=await fileToUrl(f); source={type:'file',url:u}; await blobPreview(); state('Đã chọn ảnh. Có thể tải icon 192/512.','ok'); }catch(e){state('Không đọc được ảnh.','err');}
+    try{ const u=await fileToUrl(f); source={type:'file',url:u}; await blobPreview(); state('Đã chọn ảnh. Có thể tải icon 180/192/512.','ok'); }catch(e){state('Không đọc được ảnh.','err');}
   });
   $('usePresetAppIcon1')?.addEventListener('click',async()=>{
-    try{ source={type:'preset',url:'app-icon-hinh-so-1.png?v=24.2.15r2'}; await blobPreview(); state('Đã chọn Hình số 1 – Lá bồ đề non. Bấm “Tải cả 2 icon” để tạo file.','ok'); }catch(e){state('Không tải được Hình số 1.','err');}
+    try{ source={type:'preset',url:'app-icon-hinh-so-1.png?v=24.2.15r4'}; await blobPreview(); state('Đã chọn Hình số 1 – Lá bồ đề non. Bấm “Tải cả 3 icon” để tạo file.','ok'); }catch(e){state('Không tải được Hình số 1.','err');}
   });
   $('useSiteIconForApp')?.addEventListener('click',async()=>{
     try{ source={type:'site',url:await svgSiteIconDataUrl()}; await blobPreview(); state('Đang dùng biểu tượng web đã chọn.','ok'); }catch(e){state(e.message,'err');}
   });
   bgEl?.addEventListener('input',()=>{if(source.type==='site') blobPreview();});
-  $('resetAppIconPreview')?.addEventListener('click',()=>{ source={type:'current',url:'icon-512.png?v=24.2.15r2'}; if(fileEl)fileEl.value=''; preview(source.url); state('Đang xem icon App hiện tại.'); });
+  $('resetAppIconPreview')?.addEventListener('click',()=>{ source={type:'current',url:'icon-512.png?v=24.2.15r4'}; if(fileEl)fileEl.value=''; preview(source.url); state('Đang xem icon App hiện tại.'); });
+  $('downloadAppIcon180')?.addEventListener('click',()=>download(180));
   $('downloadAppIcon192')?.addEventListener('click',()=>download(192));
   $('downloadAppIcon512')?.addEventListener('click',()=>download(512));
-  $('downloadBothAppIcons')?.addEventListener('click',async()=>{ await download(192); setTimeout(()=>download(512),450); });
+  $('downloadBothAppIcons')?.addEventListener('click',async()=>{ await download(180); setTimeout(()=>download(192),450); setTimeout(()=>download(512),900); });
 })();
 /* ===== V23.9: THƯ VIỆN ẢNH CÓ SẴN - KHÔNG BẮT BUỘC UPLOAD ===== */
 (function initBuiltInImageLibrary(){
@@ -933,7 +934,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     el.innerHTML=items.map((x,i)=>`<button type="button" class="image-preset-choice" data-preset="${i}" title="${esc(x.name)}"><img src="${x.url}" alt="${esc(x.name)}"><small>${esc(x.name)}</small></button>`).join('');
     el.addEventListener('click',e=>{const b=e.target.closest('[data-preset]'); if(!b)return; el.querySelectorAll('.selected').forEach(x=>x.classList.remove('selected')); b.classList.add('selected'); onPick(items[+b.dataset.preset],+b.dataset.preset);});
   }
-  const siteCovers=[{name:'Bồ đề non · Nâu nhạt',url:'cover-bo-de-non-v24.png?v=24.2.15r2'},...coverDefs.map((_,i)=>makeCover(i,false))];
+  const siteCovers=[{name:'Bồ đề non · Nâu nhạt',url:'cover-bo-de-non-v24.png?v=24.2.15r4'},...coverDefs.map((_,i)=>makeCover(i,false))];
   renderGrid('siteCoverPresets',siteCovers,x=>{DATA.siteSettings.coverImage=x.url; showCover(siteCoverPreview,x.url,'site'); if(siteCoverFile)siteCoverFile.value='';});
   const coverModal=$('coverLibraryModal'), openCover=$('openCoverLibrary'), closeCover=$('closeCoverLibrary'), currentCover=$('siteCoverCurrent');
   function refreshCoverCurrent(){ if(currentCover) currentCover.textContent=DATA.siteSettings.coverImage?'✓ Đã chọn ảnh cover':'Chưa chọn ảnh cover'; }
@@ -945,7 +946,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   // App: Hình số 1 đứng đầu, sau đó các biểu tượng Phật học có sẵn.
   const app=[];
-  app.push({name:'Hình số 1',url:'app-icon-hinh-so-1.png?v=24.2.15r2',type:'preset'});
+  app.push({name:'Hình số 1',url:'app-icon-hinh-so-1.png?v=24.2.15r4',type:'preset'});
   const lib=window.GNTT_BOOK_ICONS;
   if(lib){
     const ids=['lotus-01','lotus-03','lotus-07','lotus-12','bodhi-01','bodhi-04','bodhi-08','bodhi-12','theme-wheel','theme-openbook','theme-meditation','theme-scroll'];
@@ -958,7 +959,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 
 
-  // V24.2.15r2 rev2: Mot thu vien chung cho tat ca icon + anh cover.
+  // V24.2.15r4 rev2: Mot thu vien chung cho tat ca icon + anh cover.
   const unifiedModal=$('unifiedAssetLibrary'), unifiedTitle=$('unifiedLibraryTitle'), unifiedSearch=$('unifiedLibrarySearch'), unifiedFilters=$('unifiedLibraryFilters'), unifiedGrid=$('unifiedLibraryGrid');
   let unifiedMode='site', unifiedGroup='Tất cả';
   const allIconItems=(window.GNTT_BOOK_ICONS?.icons||[]).map(x=>({kind:'icon',id:x.id,name:x.label||x.id,group:x.group||'Khác'}));
@@ -983,7 +984,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     unifiedGrid.innerHTML=items.map(x=>{
       if(x.kind==='cover') return `<button type="button" class="unified-library-item" data-unified-id="${esc(x.id)}"><img src="${x.url}" alt="${esc(x.name)}"><small>${esc(x.name)}</small></button>`;
       let art='';
-      if(x.id==='image-bodhi-red') art='<img src="app-icon-hinh-so-1.png?v=24.2.15r2" alt="'+esc(x.name)+'" style="width:64px;height:64px;object-fit:contain">';
+      if(x.id==='image-bodhi-red') art='<img src="app-icon-hinh-so-1.png?v=24.2.15r4" alt="'+esc(x.name)+'" style="width:64px;height:64px;object-fit:contain">';
       else art=`<span class="asset-icon">${window.GNTT_BOOK_ICONS?.render(x.id,style)||''}</span>`;
       return `<button type="button" class="unified-library-item" data-unified-id="${esc(x.id)}">${art}<small>${esc(x.name)}</small></button>`;
     }).join('')||'<p class="field-help">Không tìm thấy mục phù hợp.</p>';
@@ -1011,7 +1012,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     else if(unifiedMode==='site') setSiteIcon(id);
     else if(unifiedMode==='app'){
       const item=window.GNTT_BOOK_ICONS?.get(id);
-      const detail=id==='image-bodhi-red'?{name:item?.label||'Lá bồ đề non đỏ',url:'app-icon-hinh-so-1.png?v=24.2.15r2',type:'preset'}:{name:item?.label||id,url:svgUrl(window.GNTT_BOOK_ICONS.svg(id)),type:'site'};
+      const detail=id==='image-bodhi-red'?{name:item?.label||'Lá bồ đề non đỏ',url:'app-icon-hinh-so-1.png?v=24.2.15r4',type:'preset'}:{name:item?.label||id,url:svgUrl(window.GNTT_BOOK_ICONS.svg(id)),type:'site'};
       window.dispatchEvent(new CustomEvent('gntt-app-preset',{detail}));
     }
     if(unifiedModal)unifiedModal.hidden=true;
