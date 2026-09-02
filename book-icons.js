@@ -158,8 +158,8 @@
     if(id==='image-bodhi-red') return '<img class="gntt-book-icon-image" src="app-icon-hinh-so-1.png?v=24.2.5" alt="Lá bồ đề non đỏ">';
     const svg=ns.svg(id);
     const colors={brown:'#8a6338',pink:'#e76f91',green:'#5f7f45',orange:'#c97818'};
-    if(id.startsWith('gold-')) return `<img class="gntt-book-icon-image gntt-library-art" src="icon-library/${id}.png?v=24.2.15r5" alt="${ns.get(id).label}">`;
-    if(id.startsWith('pink-')) return `<img class="gntt-book-icon-image gntt-library-art" src="icon-library/${id}.png?v=24.2.15r5" alt="${ns.get(id).label}">`;
+    if(id.startsWith('gold-')) return `<img class="gntt-book-icon-image gntt-library-art" src="${id}.png?v=24.2.15r6" alt="${ns.get(id).label}">`;
+    if(id.startsWith('pink-')) return `<img class="gntt-book-icon-image gntt-library-art" src="${id}.png?v=24.2.15r6" alt="${ns.get(id).label}">`;
     if(id.startsWith('buddha-')) return svg.replace('<svg ','<svg style=\"color:#c97818;--icon-vein:#fff4df\" ');
     // Backward compatibility: old 'mono' = brown, old 'color' keeps its natural category color.
     if(style==='color') return svg.replace('<svg ','<svg style=\"color:'+ns.colorFor(id)+';--icon-vein:#fff\" ');

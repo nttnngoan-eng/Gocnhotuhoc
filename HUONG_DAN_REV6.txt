@@ -1,0 +1,15 @@
+V24.2.15 REV6 - KHONG CAN UP FOLDER ICON
+
+- 30 icon dung theo anh mau: 15 vang anh cam + 15 hong nhat.
+- Tat ca 30 file PNG nam ngay thu muc goc, khong co folder icon-library.
+- Da thay the bo icon SVG vang/hong bi sai truoc do trong giao dien thu vien bang 30 PNG dung.
+- Bam icon la chon ngay, khong can keo xuong cuoi.
+- Khong co data.js hoac catalog.js.
+
+UPLOAD LEN GITHUB:
+1. Giai nen ZIP.
+2. Chon tat ca file trong thu muc vua giai nen.
+3. GitHub > Add file > Upload files.
+4. Keo tat ca file vao de ghi de.
+5. Commit changes.
+6. Ctrl+F5.
