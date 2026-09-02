@@ -1160,3 +1160,6 @@ body.v24-app .v24-cover.has-cover[data-cover-fit="auto"] .v242-cover-full{object
     aspect-ratio:auto!important;
   }
 }
+
+/* ===== V24.2.15 - Tom tat bai hoc ===== */
+.lesson-summary-box{margin:10px 0 14px}.lesson-summary-toggle{border:1px solid #d8c5ad;background:#f7efe3;color:#765b3a;border-radius:12px;padding:9px 14px;font-weight:700;cursor:pointer}.lesson-summary-content{margin-top:8px;padding:14px 16px;border:1px solid #e2d4c2;border-radius:14px;background:#fbf6ee;color:#5f5145;line-height:1.7;white-space:pre-wrap}.lesson-summary-field textarea{width:100%;box-sizing:border-box;border:1px solid #d8c8b5;border-radius:10px;padding:10px 12px;background:#fffdf9;color:#54483e;resize:vertical}

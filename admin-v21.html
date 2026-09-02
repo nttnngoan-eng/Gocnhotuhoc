@@ -7,17 +7,17 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quản trị nội dung V24.1 - Góc nhỏ tu học</title>
-<link rel="stylesheet" href="admin-v17.css?v=24.2.11">
+<link rel="stylesheet" href="admin-v17.css?v=24.2.15">
 </head>
 <body>
 <header class="admin-header">
-  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V24.2.11</b></div>
-  <a id="openReaderLink" href="reader.html?v=24.2.11" target="_blank" rel="noopener">Mở bài đọc ↗</a>
+  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V24.2.15</b></div>
+  <a id="openReaderLink" href="reader.html?v=24.2.15" target="_blank" rel="noopener">Mở bài đọc ↗</a>
 </header>
 
 <main class="admin-wrap">
   <section class="notice">
-    <strong>V24.1 · Thư viện ảnh có sẵn cho Cover, bìa sách, logo và icon App</strong>
+    <strong>V24.2.15 · Thư viện icon chung – chọn một nơi, dùng cho nhiều mục</strong>
     <span>Chọn 🌐 Public để hiển thị ngoài website hoặc 🔒 Private để ẩn khỏi Thư viện và chặn Reader thông thường.</span>
   </section>
 
@@ -155,11 +155,11 @@
     <div class="site-icon-title"><strong>📱 Tạo icon App</strong><span>Tạo đúng 2 file icon-192.png và icon-512.png để thay biểu tượng PWA trên iPhone/Android.</span></div>
     <div class="app-icon-maker-grid">
       <div class="app-icon-preview-wrap">
-        <div id="appIconPreview" class="app-icon-preview"><img src="icon-192.png?v=24.2.11" alt="Icon App hiện tại"></div>
+        <div id="appIconPreview" class="app-icon-preview"><img src="icon-192.png?v=24.2.15" alt="Icon App hiện tại"></div>
         <small>Ảnh xem trước theo kiểu icon trên màn hình iPhone.</small>
       </div>
       <div class="app-icon-maker-controls">
-        <div><span class="field-label">Chọn icon App có sẵn</span><div id="appIconPresets" class="image-preset-grid app-presets"></div></div>
+        <div><span class="field-label">Icon App</span><button type="button" class="icon-library-open" data-icon-target="app">▦ Chọn từ Thư viện icon</button><div id="appIconPresets" class="image-preset-grid app-presets legacy-icon-picker"></div></div>
         <label class="optional-upload"><span>Ảnh riêng (tùy chọn)</span><input id="appIconFile" type="file" accept="image/png,image/jpeg,image/webp,image/*"></label>
         <div class="app-icon-actions">
           <button type="button" id="usePresetAppIcon1" class="primary">✓ Hình số 1 – Lá bồ đề non</button>
@@ -193,7 +193,8 @@
         <button type="button" data-site-icon-style="pink">🌸 Hồng</button>
         <button type="button" data-site-icon-style="green">🌿 Xanh</button>
       </div>
-      <div id="siteIconPicker" class="book-icon-picker" aria-label="Chọn biểu tượng Góc nhỏ tu học"></div>
+      <button type="button" class="icon-library-open primary" data-icon-target="site">▦ Chọn từ Thư viện icon</button>
+      <div id="siteIconPicker" class="book-icon-picker legacy-icon-picker" aria-label="Chọn biểu tượng Góc nhỏ tu học"></div>
       <small class="field-help">Biểu tượng này sẽ thay 📖 trước chữ “Góc nhỏ tu học” trên Trang chủ, Thư viện và Reader.</small>
       <div style="margin-top:10px"><button type="button" id="publishSiteIcon" class="primary">Lưu & xuất bản biểu tượng</button> <span id="siteIconState" class="publish-state"></span></div>
     </div>
@@ -231,10 +232,11 @@
           <button type="button" data-icon-style="pink">🌸 Hồng</button>
           <button type="button" data-icon-style="green">🌿 Xanh</button>
         </div>
-        <div id="bookIconPicker" class="book-icon-picker" aria-label="Chọn biểu tượng đầu sách"></div>
+        <button type="button" class="icon-library-open" data-icon-target="book">▦ Chọn từ Thư viện icon</button>
+        <div id="bookIconPicker" class="book-icon-picker legacy-icon-picker" aria-label="Chọn biểu tượng đầu sách"></div>
         <small class="field-help">Mỗi mẫu đều có 3 màu: 🤎 Nâu, 🌸 Hồng và 🌿 Xanh. Chọn màu trước rồi chọn 1 trong 48 biểu tượng. Có thể đổi lại cho sách cũ bất cứ lúc nào.</small>
       </div>
-      <div class="wide field-help" style="padding:8px 0 2px;color:#725f50">V24.2.11: Đầu sách hiển thị bằng <strong>icon + tên sách</strong>. Không dùng ảnh bìa sách.</div>
+      <div class="wide field-help" style="padding:8px 0 2px;color:#725f50">V24.2.15: Đầu sách hiển thị bằng <strong>icon + tên sách</strong>. Không dùng ảnh bìa sách.</div>
       <label>
         <span>Phẩm / Chương</span>
         <input id="chapterTitle" type="text" placeholder="Nhập tên phẩm/chương">
@@ -258,6 +260,11 @@
       <label class="wide">
         <span>Mô tả</span>
         <input id="lessonSubtitle" type="text" placeholder="Ví dụ: Giảng thọ sư: ...">
+      </label>
+      <label class="wide lesson-summary-field">
+        <span>Tóm tắt bài học</span>
+        <textarea id="lessonSummary" rows="4" placeholder="Nhập các ý chính của bài học…"></textarea>
+        <small class="field-help">Bài chưa có tóm tắt sẽ không hiện mục Tóm tắt trên trang đọc.</small>
       </label>
     </div>
   </section>
@@ -302,7 +309,16 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="data.js?v=23.6"></script>
-<script src="book-icons.js?v=24.2.11"></script>
-<script src="admin-v21.js?v=24.2.11"></script>
+<div id="iconLibraryModal" class="icon-library-modal" aria-hidden="true">
+  <div class="icon-library-backdrop" data-icon-close></div>
+  <section class="icon-library-dialog" role="dialog" aria-modal="true" aria-labelledby="iconLibraryTitle">
+    <div class="icon-library-head"><div><strong id="iconLibraryTitle">Thư viện icon chung</strong><small>Chọn một icon để dùng cho mục hiện tại</small></div><button type="button" class="icon-library-x" data-icon-close>×</button></div>
+    <div class="icon-library-tools"><input id="iconLibrarySearch" type="search" placeholder="Tìm icon: Phật, sen, lá, sách..."><select id="iconLibraryGroup"><option value="">Tất cả nhóm</option></select></div>
+    <div id="iconLibraryGrid" class="icon-library-grid"></div>
+    <div class="icon-library-foot"><span id="iconLibraryStatus">Chưa chọn icon</span><button type="button" data-icon-close>Hủy</button><button type="button" id="iconLibraryUse" class="primary">Dùng icon này</button></div>
+  </section>
+</div>
+<script src="book-icons.js?v=24.2.15"></script>
+<script src="admin-v21.js?v=24.2.15"></script>
 </body>
 </html>

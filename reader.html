@@ -5,7 +5,7 @@
 <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
 <meta content="no-cache" http-equiv="Pragma"/>
 <meta content="0" http-equiv="Expires"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
-<title>Đọc bài | Góc nhỏ tu học</title><link href="style.css?v=24.2.11" rel="stylesheet"/><link rel="manifest" href="manifest.webmanifest?v=24.2.11"><meta name="theme-color" content="#765b3a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Góc nhỏ tu học"><link rel="apple-touch-icon" href="icon-192.png"></head><body class="theme-paper">
+<title>Đọc bài | Góc nhỏ tu học</title><link href="style.css?v=24.2.15" rel="stylesheet"/><link rel="manifest" href="manifest.webmanifest?v=24.2.15"><meta name="theme-color" content="#765b3a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Góc nhỏ tu học"><link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=24.2.15"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=24.2.15"><link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=24.2.15"></head><body class="theme-paper">
 <header class="site-header"><nav class="nav">
 <a class="brand" href="index.html">📖 Góc nhỏ tu học</a>
 <div class="nav-links">
@@ -31,10 +31,23 @@
 <button id="openLessonNotes">📝 Ghi chú</button>
 <button id="clearProgress">↺ Đọc từ đầu</button>
 </div>
+<div class="lesson-search" id="lessonSearch" role="search" aria-label="Tìm trong bài học">
+  <div class="lesson-search-main">
+    <span class="lesson-search-icon" aria-hidden="true">⌕</span>
+    <input id="lessonSearchInput" type="search" autocomplete="off" placeholder="Tìm trong bài học…" aria-label="Tìm từ hoặc cụm từ trong bài học">
+    <span id="lessonSearchCount" class="lesson-search-count" aria-live="polite"></span>
+  </div>
+  <div class="lesson-search-actions">
+    <button type="button" id="lessonSearchPrev" aria-label="Kết quả trước" title="Kết quả trước">↑</button>
+    <button type="button" id="lessonSearchNext" aria-label="Kết quả tiếp theo" title="Kết quả tiếp theo">↓</button>
+    <button type="button" id="lessonSearchClear" aria-label="Xóa tìm kiếm" title="Xóa tìm kiếm">✕</button>
+  </div>
+</div>
 <article class="reader-paper">
 <div class="reader-category">Đang tải…</div>
 <h1>Đang tải bài…</h1>
 <div class="subtitle"></div>
+<section id="lessonSummaryBox" class="lesson-summary-box" hidden><button type="button" id="lessonSummaryToggle" class="lesson-summary-toggle" aria-expanded="false">▾ Tóm tắt</button><div id="lessonSummaryContent" class="lesson-summary-content" hidden></div></section>
 <div class="reader-content"></div>
 <div class="page-turn-controls" hidden="" id="pageTurnControls">
 <button aria-label="Trang trước" id="prevPage" type="button">‹</button>
@@ -46,7 +59,7 @@
 </div>
 <nav id="lessonBottomNav" class="lesson-bottom-nav" aria-label="Điều hướng bài học">
   <button type="button" id="prevLessonBtn" class="lesson-nav-btn">← Bài trước</button>
-  <a class="lesson-home-btn" href="index.html?v=24.2.11" aria-label="Về Trang chủ" title="Trang chủ">⌂</a>
+  <a class="lesson-home-btn" href="index.html?v=24.2.15" aria-label="Về Trang chủ" title="Trang chủ">⌂</a>
   <button type="button" id="nextLessonBtn" class="lesson-nav-btn">Bài tiếp →</button>
 </nav>
 <div class="reader-end-footer">
@@ -104,7 +117,7 @@
 </div>
 </aside>
 <footer class="footer">Góc nhỏ tu học • Bản website đọc trực tuyến</footer>
-<script src="book-icons.js?v=24.2.11"></script><script src="data.js?v=24.2.11"></script><script>
+<script src="book-icons.js?v=24.2.15"></script><script src="data.js?v=24.2.15"></script><script>
 (function(){
   const data = window.GNTT_DATA || {books:[]};
   const params = new URLSearchParams(location.search);
@@ -178,6 +191,14 @@
   if(subtitle) subtitle.textContent = lesson.subtitle || '';
   if(footerTitle) footerTitle.textContent = lesson.title || '';
   document.title = (lesson.title || 'Bài đọc') + ' | Góc nhỏ tu học';
+  const summaryBox=document.getElementById('lessonSummaryBox');
+  const summaryToggle=document.getElementById('lessonSummaryToggle');
+  const summaryContent=document.getElementById('lessonSummaryContent');
+  if(summaryBox && summaryContent && String(lesson.summary||'').trim()){
+    summaryBox.hidden=false; summaryContent.textContent=lesson.summary.trim();
+    summaryToggle?.addEventListener('click',()=>{const open=summaryContent.hidden;summaryContent.hidden=!open;summaryToggle.setAttribute('aria-expanded',String(open));summaryToggle.textContent=(open?'▴':'▾')+' Tóm tắt';});
+  }
+
 
   let body = lesson.contentHtml || '';
   if(lesson.youtube){
@@ -191,4 +212,4 @@
     article.innerHTML = body;
   }
 })();
-</script><script src="app.js?v=24.2.11"></script><script src="pwa.js?v=24.2.11"></script></body></html>
+</script><script src="app.js?v=24.2.15"></script><script src="pwa.js?v=24.2.15"></script></body></html>

@@ -12,7 +12,8 @@
     ['theme-scroll','Chủ đề','Luận · Cổ thư'],
     ['theme-openbook','Chủ đề','Tài liệu · Học tập']
   ].map(([id,group,label])=>({id,group,label}));
-  ns.icons=[{id:'image-bodhi-red',group:'Ảnh icon',label:'Lá bồ đề non đỏ'},...lotus,...bodhi,...themes];
+  const buddhas = Array.from({length:8},(_,i)=>({id:`buddha-${String(i+1).padStart(2,'0')}`,group:'Phật vàng cam',label:`Phật tối giản ${i+1}`}));
+  ns.icons=[{id:'image-bodhi-red',group:'Ảnh icon',label:'Lá bồ đề non đỏ'},...buddhas,...lotus,...bodhi,...themes];
   ns.defaultId='theme-openbook';
 
   const wrap = inner => `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false" class="gntt-book-icon-svg" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
@@ -83,6 +84,23 @@
     return wrap(s);
   }
 
+  function buddhaSvg(n){
+    const head = `<circle cx="32" cy="17" r="5" fill="currentColor"/>`;
+    const usnisa = `<circle cx="32" cy="10.8" r="2.2" fill="currentColor"/>`;
+    const body = `<path d="M24 27 C27 23 37 23 40 27 C43 32 42 40 40 44 C46 46 50 50 52 54 H12 C14 50 18 46 24 44 C22 40 21 32 24 27 Z" fill="currentColor" opacity=".94"/>`;
+    const robe = `<path d="M31 25 C27 31 27 39 29 45" fill="none" stroke="var(--icon-vein,#fff)" stroke-width="1.5" stroke-linecap="round" opacity=".9"/>`;
+    const hands = `<path d="M25 38 C29 42 35 42 39 38" fill="none" stroke="var(--icon-vein,#fff)" stroke-width="1.5" stroke-linecap="round"/>`;
+    const lotus = `<path d="M16 53 C21 47 27 48 32 53 C37 48 43 47 48 53 C43 57 37 58 32 55 C27 58 21 57 16 53 Z" fill="none" stroke="currentColor" stroke-width="2"/>`;
+    let s=head+usnisa+body+robe+hands;
+    if([1,4,7].includes(n)) s=`<circle cx="32" cy="28" r="24" fill="none" stroke="currentColor" stroke-width="1.8" opacity=".8"/>`+s;
+    if([1,2,5,7].includes(n)) s+=lotus;
+    if(n===3) s=`<path d="M32 4 C18 13 14 28 19 41 C22 49 27 54 32 58 C37 54 42 49 45 41 C50 28 46 13 32 4 Z" fill="none" stroke="currentColor" stroke-width="2"/>`+s;
+    if(n===5) s=`<path d="M32 5 C20 11 14 20 14 31 C14 44 22 53 32 58 C42 53 50 44 50 31 C50 20 44 11 32 5 Z" fill="none" stroke="currentColor" stroke-width="1.8"/>`+s;
+    if(n===6) s=`<circle cx="32" cy="29" r="25" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="2.5 3"/>`+s;
+    if(n===8) s+=`<path d="M12 55 C20 51 44 51 52 55" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`;
+    return wrap(s);
+  }
+
   function themeSvg(id){
     if(id==='theme-book') return wrap(p('M9 15 C18 12 26 14 32 19 V52 C26 47 18 45 9 48 Z')+p('M55 15 C46 12 38 14 32 19 V52 C38 47 46 45 55 48 Z'));
     if(id==='theme-openbook') return wrap(p('M7 17 C17 14 25 16 32 21 V53 C25 47 17 45 7 48 Z')+p('M57 17 C47 14 39 16 32 21 V53 C39 47 47 45 57 48 Z')+p('M32 21 V53'));
@@ -101,12 +119,14 @@
 
   ns.svg=function(id){
     id = ns.icons.some(x=>x.id===id) ? id : ns.defaultId;
+    if(id.startsWith('buddha-')) return buddhaSvg(parseInt(id.slice(-2),10));
     if(id.startsWith('lotus-')) return lotusSvg(parseInt(id.slice(-2),10));
     if(id.startsWith('bodhi-')) return bodhiSvg(parseInt(id.slice(-2),10));
     return themeSvg(id);
   };
   ns.get=function(id){return ns.icons.find(x=>x.id===id)||ns.icons.find(x=>x.id===ns.defaultId)};
   ns.colorFor=function(id){
+    if(id.startsWith('buddha-')) return '#c97818';
     if(id.startsWith('lotus-')){ const n=parseInt(id.slice(-2),10); return [1,2,3,4,10,11,13,14,17,20].includes(n)?'#e76f91':'#b8863b'; }
     if(id.startsWith('bodhi-')) return '#5f7f45';
     return ['theme-lotus'].includes(id)?'#d98298':(['theme-wisdom'].includes(id)?'#5f7f45':'#8a6338');
@@ -114,7 +134,8 @@
   ns.render=function(id,style='brown'){
     if(id==='image-bodhi-red') return '<img class="gntt-book-icon-image" src="app-icon-hinh-so-1.png?v=24.2.5" alt="Lá bồ đề non đỏ">';
     const svg=ns.svg(id);
-    const colors={brown:'#8a6338',pink:'#e76f91',green:'#5f7f45'};
+    const colors={brown:'#8a6338',pink:'#e76f91',green:'#5f7f45',orange:'#c97818'};
+    if(id.startsWith('buddha-')) return svg.replace('<svg ','<svg style=\"color:#c97818;--icon-vein:#fff4df\" ');
     // Backward compatibility: old 'mono' = brown, old 'color' keeps its natural category color.
     if(style==='color') return svg.replace('<svg ','<svg style=\"color:'+ns.colorFor(id)+';--icon-vein:#fff\" ');
     const key=style==='mono'?'brown':style;

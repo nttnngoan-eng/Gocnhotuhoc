@@ -1,5 +1,5 @@
-const CACHE='gntt-v24-2-6-shell';
-const SHELL=['./','./index.html','./library.html','./reader.html','./style.css','./app.js','./book-icons.js','./pwa.js','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
+const CACHE='gntt-v24-2-15-shell';
+const SHELL=['./','./index.html','./library.html','./reader.html','./style.css','./app.js','./book-icons.js','./pwa.js','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png','./app-icon-hinh-so-1.png'];
 
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));
