@@ -443,3 +443,22 @@ code{background:#eee8dc;padding:2px 5px;border-radius:5px}
 .book-cover-preview{width:min(310px,100%);aspect-ratio:7/10;min-height:0;overflow:hidden;display:grid;place-items:center;background:#fffaf8}
 .book-cover-preview img{width:100%;height:100%;object-fit:contain!important}
 .book-cover-presets .image-preset-choice img{aspect-ratio:7/10;object-fit:cover}
+
+/* V24.2.15 rev2 - Thu vien icon/anh chung */
+.legacy-icon-grid{display:none!important}
+.unified-picker-row{display:flex;gap:8px;align-items:center;margin:8px 0 4px}
+.unified-picker-row button{min-height:38px}
+.unified-library-card{width:min(980px,94vw);max-height:86vh;overflow:auto}
+.unified-library-toolbar{display:grid;gap:10px;padding:12px 0}
+#unifiedLibrarySearch{width:100%;padding:10px 12px;border:1px solid #d8c4ad;border-radius:10px;background:#fffaf3;color:#5c402b}
+.unified-library-filters{display:flex;gap:7px;flex-wrap:wrap}
+.unified-library-filters button{border:1px solid #d8c4ad;background:#fffaf3;border-radius:999px;padding:7px 11px;color:#6a4a32}
+.unified-library-filters button.selected{background:#ead8c1;border-color:#b38a60;font-weight:700}
+.unified-library-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;padding:4px 0 12px}
+.unified-library-item{border:1px solid #e0cdb6;background:#fffaf4;border-radius:13px;padding:9px;min-height:126px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;cursor:pointer;color:#5c402b}
+.unified-library-item:hover,.unified-library-item.selected{border-color:#a97849;box-shadow:0 0 0 2px rgba(169,120,73,.12)}
+.unified-library-item .asset-icon{width:64px;height:64px;display:grid;place-items:center;color:#8a6338}
+.unified-library-item .asset-icon svg{width:58px;height:58px}
+.unified-library-item img{width:96px;height:64px;object-fit:cover;border-radius:9px;background:#f2e7d7}
+.unified-library-item small{text-align:center;line-height:1.2}
+@media(max-width:700px){.unified-library-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.unified-library-item{min-height:110px;padding:7px}.unified-library-item .asset-icon{width:52px;height:52px}.unified-library-item .asset-icon svg{width:48px;height:48px}}

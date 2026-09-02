@@ -7,12 +7,12 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quản trị nội dung V24.1 - Góc nhỏ tu học</title>
-<link rel="stylesheet" href="admin-v17.css?v=24.2.13">
+<link rel="stylesheet" href="admin-v17.css?v=24.2.15r2">
 </head>
 <body>
 <header class="admin-header">
-  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V24.2.13</b></div>
-  <a id="openReaderLink" href="reader.html?v=24.2.13" target="_blank" rel="noopener">Mở bài đọc ↗</a>
+  <div class="admin-brand">📖 Góc nhỏ tu học <span>· Quản trị nội dung</span> <b class="version-badge">V24.2.15r2</b></div>
+  <a id="openReaderLink" href="reader.html?v=24.2.15r2" target="_blank" rel="noopener">Mở bài đọc ↗</a>
 </header>
 
 <main class="admin-wrap">
@@ -134,7 +134,7 @@
           <button type="button" data-accent-theme="green">🌿 Xanh</button>
         </div>
       </div>
-      <div class="wide preset-field compact-cover-picker"><span class="field-label">Ảnh cover Trang chủ</span><div class="cover-picker-row"><div id="siteCoverCurrent" class="cover-current-choice">Ảnh đang chọn</div><button type="button" id="openCoverLibrary" class="secondary">🖼 Chọn từ thư viện</button></div><small class="field-help">Các mẫu cover được gom vào thư viện để trang Admin gọn hơn.</small><div id="coverLibraryModal" class="icon-library-modal" hidden><div class="icon-library-card"><div class="icon-library-head"><strong>Thư viện ảnh cover</strong><button type="button" id="closeCoverLibrary" aria-label="Đóng">✕</button></div><div id="siteCoverPresets" class="image-preset-grid cover-presets"></div></div></div></div>
+      <div class="wide preset-field compact-cover-picker"><span class="field-label">Ảnh cover Trang chủ</span><div class="cover-picker-row"><div id="siteCoverCurrent" class="cover-current-choice">Ảnh đang chọn</div><button type="button" id="openUnifiedLibraryCover" class="secondary">🖼 Chọn từ thư viện</button></div><small class="field-help">Các mẫu cover được gom vào thư viện để trang Admin gọn hơn.</small><div id="coverLibraryModal" class="icon-library-modal" hidden><div class="icon-library-card"><div class="icon-library-head"><strong>Thư viện ảnh cover</strong><button type="button" id="closeCoverLibrary" aria-label="Đóng">✕</button></div><div id="siteCoverPresets" class="image-preset-grid cover-presets"></div></div></div></div>
       <div class="wide cover-fit-field"><span class="field-label">Cách hiển thị ảnh cover</span>
         <select id="siteCoverFit">
           <option value="cover">Phủ kín khung — đẹp nhất cho cover ngang</option>
@@ -155,11 +155,11 @@
     <div class="site-icon-title"><strong>📱 Tạo icon App</strong><span>Tạo đúng 2 file icon-192.png và icon-512.png để thay biểu tượng PWA trên iPhone/Android.</span></div>
     <div class="app-icon-maker-grid">
       <div class="app-icon-preview-wrap">
-        <div id="appIconPreview" class="app-icon-preview"><img src="icon-192.png?v=24.2.13" alt="Icon App hiện tại"></div>
+        <div id="appIconPreview" class="app-icon-preview"><img src="icon-192.png?v=24.2.15r2" alt="Icon App hiện tại"></div>
         <small>Ảnh xem trước theo kiểu icon trên màn hình iPhone.</small>
       </div>
       <div class="app-icon-maker-controls">
-        <div><span class="field-label">Chọn icon App có sẵn</span><div id="appIconPresets" class="image-preset-grid app-presets"></div></div>
+        <div><span class="field-label">Icon App</span><div class="unified-picker-row"><button type="button" id="openUnifiedLibraryApp" class="secondary">▦ Chọn từ thư viện icon chung</button></div><div id="appIconPresets" class="image-preset-grid app-presets legacy-icon-grid"></div></div>
         <label class="optional-upload"><span>Ảnh riêng (tùy chọn)</span><input id="appIconFile" type="file" accept="image/png,image/jpeg,image/webp,image/*"></label>
         <div class="app-icon-actions">
           <button type="button" id="usePresetAppIcon1" class="primary">✓ Hình số 1 – Lá bồ đề non</button>
@@ -193,7 +193,7 @@
         <button type="button" data-site-icon-style="pink">🌸 Hồng</button>
         <button type="button" data-site-icon-style="green">🌿 Xanh</button>
       </div>
-      <div id="siteIconPicker" class="book-icon-picker" aria-label="Chọn biểu tượng Góc nhỏ tu học"></div>
+      <div class="unified-picker-row"><button type="button" id="openUnifiedLibrarySite" class="secondary">▦ Chọn từ thư viện icon chung</button></div><div id="siteIconPicker" class="book-icon-picker legacy-icon-grid" aria-label="Chọn biểu tượng Góc nhỏ tu học"></div>
       <small class="field-help">Biểu tượng này sẽ thay 📖 trước chữ “Góc nhỏ tu học” trên Trang chủ, Thư viện và Reader.</small>
       <div style="margin-top:10px"><button type="button" id="publishSiteIcon" class="primary">Lưu & xuất bản biểu tượng</button> <span id="siteIconState" class="publish-state"></span></div>
     </div>
@@ -231,10 +231,10 @@
           <button type="button" data-icon-style="pink">🌸 Hồng</button>
           <button type="button" data-icon-style="green">🌿 Xanh</button>
         </div>
-        <div id="bookIconPicker" class="book-icon-picker" aria-label="Chọn biểu tượng đầu sách"></div>
+        <div class="unified-picker-row"><button type="button" id="openUnifiedLibraryBook" class="secondary">▦ Chọn từ thư viện icon chung</button></div><div id="bookIconPicker" class="book-icon-picker legacy-icon-grid" aria-label="Chọn biểu tượng đầu sách"></div>
         <small class="field-help">Mỗi mẫu đều có 3 màu: 🤎 Nâu, 🌸 Hồng và 🌿 Xanh. Chọn màu trước rồi chọn 1 trong 48 biểu tượng. Có thể đổi lại cho sách cũ bất cứ lúc nào.</small>
       </div>
-      <div class="wide field-help" style="padding:8px 0 2px;color:#725f50">V24.2.15: Đầu sách hiển thị bằng <strong>icon + tên sách</strong>. Không dùng ảnh bìa sách.</div>
+      <div class="wide field-help" style="padding:8px 0 2px;color:#725f50">V24.2.15r2: Đầu sách hiển thị bằng <strong>icon + tên sách</strong>. Không dùng ảnh bìa sách.</div>
       <label>
         <span>Phẩm / Chương</span>
         <input id="chapterTitle" type="text" placeholder="Nhập tên phẩm/chương">
@@ -307,7 +307,18 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="data.js?v=23.6"></script>
-<script src="book-icons.js?v=24.2.13"></script>
-<script src="admin-v21.js?v=24.2.13"></script>
+
+<div id="unifiedAssetLibrary" class="icon-library-modal unified-asset-library" hidden>
+  <div class="icon-library-card unified-library-card">
+    <div class="icon-library-head"><strong id="unifiedLibraryTitle">Thư viện chung</strong><button type="button" id="closeUnifiedLibrary" aria-label="Đóng">✕</button></div>
+    <div class="unified-library-toolbar">
+      <input id="unifiedLibrarySearch" type="search" placeholder="Tìm icon...">
+      <div id="unifiedLibraryFilters" class="unified-library-filters"></div>
+    </div>
+    <div id="unifiedLibraryGrid" class="unified-library-grid"></div>
+  </div>
+</div>
+<script src="book-icons.js?v=24.2.15r2"></script>
+<script src="admin-v21.js?v=24.2.15r2"></script>
 </body>
 </html>
