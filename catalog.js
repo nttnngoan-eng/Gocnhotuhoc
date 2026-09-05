@@ -152,7 +152,7 @@ window.GNTT_CATALOG = {
     },
     {
       "id": "tinh-do-dai-kinh-giai-dien-nghia",
-      "title": "Tịnh Độ Đại Kinh Giải Diễn Nghĩa",
+      "title": "TỊNH ĐỘ ĐẠI KINH GIẢI DIỄN NGHĨA",
       "icon": "gold-08",
       "iconStyle": "pink",
       "coverImage": "",
