@@ -1,6 +1,6 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="24.2.15rev7";
+DATA.version="24.2.15rev10";
 DATA.siteSettings = DATA.siteSettings || {homeIcon:"theme-openbook",homeIconStyle:"brown"};
 DATA.siteSettings.homeIconStyle = DATA.siteSettings.homeIconStyle || 'brown';
 DATA.siteSettings.accentTheme=DATA.siteSettings.accentTheme||"lightbrown";
@@ -1020,3 +1020,23 @@ document.addEventListener('DOMContentLoaded',()=>{
 })();
 
 
+
+/* V24.2.15 REV10 - Quan ly Bang tin */
+(function(){
+  DATA.feedPosts=Array.isArray(DATA.feedPosts)?DATA.feedPosts:[];
+  let editingId='';
+  const q=id=>document.getElementById(id);
+  const title=q('feedTitle'), type=q('feedType'), content=q('feedContent'), image=q('feedImage'), youtube=q('feedYoutube'), lesson=q('feedLesson'), visibility=q('feedVisibility'), list=q('feedAdminList'), state=q('feedState');
+  if(!title||!list)return;
+  function esc(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+  function allLessons(){const out=[];(DATA.books||[]).forEach(b=>(b.chapters||[]).forEach(c=>(c.lessons||[]).forEach(l=>out.push({id:l.id,title:l.title,book:b.title}))));return out;}
+  function fillLessons(){lesson.innerHTML='<option value="">— Không gắn bài học —</option>'+allLessons().map(l=>`<option value="${esc(l.id)}">${esc(l.title)} · ${esc(l.book)}</option>`).join('');}
+  function reset(){editingId='';title.value='';type.value='text';content.value='';image.value='';youtube.value='';lesson.value='';visibility.value='public';state.textContent='';}
+  function render(){const posts=[...DATA.feedPosts].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));list.innerHTML=posts.length?posts.map(p=>`<div class="feed-admin-item ${p.visibility==='private'?'feed-private':''}"><div class="feed-admin-item-main"><strong>${esc(p.title||'Không tiêu đề')}</strong><small>${esc(p.type||'text')} · ${p.visibility==='private'?'Ẩn':'Công khai'} · ${esc((p.createdAt||'').slice(0,10))}</small></div><div class="feed-admin-item-actions"><button type="button" data-feed-edit="${esc(p.id)}">Sửa</button><button type="button" data-feed-delete="${esc(p.id)}">Xóa</button></div></div>`).join(''):'<div class="empty-state">Chưa có bản tin.</div>';}
+  function save(){const t=title.value.trim(), c=content.value.trim();if(!t&&!c){alert('Bạn nhập tiêu đề hoặc nội dung bản tin trước nhé.');return null;}const now=new Date().toISOString();let p=editingId?DATA.feedPosts.find(x=>x.id===editingId):null;if(!p){p={id:'feed-'+Date.now(),createdAt:now};DATA.feedPosts.push(p);}Object.assign(p,{title:t,type:type.value||'text',content:c,image:image.value.trim(),youtube:youtube.value.trim(),lessonId:lesson.value||'',visibility:visibility.value||'public',updatedAt:now});editingId=p.id;render();state.textContent='✓ Đã lưu trong dữ liệu đang chỉnh';state.className='publish-state ok';return p;}
+  q('feedNew')?.addEventListener('click',reset);
+  q('feedSave')?.addEventListener('click',save);
+  q('feedPublish')?.addEventListener('click',async()=>{try{save();state.textContent='Đang đăng…';state.className='publish-state';await apiRequest('/publish-v21',{method:'POST',body:JSON.stringify({dataJs:buildDataJs(),catalogJs:buildCatalogJs(),message:'Cập nhật Bảng tin REV10'})});state.textContent='✓ Đã đăng Bảng tin';state.className='publish-state ok';}catch(e){state.textContent='Lỗi: '+(e.message||e);state.className='publish-state err';}});
+  list.addEventListener('click',e=>{const eb=e.target.closest('[data-feed-edit]'),db=e.target.closest('[data-feed-delete]');if(eb){const p=DATA.feedPosts.find(x=>x.id===eb.dataset.feedEdit);if(!p)return;editingId=p.id;title.value=p.title||'';type.value=p.type||'text';content.value=p.content||'';image.value=p.image||'';youtube.value=p.youtube||'';lesson.value=p.lessonId||'';visibility.value=p.visibility||'public';document.getElementById('feedAdminPanel')?.scrollIntoView({behavior:'smooth',block:'start'});}if(db){const p=DATA.feedPosts.find(x=>x.id===db.dataset.feedDelete);if(p&&confirm('Xóa bản tin “'+(p.title||'')+'”?')){DATA.feedPosts=DATA.feedPosts.filter(x=>x.id!==p.id);if(editingId===p.id)reset();render();}}});
+  fillLessons();render();
+})();
