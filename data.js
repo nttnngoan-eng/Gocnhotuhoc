@@ -142,7 +142,7 @@ window.GNTT_DATA = {
     },
     {
       "id": "tinh-do-dai-kinh-giai-dien-nghia",
-      "title": "Tịnh Độ Đại Kinh Giải Diễn Nghĩa",
+      "title": "TỊNH ĐỘ ĐẠI KINH GIẢI DIỄN NGHĨA",
       "creditRole": "lecturer",
       "creditName": "Lão Pháp Sư Tịnh Không",
       "icon": "gold-08",
