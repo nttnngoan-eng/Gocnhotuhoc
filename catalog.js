@@ -149,6 +149,34 @@ window.GNTT_CATALOG = {
           ]
         }
       ]
+    },
+    {
+      "id": "tinh-do-dai-kinh-giai-dien-nghia",
+      "title": "Tịnh Độ Đại Kinh Giải Diễn Nghĩa",
+      "icon": "gold-08",
+      "iconStyle": "pink",
+      "coverImage": "",
+      "description": "Tài liệu học và bài giảng được sắp xếp theo phẩm/chương.",
+      "type": "lesson",
+      "pdfUrl": "",
+      "author": "",
+      "creditRole": "lecturer",
+      "creditName": "Lão Pháp Sư Tịnh Không",
+      "chapters": [
+        {
+          "id": "giang-ngay-05-04-2010",
+          "title": "Giảng ngày: 05/04/2010",
+          "lessons": [
+            {
+              "id": "tinh-do-dai-kinh-giai-dien-nghia-giang-ngay-05-04-2010-tap-1",
+              "title": "Tập 1",
+              "subtitle": "",
+              "tocLevel": 2,
+              "href": "reader.html?id=tinh-do-dai-kinh-giai-dien-nghia-giang-ngay-05-04-2010-tap-1&v=24.2.15rev7"
+            }
+          ]
+        }
+      ]
     }
   ]
 };
