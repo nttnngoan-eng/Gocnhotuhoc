@@ -177,7 +177,9 @@ window.GNTT_DATA = {
     "deletedIconIds": [
       "pink-14",
       "pink-01",
-      "pink-02"
+      "pink-02",
+      "pink-09",
+      "pink-10"
     ]
   }
 };
