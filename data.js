@@ -200,7 +200,10 @@ window.GNTT_DATA = {
       "pink-09",
       "pink-01",
       "pink-02",
-      "buddha-08"
+      "buddha-08",
+      "buddha-07",
+      "buddha-06",
+      "buddha-01"
     ]
   }
 };
