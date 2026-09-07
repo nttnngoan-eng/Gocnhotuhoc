@@ -175,7 +175,8 @@ window.GNTT_DATA = {
     "homeIconStyle": "pink",
     "coverFit": "cover",
     "deletedIconIds": [
-      "pink-14"
+      "pink-14",
+      "pink-01"
     ]
   }
 };
