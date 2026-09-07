@@ -176,7 +176,8 @@ window.GNTT_DATA = {
     "coverFit": "cover",
     "deletedIconIds": [
       "pink-14",
-      "pink-01"
+      "pink-01",
+      "pink-02"
     ]
   }
 };
