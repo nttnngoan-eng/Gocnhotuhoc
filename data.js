@@ -177,7 +177,8 @@ window.GNTT_DATA = {
     "deletedIconIds": [
       "rev11-buddha-bodhi",
       "rev11-buddha-lotus",
-      "theme-prayer"
+      "theme-prayer",
+      "bodhi-13"
     ]
   }
 };
