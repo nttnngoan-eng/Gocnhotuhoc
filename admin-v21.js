@@ -1021,7 +1021,23 @@ document.addEventListener('DOMContentLoaded',()=>{
           if(!DATA.siteSettings.deletedIconIds.includes(id))DATA.siteSettings.deletedIconIds.push(id);
           await apiRequest('/publish-v21',{method:'POST',body:JSON.stringify({dataJs:buildDataJs(),catalogJs:buildCatalogJs(),message:'Cập nhật thư viện icon REV11: xóa '+id})});
           renderUnifiedFilters();renderUnifiedGrid();alert('Đã xóa icon khỏi thư viện'+(/^(gold|pink)-\d{2}$/.test(id)?' và xóa file PNG khỏi GitHub.':'.'));
-        }catch(err){alert('Chưa xóa được icon: '+(err?.message||err));}
+        }catch(err){
+          const msg=String(err?.message||err||'');
+          // REV11.1: nếu PNG đã bị xóa khỏi GitHub từ trước thì GitHub trả Not Found.
+          // Khi đó vẫn dọn tham chiếu khỏi thư viện để không còn ô icon vỡ.
+          if(/GitHub:\s*Not Found|\bNot Found\b/i.test(msg)){
+            try{
+              if(!DATA.siteSettings.deletedIconIds.includes(id))DATA.siteSettings.deletedIconIds.push(id);
+              await apiRequest('/publish-v21',{method:'POST',body:JSON.stringify({dataJs:buildDataJs(),catalogJs:buildCatalogJs(),message:'REV11.1 dọn icon đã mất trên GitHub: '+id})});
+              renderUnifiedFilters();renderUnifiedGrid();
+              alert('Đã dọn icon khỏi thư viện. File PNG này đã không còn trên GitHub.');
+            }catch(saveErr){
+              alert('File icon đã không còn trên GitHub nhưng chưa lưu được việc dọn thư viện: '+(saveErr?.message||saveErr));
+            }
+          }else{
+            alert('Chưa xóa được icon: '+msg);
+          }
+        }
       })();
       return;
     }

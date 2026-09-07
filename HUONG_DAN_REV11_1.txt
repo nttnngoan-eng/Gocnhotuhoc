@@ -1,0 +1,11 @@
+GÓC NHỎ TU HỌC – REV11.1
+
+Sửa lỗi: icon PNG đã bị xóa khỏi GitHub nhưng Admin vẫn hiện ô icon vỡ và báo GitHub: Not Found.
+
+Cách cập nhật nhanh:
+1. Upload đè admin-v21.js và admin-v21.html lên GitHub.
+2. Không cần cập nhật Cloudflare Worker cho lỗi này.
+3. Mở lại Admin và Ctrl+F5.
+4. Bấm Xóa ở icon vỡ. REV11.1 sẽ hiểu Not Found = file đã mất, sau đó tự dọn icon khỏi thư viện và lưu lại.
+
+ZIP không chứa data.js hoặc catalog.js.
