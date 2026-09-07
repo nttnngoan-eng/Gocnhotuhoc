@@ -178,7 +178,8 @@ window.GNTT_DATA = {
       "rev11-buddha-bodhi",
       "rev11-buddha-lotus",
       "theme-prayer",
-      "bodhi-13"
+      "bodhi-13",
+      "pink-13"
     ]
   }
 };
