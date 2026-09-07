@@ -195,7 +195,10 @@ window.GNTT_DATA = {
       "pink-04",
       "pink-07",
       "pink-14",
-      "pink-11"
+      "pink-11",
+      "pink-10",
+      "pink-09",
+      "pink-01"
     ]
   }
 };
