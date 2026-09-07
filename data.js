@@ -180,7 +180,8 @@ window.GNTT_DATA = {
       "theme-prayer",
       "bodhi-13",
       "pink-13",
-      "pink-06"
+      "pink-06",
+      "rev11-buddha-face"
     ]
   }
 };
