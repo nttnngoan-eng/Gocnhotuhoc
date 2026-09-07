@@ -186,7 +186,9 @@ window.GNTT_DATA = {
       "rev11-dharma-wheel",
       "rev11-bodhi-line",
       "rev11-lotus-3",
-      "rev11-stupa"
+      "rev11-stupa",
+      "pink-03",
+      "pink-05"
     ]
   }
 };
