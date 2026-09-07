@@ -204,7 +204,8 @@ window.GNTT_DATA = {
       "buddha-07",
       "buddha-06",
       "buddha-01",
-      "buddha-03"
+      "buddha-03",
+      "buddha-05"
     ]
   }
 };
