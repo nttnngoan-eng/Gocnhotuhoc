@@ -175,7 +175,9 @@ window.GNTT_DATA = {
     "homeIconStyle": "pink",
     "coverFit": "cover",
     "deletedIconIds": [
-      "rev11-buddha-bodhi"
+      "rev11-buddha-bodhi",
+      "rev11-buddha-lotus",
+      "theme-prayer"
     ]
   }
 };
