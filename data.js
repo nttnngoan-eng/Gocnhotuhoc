@@ -183,7 +183,8 @@ window.GNTT_DATA = {
       "pink-06",
       "rev11-buddha-face",
       "rev11-prayer",
-      "rev11-dharma-wheel"
+      "rev11-dharma-wheel",
+      "rev11-bodhi-line"
     ]
   }
 };
