@@ -189,7 +189,8 @@ window.GNTT_DATA = {
       "rev11-stupa",
       "pink-03",
       "pink-05",
-      "pink-08"
+      "pink-08",
+      "pink-12"
     ]
   }
 };
