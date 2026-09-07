@@ -184,7 +184,9 @@ window.GNTT_DATA = {
       "rev11-buddha-face",
       "rev11-prayer",
       "rev11-dharma-wheel",
-      "rev11-bodhi-line"
+      "rev11-bodhi-line",
+      "rev11-lotus-3",
+      "rev11-stupa"
     ]
   }
 };
