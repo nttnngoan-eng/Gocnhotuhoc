@@ -1,0 +1,26 @@
+GÓC NHỎ TU HỌC — REV11
+
+NỘI DUNG:
+1) Thêm 8 icon tối giản mới vào Thư viện icon chung.
+2) Giữ nguyên icon cũ để các đầu sách/logo đang dùng không bị mất.
+3) Thêm nút “Quản lý icon” trong Admin.
+   - Icon đang được dùng: Admin cảnh báo và không cho xóa nhầm.
+   - PNG Vàng/Hồng: có thể xóa vĩnh viễn file khỏi GitHub.
+   - Icon vector: loại khỏi thư viện (không có file PNG riêng nên không có dung lượng ảnh để xóa).
+4) Sửa chọn icon Vàng/Hồng cho App để dùng đúng PNG.
+5) Trang chủ: bỏ nút “Ghi chú” ở thanh điều hướng dưới. Nút Ghi chú phía trên cạnh Yêu thích/Đọc gần đây vẫn giữ nguyên.
+6) KHÔNG có data.js và catalog.js trong gói — không ghi đè dữ liệu sách hiện tại.
+
+CÁCH CẬP NHẬT WEBSITE:
+- Upload các file REV11 lên GitHub repo Gocnhotuhoc như các bản trước.
+- KHÔNG cần xóa data.js/catalog.js đang có trên GitHub.
+
+ĐỂ DÙNG “XÓA VĨNH VIỄN PNG”:
+- File worker_REV11.js là mã Worker cập nhật.
+- Vào Cloudflare > Workers & Pages > gocnhotuhoc-publisher > Edit code.
+- Thay code Worker bằng nội dung worker_REV11.js > Deploy.
+- Giữ nguyên toàn bộ Secrets/Variables hiện có; không tạo lại.
+
+LƯU Ý AN TOÀN:
+- Admin chỉ cho endpoint REV11 xóa file gold-XX.png hoặc pink-XX.png.
+- Không cho xóa data.js, catalog.js, HTML, CSS, JS hoặc icon App bằng endpoint này.

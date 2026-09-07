@@ -169,3 +169,42 @@
   };
   window.GNTT_BOOK_ICONS=ns;
 })();
+
+/* REV11: curated minimalist additions (vector, no extra image weight). */
+(function(){
+  const lib=window.GNTT_BOOK_ICONS;if(!lib)return;
+  const additions=[
+    ['rev11-buddha-bodhi','REV11 · Tối giản','Phật trong lá bồ đề'],
+    ['rev11-buddha-lotus','REV11 · Tối giản','Đức Phật trên hoa sen'],
+    ['rev11-lotus-3','REV11 · Tối giản','Hoa sen 3 cánh'],
+    ['rev11-bodhi-line','REV11 · Tối giản','Lá bồ đề nét mảnh'],
+    ['rev11-buddha-face','REV11 · Tối giản','Gương mặt Đức Phật'],
+    ['rev11-dharma-wheel','REV11 · Tối giản','Bánh xe Pháp'],
+    ['rev11-prayer','REV11 · Tối giản','Chắp tay'],
+    ['rev11-stupa','REV11 · Tối giản','Bảo tháp']
+  ];
+  additions.forEach(([id,group,label])=>{if(!lib.icons.some(x=>x.id===id))lib.icons.push({id,group,label});});
+  const oldSvg=lib.svg.bind(lib), oldColor=lib.colorFor.bind(lib), oldRender=lib.render.bind(lib);
+  const W=x=>`<svg viewBox="0 0 64 64" aria-hidden="true" class="gntt-book-icon-svg" xmlns="http://www.w3.org/2000/svg">${x}</svg>`;
+  const P=d=>`<path d="${d}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  function art(id){
+    const lotus=P('M32 52 C25 45 22 37 32 23 C42 37 39 45 32 52 Z')+P('M31 51 C21 50 15 45 13 36 C22 35 29 40 32 48')+P('M33 51 C43 50 49 45 51 36 C42 35 35 40 32 48');
+    const bud=`<circle cx="32" cy="22" r="4.5" fill="none" stroke="currentColor" stroke-width="2.2"/>`+P('M25 39 C26 30 38 30 39 39')+P('M21 47 C26 42 38 42 43 47')+P('M18 51 C25 55 39 55 46 51');
+    if(id==='rev11-buddha-bodhi')return W(P('M32 59 C18 50 11 39 13 25 C15 13 24 7 32 3 C40 7 49 13 51 25 C53 39 46 50 32 59 Z')+P('M32 9 V16')+bud+lotus);
+    if(id==='rev11-buddha-lotus')return W(bud+lotus);
+    if(id==='rev11-lotus-3')return W(P('M32 51 C25 43 25 33 32 21 C39 33 39 43 32 51 Z')+P('M31 50 C22 49 16 44 14 35 C23 35 29 40 32 47')+P('M33 50 C42 49 48 44 50 35 C41 35 35 40 32 47'));
+    if(id==='rev11-bodhi-line')return W(P('M32 57 C18 48 12 37 14 24 C16 13 25 8 32 4 C39 8 48 13 50 24 C52 37 46 48 32 57 Z')+P('M32 12 V58')+P('M32 27 L22 20 M32 34 L19 29 M32 41 L20 38 M32 27 L42 20 M32 34 L45 29 M32 41 L44 38'));
+    if(id==='rev11-buddha-face')return W(P('M21 23 C23 12 41 12 43 23')+P('M23 24 C23 39 27 47 32 50 C37 47 41 39 41 24')+P('M26 30 C28 29 29 29 30 30 M34 30 C35 29 36 29 38 30')+P('M29 39 C31 41 33 41 35 39')+P('M19 52 C26 47 38 47 45 52'));
+    if(id==='rev11-dharma-wheel'){let s='<circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="32" cy="32" r="5" fill="none" stroke="currentColor" stroke-width="2.2"/>';for(let i=0;i<8;i++){const a=i*Math.PI/4;s+=`<path d="M${32+6*Math.cos(a)} ${32+6*Math.sin(a)} L${32+21*Math.cos(a)} ${32+21*Math.sin(a)}" stroke="currentColor" stroke-width="2"/>`;}return W(s);}
+    if(id==='rev11-prayer')return W(P('M30 53 C23 46 19 37 21 25 C22 18 25 13 28 10 C30 22 31 33 32 43')+P('M34 53 C41 46 45 37 43 25 C42 18 39 13 36 10 C34 22 33 33 32 43')+P('M23 51 C28 56 36 56 41 51'));
+    if(id==='rev11-stupa')return W(P('M16 53 H48 M20 53 V47 H44 V53 M23 47 V41 H41 V47 M26 41 C26 33 28 28 32 24 C36 28 38 33 38 41 M27 24 H37 M28 20 H36 M29 16 H35 M30 12 H34 M32 7 V12'));
+  }
+  lib.svg=id=>id.startsWith('rev11-')?art(id):oldSvg(id);
+  lib.colorFor=id=>id.startsWith('rev11-')?(id.includes('bodhi')?'#6f8a50':id.includes('dharma')||id.includes('stupa')?'#d68a16':'#e83e78'):oldColor(id);
+  lib.render=function(id,style='brown'){
+    if(!id.startsWith('rev11-'))return oldRender(id,style);
+    const colors={brown:'#8a6338',pink:'#e83e78',green:'#6f8a50',orange:'#d68a16'};
+    const color=style==='color'?lib.colorFor(id):(colors[style==='mono'?'brown':style]||colors.brown);
+    return art(id).replace('<svg ','<svg style="color:'+color+'" ');
+  };
+})();

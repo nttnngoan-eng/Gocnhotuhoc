@@ -1,6 +1,6 @@
 
 const DATA = window.GNTT_DATA || {version:"21.1",books:[]};
-DATA.version="24.2.15rev10";
+DATA.version="24.2.15rev7";
 DATA.siteSettings = DATA.siteSettings || {homeIcon:"theme-openbook",homeIconStyle:"brown"};
 DATA.siteSettings.homeIconStyle = DATA.siteSettings.homeIconStyle || 'brown';
 DATA.siteSettings.accentTheme=DATA.siteSettings.accentTheme||"lightbrown";
@@ -961,7 +961,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   // V24.2.15rev7 rev2: Mot thu vien chung cho tat ca icon + anh cover.
   const unifiedModal=$('unifiedAssetLibrary'), unifiedTitle=$('unifiedLibraryTitle'), unifiedSearch=$('unifiedLibrarySearch'), unifiedFilters=$('unifiedLibraryFilters'), unifiedGrid=$('unifiedLibraryGrid');
-  let unifiedMode='site', unifiedGroup='Tất cả';
+  let unifiedMode='site', unifiedGroup='Tất cả', iconManageMode=false;
+  DATA.siteSettings=DATA.siteSettings||{}; DATA.siteSettings.deletedIconIds=Array.isArray(DATA.siteSettings.deletedIconIds)?DATA.siteSettings.deletedIconIds:[];
   const allIconItems=(window.GNTT_BOOK_ICONS?.icons||[]).map(x=>({kind:'icon',id:x.id,name:x.label||x.id,group:x.group||'Khác'}));
   const allCoverItems=siteCovers.map((x,i)=>({kind:'cover',id:'cover-'+i,name:x.name,url:x.url,group:'Ảnh cover'}));
   function currentUnifiedStyle(){
@@ -969,7 +970,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(unifiedMode==='site') return siteIconStyle?.value||'brown';
     return 'color';
   }
-  function unifiedItems(){ return unifiedMode==='cover'?allCoverItems:allIconItems; }
+  function unifiedItems(){ return unifiedMode==='cover'?allCoverItems:allIconItems.filter(x=>!DATA.siteSettings.deletedIconIds.includes(x.id)); }
   function renderUnifiedFilters(){
     if(!unifiedFilters)return;
     const groups=['Tất cả',...Array.from(new Set(unifiedItems().map(x=>x.group)))];
@@ -986,11 +987,11 @@ document.addEventListener('DOMContentLoaded',()=>{
       let art='';
       if(x.id==='image-bodhi-red') art='<img src="app-icon-hinh-so-1.png?v=24.2.15rev7" alt="'+esc(x.name)+'" style="width:64px;height:64px;object-fit:contain">';
       else art=`<span class="asset-icon">${window.GNTT_BOOK_ICONS?.render(x.id,style)||''}</span>`;
-      return `<button type="button" class="unified-library-item" data-unified-id="${esc(x.id)}">${art}<small>${esc(x.name)}</small></button>`;
+      return `<button type="button" class="unified-library-item${iconManageMode?' manage-mode':''}" data-unified-id="${esc(x.id)}">${art}<small>${esc(x.name)}</small>${iconManageMode?'<b class="icon-delete-mark">🗑 Xóa</b>':''}</button>`;
     }).join('')||'<p class="field-help">Không tìm thấy mục phù hợp.</p>';
   }
   function openUnified(mode){
-    unifiedMode=mode; unifiedGroup='Tất cả'; if(unifiedSearch)unifiedSearch.value='';
+    unifiedMode=mode; unifiedGroup='Tất cả'; iconManageMode=false; if(unifiedSearch)unifiedSearch.value=''; if($('toggleIconManage')) $('toggleIconManage').textContent='🗑 Quản lý icon';
     const titles={cover:'Thư viện chung · Ảnh cover',app:'Thư viện chung · Icon App',site:'Thư viện chung · Logo Góc nhỏ tu học',book:'Thư viện chung · Icon đầu sách'};
     if(unifiedTitle) unifiedTitle.textContent=titles[mode]||'Thư viện chung';
     renderUnifiedFilters(); renderUnifiedGrid(); if(unifiedModal){unifiedModal.hidden=false;document.body.classList.add('icon-library-open');unifiedModal.querySelector('.icon-library-card')?.scrollTo({top:0});}
@@ -1001,18 +1002,36 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('openUnifiedLibraryBook')?.addEventListener('click',()=>openUnified('book'));
   $('closeUnifiedLibrary')?.addEventListener('click',()=>{if(unifiedModal)unifiedModal.hidden=true;document.body.classList.remove('icon-library-open');});
   unifiedModal?.addEventListener('click',e=>{if(e.target===unifiedModal){unifiedModal.hidden=true;document.body.classList.remove('icon-library-open');}});
+  $('toggleIconManage')?.addEventListener('click',()=>{if(unifiedMode==='cover')return alert('Quản lý xóa áp dụng cho icon.');iconManageMode=!iconManageMode;$('toggleIconManage').textContent=iconManageMode?'✓ Xong':'🗑 Quản lý icon';renderUnifiedGrid();});
   unifiedSearch?.addEventListener('input',renderUnifiedGrid);
   unifiedFilters?.addEventListener('click',e=>{const b=e.target.closest('[data-lib-group]');if(!b)return;unifiedGroup=b.dataset.libGroup||'Tất cả';renderUnifiedFilters();renderUnifiedGrid();});
   unifiedGrid?.addEventListener('click',e=>{
     const b=e.target.closest('[data-unified-id]'); if(!b)return;
     const id=b.dataset.unifiedId;
+    if(iconManageMode && unifiedMode!=='cover'){
+      const used=[];
+      if(DATA.siteSettings?.homeIcon===id) used.push('logo Góc nhỏ tu học');
+      (DATA.books||[]).forEach(book=>{if(book.icon===id||book.bookIcon===id)used.push('đầu sách: '+(book.title||book.name||''));});
+      if(used.length)return alert('Không thể xóa vì icon đang được dùng tại: '+used.join(', ')+'. Hãy đổi icon ở vị trí đó trước.');
+      const item=window.GNTT_BOOK_ICONS?.get(id);
+      if(!confirm('Xóa icon “'+(item?.label||id)+'” khỏi thư viện?\n\nPNG Vàng/Hồng sẽ bị xóa vĩnh viễn khỏi GitHub. Icon vector sẽ được loại khỏi thư viện (không có file ảnh riêng để giảm dung lượng).'))return;
+      (async()=>{
+        try{
+          if(/^(gold|pink)-\d{2}$/.test(id)) await apiRequest('/delete-icon-v11',{method:'POST',body:JSON.stringify({file:id+'.png',message:'Xóa icon '+id+' từ Admin REV11'})});
+          if(!DATA.siteSettings.deletedIconIds.includes(id))DATA.siteSettings.deletedIconIds.push(id);
+          await apiRequest('/publish-v21',{method:'POST',body:JSON.stringify({dataJs:buildDataJs(),catalogJs:buildCatalogJs(),message:'Cập nhật thư viện icon REV11: xóa '+id})});
+          renderUnifiedFilters();renderUnifiedGrid();alert('Đã xóa icon khỏi thư viện'+(/^(gold|pink)-\d{2}$/.test(id)?' và xóa file PNG khỏi GitHub.':'.'));
+        }catch(err){alert('Chưa xóa được icon: '+(err?.message||err));}
+      })();
+      return;
+    }
     if(unifiedMode==='cover'){
       const x=allCoverItems.find(v=>v.id===id); if(x){DATA.siteSettings.coverImage=x.url;showCover(siteCoverPreview,x.url,'site');if(siteCoverFile)siteCoverFile.value='';refreshCoverCurrent();}
     }else if(unifiedMode==='book') setBookIcon(id);
     else if(unifiedMode==='site') setSiteIcon(id);
     else if(unifiedMode==='app'){
       const item=window.GNTT_BOOK_ICONS?.get(id);
-      const detail=id==='image-bodhi-red'?{name:item?.label||'Lá bồ đề non đỏ',url:'app-icon-hinh-so-1.png?v=24.2.15rev7',type:'preset'}:{name:item?.label||id,url:svgUrl(window.GNTT_BOOK_ICONS.svg(id)),type:'site'};
+      const detail=id==='image-bodhi-red'?{name:item?.label||'Lá bồ đề non đỏ',url:'app-icon-hinh-so-1.png?v=24.2.15rev11',type:'preset'}:/^(gold|pink)-\d{2}$/.test(id)?{name:item?.label||id,url:id+'.png?v=24.2.15rev11',type:'preset'}:{name:item?.label||id,url:svgUrl(window.GNTT_BOOK_ICONS.svg(id)),type:'site'};
       window.dispatchEvent(new CustomEvent('gntt-app-preset',{detail}));
     }
     if(unifiedModal)unifiedModal.hidden=true; document.body.classList.remove('icon-library-open');
@@ -1020,23 +1039,3 @@ document.addEventListener('DOMContentLoaded',()=>{
 })();
 
 
-
-/* V24.2.15 REV10 - Quan ly Bang tin */
-(function(){
-  DATA.feedPosts=Array.isArray(DATA.feedPosts)?DATA.feedPosts:[];
-  let editingId='';
-  const q=id=>document.getElementById(id);
-  const title=q('feedTitle'), type=q('feedType'), content=q('feedContent'), image=q('feedImage'), youtube=q('feedYoutube'), lesson=q('feedLesson'), visibility=q('feedVisibility'), list=q('feedAdminList'), state=q('feedState');
-  if(!title||!list)return;
-  function esc(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-  function allLessons(){const out=[];(DATA.books||[]).forEach(b=>(b.chapters||[]).forEach(c=>(c.lessons||[]).forEach(l=>out.push({id:l.id,title:l.title,book:b.title}))));return out;}
-  function fillLessons(){lesson.innerHTML='<option value="">— Không gắn bài học —</option>'+allLessons().map(l=>`<option value="${esc(l.id)}">${esc(l.title)} · ${esc(l.book)}</option>`).join('');}
-  function reset(){editingId='';title.value='';type.value='text';content.value='';image.value='';youtube.value='';lesson.value='';visibility.value='public';state.textContent='';}
-  function render(){const posts=[...DATA.feedPosts].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));list.innerHTML=posts.length?posts.map(p=>`<div class="feed-admin-item ${p.visibility==='private'?'feed-private':''}"><div class="feed-admin-item-main"><strong>${esc(p.title||'Không tiêu đề')}</strong><small>${esc(p.type||'text')} · ${p.visibility==='private'?'Ẩn':'Công khai'} · ${esc((p.createdAt||'').slice(0,10))}</small></div><div class="feed-admin-item-actions"><button type="button" data-feed-edit="${esc(p.id)}">Sửa</button><button type="button" data-feed-delete="${esc(p.id)}">Xóa</button></div></div>`).join(''):'<div class="empty-state">Chưa có bản tin.</div>';}
-  function save(){const t=title.value.trim(), c=content.value.trim();if(!t&&!c){alert('Bạn nhập tiêu đề hoặc nội dung bản tin trước nhé.');return null;}const now=new Date().toISOString();let p=editingId?DATA.feedPosts.find(x=>x.id===editingId):null;if(!p){p={id:'feed-'+Date.now(),createdAt:now};DATA.feedPosts.push(p);}Object.assign(p,{title:t,type:type.value||'text',content:c,image:image.value.trim(),youtube:youtube.value.trim(),lessonId:lesson.value||'',visibility:visibility.value||'public',updatedAt:now});editingId=p.id;render();state.textContent='✓ Đã lưu trong dữ liệu đang chỉnh';state.className='publish-state ok';return p;}
-  q('feedNew')?.addEventListener('click',reset);
-  q('feedSave')?.addEventListener('click',save);
-  q('feedPublish')?.addEventListener('click',async()=>{try{save();state.textContent='Đang đăng…';state.className='publish-state';await apiRequest('/publish-v21',{method:'POST',body:JSON.stringify({dataJs:buildDataJs(),catalogJs:buildCatalogJs(),message:'Cập nhật Bảng tin REV10'})});state.textContent='✓ Đã đăng Bảng tin';state.className='publish-state ok';}catch(e){state.textContent='Lỗi: '+(e.message||e);state.className='publish-state err';}});
-  list.addEventListener('click',e=>{const eb=e.target.closest('[data-feed-edit]'),db=e.target.closest('[data-feed-delete]');if(eb){const p=DATA.feedPosts.find(x=>x.id===eb.dataset.feedEdit);if(!p)return;editingId=p.id;title.value=p.title||'';type.value=p.type||'text';content.value=p.content||'';image.value=p.image||'';youtube.value=p.youtube||'';lesson.value=p.lessonId||'';visibility.value=p.visibility||'public';document.getElementById('feedAdminPanel')?.scrollIntoView({behavior:'smooth',block:'start'});}if(db){const p=DATA.feedPosts.find(x=>x.id===db.dataset.feedDelete);if(p&&confirm('Xóa bản tin “'+(p.title||'')+'”?')){DATA.feedPosts=DATA.feedPosts.filter(x=>x.id!==p.id);if(editingId===p.id)reset();render();}}});
-  fillLessons();render();
-})();

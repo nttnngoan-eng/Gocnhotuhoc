@@ -473,3 +473,5 @@ code{background:#eee8dc;padding:2px 5px;border-radius:5px}
 .icon-library-head button{border:0!important;background:#efe4d5!important;border-radius:9px!important;padding:7px 10px!important;cursor:pointer!important}
 .unified-library-toolbar{position:sticky!important;top:38px!important;background:#fffaf3!important;z-index:2!important;padding:8px 0 12px!important}
 body.icon-library-open{overflow:hidden!important}
+/* REV11 - quản lý icon */
+.unified-library-toolbar{gap:8px;align-items:center}.unified-library-toolbar #toggleIconManage{white-space:nowrap}.unified-library-item.manage-mode{position:relative;outline:1px dashed #c99b8b}.icon-delete-mark{display:block;margin-top:4px;font-size:11px;color:#a33;font-weight:700}
